@@ -1,0 +1,24 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Database\Factories;
+
+use App\Models\Role;
+use App\Models\User;
+use App\Models\UserRole;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+class UserRoleFactory extends Factory
+{
+    protected $model = UserRole::class;
+
+    public function definition(): array
+    {
+        return [
+            'user_id' => User::factory(),
+            'role_id' => Role::factory(),
+            'unit_id' => null,
+        ];
+    }
+}
