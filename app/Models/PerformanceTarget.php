@@ -19,19 +19,21 @@ class PerformanceTarget extends Model
     protected $fillable = [
         'employee_id',
         'period_label',
-        'status',
+        'period_start',
+        'period_end',
         'appraiser_id',
-        'submitted_at',
-        'approved_at',
+        'status',
         'final_score',
-        'evaluation_summary',
+        'rating',
+        'approved_at',
         'version',
     ];
 
     protected $casts = [
-        'submitted_at' => 'datetime',
-        'approved_at' => 'datetime',
+        'period_start' => 'date',
+        'period_end' => 'date',
         'final_score' => 'decimal:2',
+        'approved_at' => 'datetime',
         'version' => 'integer',
     ];
 

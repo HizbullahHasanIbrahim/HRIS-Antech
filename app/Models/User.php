@@ -22,12 +22,14 @@ class User extends Authenticatable
         'employee_id',
         'username',
         'password_hash',
+        'api_token',
         'is_active',
         'last_login_at',
     ];
 
     protected $hidden = [
         'password_hash',
+        'api_token',
     ];
 
     protected $casts = [

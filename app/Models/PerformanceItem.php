@@ -17,22 +17,19 @@ class PerformanceItem extends Model
 
     protected $fillable = [
         'target_id',
-        'activity_name',
-        'target_quantity',
-        'actual_quantity',
-        'target_quality',
-        'actual_quality',
-        'score',
+        'description',
+        'unit',
+        'target_value',
+        'realization_value',
         'weight',
+        'score',
     ];
 
     protected $casts = [
-        'target_quantity' => 'integer',
-        'actual_quantity' => 'integer',
-        'target_quality' => 'decimal:2',
-        'actual_quality' => 'decimal:2',
-        'score' => 'decimal:2',
+        'target_value' => 'decimal:2',
+        'realization_value' => 'decimal:2',
         'weight' => 'decimal:2',
+        'score' => 'decimal:2',
     ];
 
     public function target(): BelongsTo

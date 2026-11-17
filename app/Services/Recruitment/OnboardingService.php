@@ -4,9 +4,9 @@ namespace App\Services\Recruitment;
 
 use App\Enums\ApplicationStatus;
 use App\Exceptions\UnauthorizedActionException;
+use App\Models\ActivityLog;
 use App\Models\Application;
 use App\Models\Employee;
-use App\Models\Vacancy;
 use Illuminate\Support\Facades\DB;
 
 class OnboardingService
@@ -19,13 +19,13 @@ class OnboardingService
         if ($application->status !== ApplicationStatus::APPROVED->value) {
             throw new UnauthorizedActionException('Only approved applications can be onboarded.');
         }
-        
+
         if (! $application->vacancy_id) {
             throw new \InvalidArgumentException('Application must be linked to a vacancy.');
         }
-        
+
         $this->validateNipUnique($nip);
-        
+
         $employee = DB::transaction(function () use ($application, $nip, $nidn) {
             $employee = Employee::create([
                 'nip' => $nip,
@@ -38,27 +38,27 @@ class OnboardingService
                 'join_date' => now(),
                 'application_id' => $application->id,
             ]);
-            
+
             $application->update(['status' => ApplicationStatus::EMPLOYEE_CREATED->value]);
-            
+
             $this->logActivity(null, 'CREATE_EMPLOYEE', 'Employee', $employee->id, null, 'aktif');
-            
+
             return $employee;
         });
-        
+
         return $employee;
     }
-    
+
     protected function validateNipUnique(string $nip): void
     {
         if (Employee::where('nip', $nip)->exists()) {
             throw new \InvalidArgumentException('NIP already exists.');
         }
     }
-    
+
     protected function logActivity(?int $actorId, string $action, string $entityType, int $entityId, ?string $oldStatus, ?string $newStatus): void
     {
-        \App\Models\ActivityLog::create([
+        ActivityLog::create([
             'actor_id' => $actorId ?? 1,
             'action' => $action,
             'entity_type' => $entityType,

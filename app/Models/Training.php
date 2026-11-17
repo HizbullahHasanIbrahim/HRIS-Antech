@@ -19,18 +19,20 @@ class Training extends Model
         'employee_id',
         'retirement_id',
         'title',
-        'provider',
+        'training_type',
+        'organizer',
         'start_date',
         'end_date',
-        'hours',
+        'duration_hours',
         'status',
+        'certificate_number',
         'certificate_path',
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
-        'hours' => 'integer',
+        'duration_hours' => 'integer',
     ];
 
     public function employee(): BelongsTo

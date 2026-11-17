@@ -18,21 +18,24 @@ class Retirement extends Model
 
     protected $fillable = [
         'employee_id',
-        'pension_type',
-        'proposed_date',
-        'effective_date',
+        'retirement_age',
+        'planned_date',
+        'proposed_at',
         'status',
+        'processed_by',
         'sk_number',
         'sk_date',
-        'reason',
-        'processed_by',
+        'completed_at',
+        'notes',
         'version',
     ];
 
     protected $casts = [
-        'proposed_date' => 'date',
-        'effective_date' => 'date',
+        'retirement_age' => 'integer',
+        'planned_date' => 'date',
+        'proposed_at' => 'datetime',
         'sk_date' => 'date',
+        'completed_at' => 'datetime',
         'version' => 'integer',
     ];
 

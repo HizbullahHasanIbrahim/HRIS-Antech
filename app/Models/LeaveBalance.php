@@ -19,17 +19,15 @@ class LeaveBalance extends Model
         'employee_id',
         'leave_type_id',
         'year',
-        'quota_amount',
-        'used_amount',
-        'remaining_amount',
+        'quota_days',
+        'used_days',
         'version',
     ];
 
     protected $casts = [
         'year' => 'integer',
-        'quota_amount' => 'integer',
-        'used_amount' => 'integer',
-        'remaining_amount' => 'integer',
+        'quota_days' => 'integer',
+        'used_days' => 'integer',
         'version' => 'integer',
     ];
 
@@ -41,5 +39,37 @@ class LeaveBalance extends Model
     public function leaveType(): BelongsTo
     {
         return $this->belongsTo(LeaveType::class, 'leave_type_id');
+    }
+
+    /**
+     * Get remaining days (computed from quota_days - used_days).
+     */
+    public function getRemainingDaysAttribute(): int
+    {
+        return $this->quota_days - $this->used_days;
+    }
+
+    /**
+     * Alias for backward compatibility.
+     */
+    public function getRemainingAmountAttribute(): int
+    {
+        return $this->remaining_days;
+    }
+
+    /**
+     * Alias for backward compatibility.
+     */
+    public function getQuotaAmountAttribute(): int
+    {
+        return $this->quota_days;
+    }
+
+    /**
+     * Alias for backward compatibility.
+     */
+    public function getUsedAmountAttribute(): int
+    {
+        return $this->used_days;
     }
 }

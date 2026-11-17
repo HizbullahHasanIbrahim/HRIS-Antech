@@ -1,19 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Attendance;
 
 use App\Enums\LeaveRequestStatus;
+use App\Exceptions\BusinessRuleViolationException;
 use App\Exceptions\ConcurrencyConflictException;
 use App\Exceptions\UnauthorizedActionException;
+use App\Models\Employee;
 use App\Models\LeaveBalance;
 use App\Models\LeaveRequest;
-use App\Models\Employee;
+use App\Services\Audit\ActivityLogService;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class LeaveRequestService
 {
+    public function __construct(
+        protected ActivityLogService $activityLog
+    ) {}
+
     /**
-     * Validate and create a leave request.
+     * Create a new leave request.
      */
     public function createRequest(
         Employee $employee,
@@ -24,16 +33,16 @@ class LeaveRequestService
         int $approverId
     ): LeaveRequest {
         $this->validateNoSelfApproval($employee, $approverId);
-        
         $this->validateDateRange($startDate, $endDate);
-        
-        $this->validateLeaveBalance($employee, $leaveTypeId, $startDate, $endDate);
-        
         $this->validateNoOverlappingRequests($employee, $startDate, $endDate);
-        
+
         return DB::transaction(function () use ($employee, $leaveTypeId, $startDate, $endDate, $reason, $approverId) {
+            // Pessimistic parent-row mutex (SDD 5, EX-02/EX-07/EX-08)
+            DB::table('employees')->where('id', $employee->id)->lockForUpdate()->first();
+
             $totalDays = $this->calculateWorkingDays($startDate, $endDate);
-            
+            $this->validateLeaveBalance($employee, $leaveTypeId, $totalDays);
+
             $leaveRequest = LeaveRequest::create([
                 'employee_id' => $employee->id,
                 'leave_type_id' => $leaveTypeId,
@@ -46,23 +55,30 @@ class LeaveRequestService
                 'submitted_at' => now(),
                 'version' => 1,
             ]);
-            
-            $this->logActivity($employee->id, 'CREATE_LEAVE_REQUEST', 'LeaveRequest', $leaveRequest->id, null, LeaveRequestStatus::SUBMITTED->value);
-            
+
+            $this->activityLog->log(
+                $employee->user?->id,
+                'CREATE_LEAVE_REQUEST',
+                'LeaveRequest',
+                $leaveRequest->id,
+                null,
+                LeaveRequestStatus::SUBMITTED->value,
+            );
+
             return $leaveRequest;
         });
     }
-    
+
     /**
-     * Approve a leave request.
+     * Approve a submitted leave request (RULE-03: lock balance row in same tx).
      */
     public function approveRequest(LeaveRequest $request, Employee $approver, ?string $decisionNote = null): LeaveRequest
     {
-        $this->validateApprover($request, $approver, $decisionNote);
-        
+        $this->validateTransition($request, LeaveRequestStatus::APPROVED, $approver);
+
         return DB::transaction(function () use ($request, $approver, $decisionNote) {
-            $this->lockRelatedRecords($request);
-            
+            $this->lockParentRows($request);
+
             $updated = LeaveRequest::where('id', $request->id)
                 ->where('version', $request->version)
                 ->update([
@@ -71,31 +87,41 @@ class LeaveRequestService
                     'decision_note' => $decisionNote,
                     'version' => $request->version + 1,
                 ]);
-                
+
             if ($updated === 0) {
                 throw new ConcurrencyConflictException('Leave request has been modified by another user.');
             }
-            
-            $request->refresh();
-            
-            $this->updateLeaveBalance($request);
-            
-            $this->logActivity($request->employee_id, 'APPROVE_LEAVE_REQUEST', 'LeaveRequest', $request->id, LeaveRequestStatus::SUBMITTED->value, LeaveRequestStatus::APPROVED->value);
-            
-            return $request;
+
+            $this->applyToLeaveBalance($request);
+
+            $this->activityLog->log(
+                $approver->user?->id,
+                'APPROVE_LEAVE_REQUEST',
+                'LeaveRequest',
+                $request->id,
+                LeaveRequestStatus::SUBMITTED->value,
+                LeaveRequestStatus::APPROVED->value,
+                $decisionNote,
+            );
+
+            return $request->refresh();
         });
     }
-    
+
     /**
-     * Reject a leave request.
+     * Reject a submitted leave request (RULE-11: reason required).
      */
     public function rejectRequest(LeaveRequest $request, Employee $approver, string $decisionNote): LeaveRequest
     {
-        $this->validateApprover($request, $approver, $decisionNote);
-        
+        if (trim($decisionNote) === '') {
+            throw new BusinessRuleViolationException('Decision note is required for rejection.');
+        }
+
+        $this->validateTransition($request, LeaveRequestStatus::REJECTED, $approver);
+
         return DB::transaction(function () use ($request, $approver, $decisionNote) {
-            $this->lockRelatedRecords($request);
-            
+            $this->lockParentRows($request);
+
             $updated = LeaveRequest::where('id', $request->id)
                 ->where('version', $request->version)
                 ->update([
@@ -104,155 +130,150 @@ class LeaveRequestService
                     'decision_note' => $decisionNote,
                     'version' => $request->version + 1,
                 ]);
-                
+
             if ($updated === 0) {
                 throw new ConcurrencyConflictException('Leave request has been modified by another user.');
             }
-            
-            $request->refresh();
-            
-            $this->logActivity($request->employee_id, 'REJECT_LEAVE_REQUEST', 'LeaveRequest', $request->id, LeaveRequestStatus::SUBMITTED->value, LeaveRequestStatus::REJECTED->value);
-            
-            return $request;
+
+            $this->activityLog->log(
+                $approver->user?->id,
+                'REJECT_LEAVE_REQUEST',
+                'LeaveRequest',
+                $request->id,
+                LeaveRequestStatus::SUBMITTED->value,
+                LeaveRequestStatus::REJECTED->value,
+                $decisionNote,
+            );
+
+            return $request->refresh();
         });
     }
-    
+
     /**
-     * Cancel a pending leave request.
+     * Cancel a submitted leave request.
      */
-    public function cancelRequest(LeaveRequest $request): LeaveRequest
+    public function cancelRequest(LeaveRequest $request, ?string $reason = null): LeaveRequest
     {
-        if (! $request->status === LeaveRequestStatus::SUBMITTED->value) {
-            throw new UnauthorizedActionException('Only submitted leave requests can be cancelled.');
+        if ($request->status !== LeaveRequestStatus::SUBMITTED->value) {
+            throw new BusinessRuleViolationException('Only submitted leave requests can be cancelled.');
         }
-        
-        return DB::transaction(function () use ($request) {
+
+        return DB::transaction(function () use ($request, $reason) {
             $updated = LeaveRequest::where('id', $request->id)
                 ->where('version', $request->version)
                 ->update([
                     'status' => LeaveRequestStatus::CANCELLED->value,
+                    'decided_at' => now(),
+                    'decision_note' => $reason,
                     'version' => $request->version + 1,
                 ]);
-                
+
             if ($updated === 0) {
                 throw new ConcurrencyConflictException('Leave request has been modified by another user.');
             }
-            
-            $request->refresh();
-            
-            $this->logActivity($request->employee_id, 'CANCEL_LEAVE_REQUEST', 'LeaveRequest', $request->id, LeaveRequestStatus::SUBMITTED->value, LeaveRequestStatus::CANCELLED->value);
-            
-            return $request;
+
+            $this->activityLog->log(
+                $request->employee?->user?->id,
+                'CANCEL_LEAVE_REQUEST',
+                'LeaveRequest',
+                $request->id,
+                LeaveRequestStatus::SUBMITTED->value,
+                LeaveRequestStatus::CANCELLED->value,
+                $reason,
+            );
+
+            return $request->refresh();
         });
     }
-    
+
     protected function validateNoSelfApproval(Employee $employee, int $approverId): void
     {
         if ($employee->id === $approverId) {
             throw new UnauthorizedActionException('Employee cannot approve their own leave request.');
         }
     }
-    
+
     protected function validateDateRange(\DateTimeInterface $startDate, \DateTimeInterface $endDate): void
     {
-        if ($endDate < $startDate) {
-            throw new \InvalidArgumentException('End date must be after start date.');
+        if (Carbon::parse($endDate)->lt(Carbon::parse($startDate))) {
+            throw new BusinessRuleViolationException('End date must be on or after start date.');
         }
     }
-    
-    protected function validateLeaveBalance(Employee $employee, int $leaveTypeId, \DateTimeInterface $startDate, \DateTimeInterface $endDate): void
+
+    protected function validateLeaveBalance(Employee $employee, int $leaveTypeId, int $totalDays): void
     {
-        $totalDays = $this->calculateWorkingDays($startDate, $endDate);
-        
         $balance = LeaveBalance::where('employee_id', $employee->id)
             ->where('leave_type_id', $leaveTypeId)
+            ->lockForUpdate()
             ->first();
-            
+
         if (! $balance || $balance->remaining_amount < $totalDays) {
-            throw new \InvalidArgumentException('Insufficient leave balance.');
+            throw new BusinessRuleViolationException('Insufficient leave balance.');
         }
     }
-    
+
     protected function validateNoOverlappingRequests(Employee $employee, \DateTimeInterface $startDate, \DateTimeInterface $endDate): void
     {
         $overlapping = LeaveRequest::where('employee_id', $employee->id)
-            ->where('status', 'disetujui')
-            ->where(function ($q) use ($startDate, $endDate) {
-                $q->whereBetween('start_date', [$startDate, $endDate])
-                  ->orWhereBetween('end_date', [$startDate, $endDate])
-                  ->orWhere(function ($q2) use ($startDate, $endDate) {
-                      $q2->where('start_date', '<=', $startDate)
-                         ->where('end_date', '>=', $endDate);
-                  });
-            })
+            ->whereIn('status', [LeaveRequestStatus::SUBMITTED->value, LeaveRequestStatus::APPROVED->value])
+            ->where('start_date', '<=', $endDate)
+            ->where('end_date', '>=', $startDate)
             ->exists();
-            
+
         if ($overlapping) {
-            throw new \InvalidArgumentException('Leave date overlaps with an existing approved leave.');
+            throw new BusinessRuleViolationException('Leave date overlaps with an existing leave request.');
         }
     }
-    
+
     protected function calculateWorkingDays(\DateTimeInterface $start, \DateTimeInterface $end): int
     {
-        $start = \Carbon\Carbon::parse($start)->startOfDay();
-        $end = \Carbon\Carbon::parse($end)->startOfDay();
-        
-        return $start->diffInBusinessDays($end) + 1;
+        $start = Carbon::parse($start)->startOfDay();
+        $end = Carbon::parse($end)->startOfDay();
+
+        return max(1, (int) $start->diffInWeekdays($end) + 1);
     }
-    
-    protected function lockRelatedRecords(LeaveRequest $request): void
+
+    protected function lockParentRows(LeaveRequest $request): void
     {
+        DB::table('employees')->where('id', $request->employee_id)->lockForUpdate()->first();
+
         DB::table('leave_balances')
             ->where('employee_id', $request->employee_id)
             ->where('leave_type_id', $request->leave_type_id)
             ->lockForUpdate()
             ->first();
-            
-        DB::table('employees')
-            ->where('id', $request->employee_id)
-            ->lockForUpdate()
-            ->first();
     }
-    
-    protected function updateLeaveBalance(LeaveRequest $request): void
+
+    protected function applyToLeaveBalance(LeaveRequest $request): void
     {
         $balance = LeaveBalance::where('employee_id', $request->employee_id)
             ->where('leave_type_id', $request->leave_type_id)
+            ->lockForUpdate()
             ->first();
-            
-        if ($balance) {
-            $balance->update([
-                'used_amount' => $balance->used_amount + $request->total_days,
-                'remaining_amount' => $balance->remaining_amount - $request->total_days,
-            ]);
+
+        if ($balance === null) {
+            throw new BusinessRuleViolationException('Leave balance not found.');
         }
-    }
-    
-    protected function logActivity(int $actorId, string $action, string $entityType, int $entityId, ?string $oldStatus, ?string $newStatus): void
-    {
-        \App\Models\ActivityLog::create([
-            'actor_id' => $actorId,
-            'action' => $action,
-            'entity_type' => $entityType,
-            'entity_id' => $entityId,
-            'old_status' => $oldStatus,
-            'new_status' => $newStatus,
-            'created_at' => now(),
+
+        $balance->update([
+            'used_days' => $balance->used_days + $request->total_days,
+            'version' => $balance->version + 1,
         ]);
     }
-    
-    protected function validateApprover(LeaveRequest $request, Employee $approver, ?string $decisionNote): void
-    {
+
+    protected function validateTransition(
+        LeaveRequest $request,
+        LeaveRequestStatus $target,
+        Employee $approver
+    ): void {
         if ($request->approver_id !== $approver->id) {
-            throw new UnauthorizedActionException('You are not authorized to approve this leave request.');
+            throw new UnauthorizedActionException('You are not authorized to decide this leave request.');
         }
-        
-        if (! $request->status === LeaveRequestStatus::SUBMITTED->value) {
-            throw new UnauthorizedActionException('Only submitted leave requests can be approved.');
-        }
-        
-        if (($request->status === LeaveRequestStatus::REJECTED->value || $request->status === LeaveRequestStatus::CANCELLED->value) && empty($decisionNote)) {
-            throw new \InvalidArgumentException('Decision note is required for rejection or cancellation.');
+
+        if ($request->status !== LeaveRequestStatus::SUBMITTED->value) {
+            throw new BusinessRuleViolationException(
+                sprintf('Cannot transition leave request from "%s" to "%s".', $request->status, $target->value)
+            );
         }
     }
 }

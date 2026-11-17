@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Enums;
 
 enum LeaveRequestStatus: string
@@ -10,13 +12,14 @@ enum LeaveRequestStatus: string
     case REJECTED = 'ditolak';
     case CANCELLED = 'dibatalkan';
 
-    public function isTerminal(): bool
+    public function label(): string
     {
-        return in_array($this, [self::APPROVED, self::REJECTED, self::CANCELLED]);
-    }
-
-    public function canBeCancelled(): bool
-    {
-        return $this === self::SUBMITTED;
+        return match ($this) {
+            self::DRAFT => 'Draft',
+            self::SUBMITTED => 'Diajukan',
+            self::APPROVED => 'Disetujui',
+            self::REJECTED => 'Ditolak',
+            self::CANCELLED => 'Dibatalkan',
+        };
     }
 }
