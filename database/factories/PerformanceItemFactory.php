@@ -16,13 +16,12 @@ class PerformanceItemFactory extends Factory
     {
         return [
             'target_id' => PerformanceTarget::factory(),
-            'activity_name' => fake('id_ID')->sentence(4),
-            'target_quantity' => 10,
-            'actual_quantity' => 10,
-            'target_quality' => 100.00,
-            'actual_quality' => 90.00,
-            'score' => 90.00,
-            'weight' => 25.00,
+            'description' => fake('id_ID')->sentence(4),
+            'unit' => fake()->randomElement(['orang', 'benda', 'program', 'acara']),
+            'target_value' => fake()->randomFloat(2, 50, 100),
+            'realization_value' => null,
+            'weight' => fake()->randomFloat(2, 10, 30),
+            'score' => null,
         ];
     }
 }

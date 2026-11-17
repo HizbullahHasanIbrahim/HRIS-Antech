@@ -14,8 +14,11 @@ class AllowanceTypeFactory extends Factory
     public function definition(): array
     {
         return [
+            'code' => 'TUK-'.fake()->unique()->numerify('###'),
             'name' => fake()->unique()->randomElement(['Tunjangan Jabatan', 'Tunjangan Fungsional', 'Tunjangan Kehadiran', 'Tunjangan Kinerja']),
-            'category' => fake()->randomElement(['fungsional', 'struktural', 'umum']),
+            'requires_doctorate' => false,
+            'period_type' => 'bulanan',
+            'description' => fake('id_ID')->sentence(),
             'is_active' => true,
         ];
     }

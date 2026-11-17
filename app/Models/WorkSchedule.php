@@ -17,17 +17,20 @@ class WorkSchedule extends Model
     protected $table = 'work_schedules';
 
     protected $fillable = [
-        'name',
-        'schedule_type',
-        'effective_start',
-        'effective_end',
-        'is_active',
+        'unit_id',
+        'category',
+        'valid_from',
+        'valid_until',
+        'is_published',
+        'published_at',
+        'created_by',
     ];
 
     protected $casts = [
-        'effective_start' => 'date',
-        'effective_end' => 'date',
-        'is_active' => 'boolean',
+        'valid_from' => 'date',
+        'valid_until' => 'date',
+        'is_published' => 'boolean',
+        'published_at' => 'datetime',
     ];
 
     public function days(): HasMany
@@ -35,8 +38,18 @@ class WorkSchedule extends Model
         return $this->hasMany(WorkScheduleDay::class, 'schedule_id');
     }
 
+    public function unit(): BelongsTo
+    {
+        return $this->belongsTo(Department::class, 'unit_id');
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('is_active', true);
+        return $query->where('is_published', true);
     }
 }

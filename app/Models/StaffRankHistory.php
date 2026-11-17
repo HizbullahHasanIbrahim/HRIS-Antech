@@ -17,7 +17,8 @@ class StaffRankHistory extends Model
 
     protected $fillable = [
         'employee_id',
-        'rank_level',
+        'rank_grade',
+        'functional_position',
         'status',
         'submitted_at',
         'approver_id',

@@ -35,11 +35,11 @@ class AllowanceRequestService
             $existing = AllowanceRequest::where('employee_id', $employee->id)
                 ->where('allowance_type_id', $allowanceType->id)
                 ->where('period_label', $periodLabel)
-                ->where('status', 'aktif')
+                ->whereNotIn('status', ['ditolak', 'dibatalkan'])
                 ->exists();
 
             if ($existing) {
-                throw new \RuntimeException('Sudah ada permintaan tunjangan aktif untuk periode dan jenis yang sama.');
+                throw new \RuntimeException('Sudah ada permintaan tunjangan untuk periode dan jenis yang sama.');
             }
 
             // Validate that doctoral education is required for certain types (RULE-09)
@@ -97,7 +97,7 @@ class AllowanceRequestService
             $updated = AllowanceRequest::where('id', $request->id)
                 ->where('version', $request->version)
                 ->update([
-                    'status' => 'selesai',
+                    'status' => 'disetujui',
                     'decided_at' => now(),
                     'version' => $request->version + 1,
                 ]);
@@ -114,7 +114,7 @@ class AllowanceRequestService
                 'AllowanceRequest',
                 $request->id,
                 'diajukan',
-                'selesai',
+                'disetujui',
                 null,
                 ['approver_id' => $approver->id]
             );

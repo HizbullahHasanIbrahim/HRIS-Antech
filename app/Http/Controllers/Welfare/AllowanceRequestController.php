@@ -25,6 +25,8 @@ class AllowanceRequestController extends Controller
             return response()->json(['message' => 'No employee profile.'], 422);
         }
 
+        $this->authorize('viewAny', AllowanceRequest::class);
+
         $query = AllowanceRequest::with('allowanceType')
             ->where('employee_id', $employee->id)
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s));
@@ -38,6 +40,8 @@ class AllowanceRequestController extends Controller
         if (! $employee) {
             return response()->json(['message' => 'No employee profile.'], 422);
         }
+
+        $this->authorize('create', AllowanceRequest::class);
 
         $allowance = $this->allowanceService->createRequest(
             $employee,
@@ -53,6 +57,8 @@ class AllowanceRequestController extends Controller
 
     public function approve(Request $request, AllowanceRequest $allowanceRequest): JsonResponse
     {
+        $this->authorize('approve', $allowanceRequest);
+
         $approver = $request->user()->employee;
         if (! $approver) {
             return response()->json(['message' => 'No employee profile.'], 422);
@@ -65,6 +71,8 @@ class AllowanceRequestController extends Controller
 
     public function cancel(AllowanceRequest $allowanceRequest): JsonResponse
     {
+        $this->authorize('cancel', $allowanceRequest);
+
         $this->allowanceService->cancelRequest($allowanceRequest);
 
         return response()->json(['success' => true, 'message' => 'Allowance request cancelled.']);

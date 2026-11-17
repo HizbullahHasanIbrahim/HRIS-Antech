@@ -19,6 +19,8 @@ class WorkScheduleController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', WorkSchedule::class);
+
         $query = WorkSchedule::with('days')
             ->when($request->input('type'), fn ($q, $t) => $q->where('schedule_type', $t));
 
@@ -27,6 +29,8 @@ class WorkScheduleController extends Controller
 
     public function store(WorkScheduleRequest $request): JsonResponse
     {
+        $this->authorize('create', WorkSchedule::class);
+
         $schedule = $this->scheduleService->createSchedule(
             $request->validated('name'),
             $request->validated('schedule_type'),
@@ -40,6 +44,8 @@ class WorkScheduleController extends Controller
 
     public function destroy(WorkSchedule $workSchedule): JsonResponse
     {
+        $this->authorize('delete', $workSchedule);
+
         $this->scheduleService->deleteSchedule($workSchedule);
 
         return response()->json(['success' => true, 'message' => 'Work schedule deleted.']);
@@ -47,6 +53,8 @@ class WorkScheduleController extends Controller
 
     public function assign(Request $request, WorkSchedule $workSchedule): JsonResponse
     {
+        $this->authorize('assign', $workSchedule);
+
         $request->validate(['employee_id' => ['required', 'integer', 'exists:employees,id']]);
 
         $this->scheduleService->assignSchedule((int) $request->input('employee_id'), $workSchedule->id);

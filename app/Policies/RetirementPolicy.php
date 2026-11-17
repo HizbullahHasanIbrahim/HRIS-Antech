@@ -42,7 +42,7 @@ class RetirementPolicy
 
     public function cancel(User $user, Retirement $retirement): bool
     {
-        if ($retirement->status !== 'diajukan') {
+        if (! in_array($retirement->status, ['diusulkan', 'diproses'], true)) {
             return false;
         }
 

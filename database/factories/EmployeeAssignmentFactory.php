@@ -18,12 +18,10 @@ class EmployeeAssignmentFactory extends Factory
         return [
             'employee_id' => Employee::factory(),
             'unit_id' => Department::factory(),
-            'position_title' => fake('id_ID')->jobTitle(),
-            'assignment_type' => 'struktural',
-            'start_date' => now()->toDateString(),
-            'end_date' => null,
-            'sk_number' => 'SK/'.fake()->numerify('###/UAD/2026'),
-            'is_active' => true,
+            'supervisor_id' => null,
+            'category' => fake()->randomElement(['struktural', 'fungsional', 'pelaksana']),
+            'effective_from' => now()->toDateString(),
+            'effective_until' => null,
         ];
     }
 }

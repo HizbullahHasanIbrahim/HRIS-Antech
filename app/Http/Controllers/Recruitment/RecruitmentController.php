@@ -34,6 +34,8 @@ class RecruitmentController extends Controller
 
     public function storeVacancy(VacancyRequest $request): JsonResponse
     {
+        $this->authorize('create', Vacancy::class);
+
         $vacancy = $this->recruitmentService->createVacancy($request->validated(), (int) $request->user()->id);
 
         return response()->json(['success' => true, 'data' => $vacancy], 201);
@@ -80,6 +82,8 @@ class RecruitmentController extends Controller
 
     public function updateApplicationStatus(Request $request, Application $application): JsonResponse
     {
+        $this->authorize('update', $application);
+
         $request->validate([
             'status' => ['required', 'string', 'in:diajukan,administrasi,tulis,wawancara,final,diterima,ditolak'],
             'aik_score' => ['nullable', 'numeric', 'min:0', 'max:100'],
@@ -95,25 +99,30 @@ class RecruitmentController extends Controller
     }
 
     // Selection Stage endpoints
-    public function storeSelectionStage(SelectionStageRequest $request): JsonResponse
+    public function storeSelectionStage(SelectionStageRequest $request, Application $application): JsonResponse
     {
+        $this->authorize('create', SelectionStage::class);
+
         $validated = $request->validated();
+        $validated['application_id'] = $application->id;
 
         $stage = SelectionStage::create($validated);
 
         return response()->json(['success' => true, 'data' => $stage], 201);
     }
 
-    public function updateSelectionStageResult(Request $request, SelectionStage $selectionStage): JsonResponse
+    public function updateSelectionStageResult(Request $request, Application $application, SelectionStage $stage): JsonResponse
     {
+        $this->authorize('update', $stage);
+
         $validated = $request->validate([
-            'status' => ['required', 'string', 'in:lolos,gugur'],
+            'result' => ['required', 'string', 'in:lolos,gugur'],
             'score' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'assessor_notes' => ['nullable', 'string'],
+            'notes' => ['nullable', 'string'],
         ]);
 
-        $selectionStage->update($validated);
+        $stage->update($validated);
 
-        return response()->json(['success' => true, 'data' => $selectionStage->refresh()]);
+        return response()->json(['success' => true, 'data' => $stage->refresh()]);
     }
 }

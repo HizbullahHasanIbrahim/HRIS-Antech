@@ -21,27 +21,22 @@ class EmployeeAssignmentService
     public function assign(
         Employee $employee,
         int $unitId,
-        string $positionTitle,
-        string $assignmentType,
-        \DateTimeInterface $startDate,
-        ?string $skNumber = null
+        string $category,
+        \DateTimeInterface $effectiveFrom,
+        ?int $supervisorId = null,
+        ?\DateTimeInterface $effectiveUntil = null
     ): EmployeeAssignment {
-        return DB::transaction(function () use ($employee, $unitId, $positionTitle, $assignmentType, $startDate, $skNumber) {
+        return DB::transaction(function () use ($employee, $unitId, $category, $effectiveFrom, $supervisorId, $effectiveUntil) {
             // Pessimistic lock on parent employee row
             DB::table('employees')->where('id', $employee->id)->lockForUpdate()->first();
-
-            // Ponytaill: Deactivate previous active assignments if needed?
-            // The requirement doesn't explicitly say only one active, but usually true for main assignments.
-            // For now, just create a new one.
 
             $assignment = EmployeeAssignment::create([
                 'employee_id' => $employee->id,
                 'unit_id' => $unitId,
-                'position_title' => $positionTitle,
-                'assignment_type' => $assignmentType,
-                'start_date' => $startDate,
-                'sk_number' => $skNumber,
-                'is_active' => true,
+                'supervisor_id' => $supervisorId,
+                'category' => $category,
+                'effective_from' => $effectiveFrom,
+                'effective_until' => $effectiveUntil,
             ]);
 
             $this->activityLog->log(
@@ -52,7 +47,7 @@ class EmployeeAssignmentService
                 null,
                 'aktif',
                 null,
-                ['unit_id' => $unitId, 'position' => $positionTitle]
+                ['unit_id' => $unitId, 'category' => $category]
             );
 
             return $assignment;
@@ -62,12 +57,11 @@ class EmployeeAssignmentService
     /**
      * Terminate an assignment.
      */
-    public function terminate(EmployeeAssignment $assignment, \DateTimeInterface $endDate): void
+    public function terminate(EmployeeAssignment $assignment, \DateTimeInterface $effectiveUntil): void
     {
-        DB::transaction(function () use ($assignment, $endDate) {
+        DB::transaction(function () use ($assignment, $effectiveUntil) {
             $assignment->update([
-                'end_date' => $endDate,
-                'is_active' => false,
+                'effective_until' => $effectiveUntil,
             ]);
 
             $this->activityLog->log(

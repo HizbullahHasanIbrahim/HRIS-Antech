@@ -19,9 +19,6 @@ class WorkScheduleDayFactory extends Factory
             'day_of_week' => fake()->numberBetween(1, 5),
             'start_time' => '08:00:00',
             'end_time' => '16:00:00',
-            'break_start' => '12:00:00',
-            'break_end' => '13:00:00',
-            'is_work_day' => true,
         ];
     }
 }

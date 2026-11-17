@@ -78,8 +78,8 @@ Route::middleware(['auth:api', 'unit.scope'])->prefix('v1')->group(function () {
 
     Route::post('/study-leaves', [CareerController::class, 'storeStudyLeave']);
     Route::get('/study-leaves', [CareerController::class, 'indexStudyLeaves']);
-    Route::post('/study-leaves/{leave}', [CareerController::class, 'approveStudyLeave']);
-    Route::post('/study-leaves/{leave}/reject', [CareerController::class, 'rejectStudyLeave']);
+    Route::post('/study-leaves/{studyLeave}', [CareerController::class, 'approveStudyLeave']);
+    Route::post('/study-leaves/{studyLeave}/reject', [CareerController::class, 'rejectStudyLeave']);
 
     Route::post('/certifications', [CareerController::class, 'storeCertification']);
     Route::get('/certifications', [CareerController::class, 'indexCertifications']);
@@ -96,8 +96,8 @@ Route::middleware(['auth:api', 'unit.scope'])->prefix('v1')->group(function () {
     Route::post('/bpjs/{membership}/cancel', [BpjsController::class, 'cancel']);
     Route::post('/allowances', [AllowanceRequestController::class, 'store']);
     Route::get('/allowances', [AllowanceRequestController::class, 'index']);
-    Route::post('/allowances/{allowance}/approve', [AllowanceRequestController::class, 'approve']);
-    Route::post('/allowances/{allowance}/cancel', [AllowanceRequestController::class, 'cancel']);
+    Route::post('/allowances/{allowanceRequest}/approve', [AllowanceRequestController::class, 'approve']);
+    Route::post('/allowances/{allowanceRequest}/cancel', [AllowanceRequestController::class, 'cancel']);
 
     // Retirement (P-16)
     Route::post('/retirements', [RetirementController::class, 'store']);

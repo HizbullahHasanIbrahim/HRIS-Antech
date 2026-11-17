@@ -16,7 +16,8 @@ class StaffRankRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'rank_level' => ['required', 'string', 'max:50'],
+            'rank_grade' => ['required', 'string', 'max:50'],
+            'functional_position' => ['nullable', 'string', 'max:100'],
             'status' => ['required', 'string', 'in:diajukan,disetujui,dibatalkan'],
             'approver_id' => ['required', 'integer'],
         ];

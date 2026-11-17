@@ -18,11 +18,13 @@ class TrainingFactory extends Factory
             'employee_id' => Employee::factory(),
             'retirement_id' => null,
             'title' => 'Pelatihan '.fake()->words(3, true),
-            'provider' => 'Lembaga Pengembangan Profesi',
+            'training_type' => fake()->randomElement(['prajabatan', 'teknis', 'kepemimpinan', 'fungsional']),
+            'organizer' => 'Lembaga Pengembangan Profesi',
             'start_date' => now()->subDays(5)->toDateString(),
             'end_date' => now()->subDays(3)->toDateString(),
-            'hours' => 32,
+            'duration_hours' => 32,
             'status' => 'selesai',
+            'certificate_number' => 'CERT-TRN/'.fake()->numerify('###/2026'),
             'certificate_path' => 'trainings/'.fake()->uuid().'.pdf',
         ];
     }

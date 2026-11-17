@@ -19,9 +19,8 @@ class LeaveBalanceFactory extends Factory
             'employee_id' => Employee::factory(),
             'leave_type_id' => LeaveType::factory(),
             'year' => (int) date('Y'),
-            'quota_amount' => 12,
-            'used_amount' => 0,
-            'remaining_amount' => 12,
+            'quota_days' => 12,
+            'used_days' => 0,
             'version' => 1,
         ];
     }

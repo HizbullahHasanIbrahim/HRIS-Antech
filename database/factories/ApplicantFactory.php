@@ -17,7 +17,9 @@ class ApplicantFactory extends Factory
             'full_name' => fake('id_ID')->name(),
             'email' => fake('id_ID')->unique()->safeEmail(),
             'phone' => fake('id_ID')->phoneNumber(),
-            'nik' => fake('id_ID')->unique()->numerify('3404############'),
+            'birth_date' => fake()->date('Y-m-d', '-22 years'),
+            'highest_education' => fake()->randomElement(['S1', 'S2', 'S3']),
+            'cv_path' => null,
         ];
     }
 }

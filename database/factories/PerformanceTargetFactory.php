@@ -17,12 +17,13 @@ class PerformanceTargetFactory extends Factory
         return [
             'employee_id' => Employee::factory(),
             'period_label' => '2026',
-            'status' => 'disetujui',
+            'period_start' => now()->startOfYear()->toDateString(),
+            'period_end' => now()->endOfYear()->toDateString(),
+            'status' => 'draf',
             'appraiser_id' => Employee::factory(),
-            'submitted_at' => now()->subMonth(),
-            'approved_at' => now(),
-            'final_score' => 88.50,
-            'evaluation_summary' => fake('id_ID')->paragraph(),
+            'final_score' => null,
+            'rating' => null,
+            'approved_at' => null,
             'version' => 1,
         ];
     }

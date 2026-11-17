@@ -20,14 +20,10 @@ class WorkScheduleDay extends Model
         'day_of_week',
         'start_time',
         'end_time',
-        'break_start',
-        'break_end',
-        'is_work_day',
     ];
 
     protected $casts = [
         'day_of_week' => 'integer',
-        'is_work_day' => 'boolean',
     ];
 
     public function schedule(): BelongsTo

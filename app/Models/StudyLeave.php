@@ -18,14 +18,15 @@ class StudyLeave extends Model
     protected $fillable = [
         'employee_id',
         'degree_level',
-        'institution_name',
-        'major',
+        'university',
+        'study_program',
         'start_date',
         'expected_end_date',
         'actual_end_date',
         'status',
-        'sk_number',
-        'created_by',
+        'scholarship_name',
+        'scholarship_status',
+        'mentoring_notes',
     ];
 
     protected $casts = [
@@ -37,10 +38,5 @@ class StudyLeave extends Model
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class, 'employee_id');
-    }
-
-    public function creator(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by');
     }
 }

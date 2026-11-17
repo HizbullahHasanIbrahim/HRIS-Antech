@@ -18,9 +18,9 @@ class SelectionStageFactory extends Factory
         return [
             'application_id' => Application::factory(),
             'stage_name' => fake()->randomElement(['seleksi_berkas', 'tes_kompetensi', 'wawancara', 'aipt_microteaching']),
+            'stage_order' => fake()->numberBetween(1, 5),
             'score' => fake()->randomFloat(2, 60, 100),
-            'status' => 'lulus',
-            'scheduled_date' => now()->toDateString(),
+            'result' => 'lulus',
             'assessed_by' => User::factory(),
             'assessed_at' => now(),
             'notes' => fake('id_ID')->sentence(),

@@ -16,10 +16,10 @@ class OvertimeRequestFactory extends Factory
     {
         return [
             'employee_id' => Employee::factory(),
-            'overtime_date' => now()->toDateString(),
+            'work_date' => now()->toDateString(),
             'start_time' => '17:00:00',
             'end_time' => '20:00:00',
-            'duration_hours' => 3.00,
+            'total_hours' => 3.00,
             'reason' => fake('id_ID')->sentence(),
             'status' => 'diajukan',
             'approver_id' => Employee::factory(),

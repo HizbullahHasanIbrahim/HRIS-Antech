@@ -17,21 +17,20 @@ class CertificationService
 
     public function createCertification(
         Employee $employee,
-        string $certificationName,
-        \DateTimeInterface $certificationDate,
-        string $certificationLevel,
-        string $certificationNumber,
+        string $certType,
+        string $certNumber,
+        \DateTimeInterface $submittedDate,
         ?string $certificatePath = null
     ): Certification {
-        return DB::transaction(function () use ($employee, $certificationName, $certificationDate, $certificationLevel, $certificationNumber, $certificatePath) {
+        return DB::transaction(function () use ($employee, $certType, $certNumber, $submittedDate, $certificatePath) {
             DB::table('employees')->where('id', $employee->id)->lockForUpdate()->first();
 
             $certification = Certification::create([
                 'employee_id' => $employee->id,
-                'certification_name' => $certificationName,
-                'certification_date' => $certificationDate,
-                'certification_level' => $certificationLevel,
-                'certification_number' => $certificationNumber,
+                'cert_type' => $certType,
+                'cert_number' => $certNumber,
+                'submitted_date' => $submittedDate,
+                'status' => 'diajukan',
                 'certificate_path' => $certificatePath,
             ]);
 
@@ -41,7 +40,7 @@ class CertificationService
                 'Certification',
                 $certification->id,
                 null,
-                'aktif',
+                'diajukan',
             );
 
             return $certification;

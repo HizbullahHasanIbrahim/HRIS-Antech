@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Models\Department;
+use App\Models\User;
 use App\Models\WorkSchedule;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -14,11 +16,13 @@ class WorkScheduleFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => 'Jadwal Reguler BSDM 5 Hari',
-            'schedule_type' => 'reguler',
-            'effective_start' => now()->startOfYear()->toDateString(),
-            'effective_end' => null,
-            'is_active' => true,
+            'unit_id' => Department::factory(),
+            'category' => fake()->randomElement(['reguler', 'shift', 'fleksibel']),
+            'valid_from' => now()->startOfYear()->toDateString(),
+            'valid_until' => null,
+            'is_published' => false,
+            'published_at' => null,
+            'created_by' => User::factory(),
         ];
     }
 }

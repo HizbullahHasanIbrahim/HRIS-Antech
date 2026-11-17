@@ -20,17 +20,19 @@ class StaffRankService
      */
     public function createRankHistory(
         Employee $employee,
-        string $rankLevel,
+        string $rankGrade,
         string $status,
-        int $approverId
+        int $approverId,
+        ?string $functionalPosition = null
     ): StaffRankHistory {
-        return DB::transaction(function () use ($employee, $rankLevel, $status, $approverId) {
+        return DB::transaction(function () use ($employee, $rankGrade, $status, $approverId, $functionalPosition) {
             // Pessimistic lock on parent employee row (SDD-5.6)
             DB::table('employees')->where('id', $employee->id)->lockForUpdate()->first();
 
             $rank = StaffRankHistory::create([
                 'employee_id' => $employee->id,
-                'rank_level' => $rankLevel,
+                'rank_grade' => $rankGrade,
+                'functional_position' => $functionalPosition,
                 'status' => $status,
                 'submitted_at' => now(),
                 'approver_id' => $approverId,
@@ -45,7 +47,7 @@ class StaffRankService
                 null,
                 $status,
                 null,
-                ['rank' => $rankLevel, 'approver' => $approverId]
+                ['rank' => $rankGrade, 'approver' => $approverId]
             );
 
             return $rank;

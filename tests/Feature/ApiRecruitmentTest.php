@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Models\Applicant;
 use App\Models\Department;
 use App\Models\Employee;
+use App\Models\Role;
 use App\Models\User;
 use App\Models\Vacancy;
 use Illuminate\Http\UploadedFile;
@@ -74,6 +75,16 @@ class ApiRecruitmentTest extends TestCase
             'password_hash' => bcrypt('password'),
             'api_token' => 'rec-token-12345',
             'is_active' => true,
+        ]);
+
+        // Assign Staff Rekrutmen role for vacancy creation authorization
+        $staffRekrutmenRole = Role::where('name', 'Staff Rekrutmen')->first();
+        if (! $staffRekrutmenRole) {
+            $staffRekrutmenRole = Role::create(['name' => 'Staff Rekrutmen']);
+        }
+        $user->userRoles()->create([
+            'role_id' => $staffRekrutmenRole->id,
+            'unit_id' => $dept->id,
         ]);
 
         // 1. Create Vacancy

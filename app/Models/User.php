@@ -71,13 +71,11 @@ class User extends Authenticatable
 
     public function hasRole(string $roleName, ?int $unitId = null): bool
     {
-        return $this->userRoles()->whereHas('role', function ($q) use ($roleName) {
-            $q->where('name', $roleName);
-        })->where(function ($q) use ($unitId) {
-            $q->whereNull('unit_id');
-            if ($unitId !== null) {
-                $q->orWhere('unit_id', $unitId);
-            }
-        })->exists();
+        return $this->userRoles()
+            ->whereHas('role', fn ($q) => $q->where('name', $roleName))
+            ->when($unitId !== null, function ($q) use ($unitId) {
+                $q->where(fn ($sub) => $sub->whereNull('unit_id')->orWhere('unit_id', $unitId));
+            })
+            ->exists();
     }
 }

@@ -16,7 +16,8 @@ class StaffRankHistoryFactory extends Factory
     {
         return [
             'employee_id' => Employee::factory(),
-            'rank_level' => fake()->randomElement(['Pengatur Muda / II A', 'Pengatur / II C', 'Penata Muda / III A', 'Penata / III C']),
+            'rank_grade' => fake()->randomElement(['Pengatur Muda / II A', 'Pengatur / II C', 'Penata Muda / III A', 'Penata / III C']),
+            'functional_position' => 'Staf',
             'status' => 'disetujui',
             'submitted_at' => now()->subMonth(),
             'approver_id' => Employee::factory(),

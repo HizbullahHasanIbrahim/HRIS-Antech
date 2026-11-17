@@ -19,32 +19,36 @@ class EmployeeAssignmentController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', EmployeeAssignment::class);
+
         $query = EmployeeAssignment::with(['employee', 'unit'])
             ->when($request->input('employee_id'), fn ($q, $e) => $q->where('employee_id', $e))
-            ->when($request->input('is_active'), fn ($q, $a) => $q->where('is_active', $a));
+            ->when($request->input('category'), fn ($q, $c) => $q->where('category', $c));
 
         return response()->json(['success' => true, 'data' => $query->paginate()]);
     }
 
     public function store(Request $request): JsonResponse
     {
+        $this->authorize('create', EmployeeAssignment::class);
+
         $request->validate([
             'employee_id' => ['required', 'integer', 'exists:employees,id'],
             'unit_id' => ['required', 'integer', 'exists:departments,id'],
-            'position_title' => ['required', 'string', 'max:100'],
-            'assignment_type' => ['required', 'string', 'max:50'],
-            'start_date' => ['required', 'date'],
-            'sk_number' => ['nullable', 'string', 'max:100'],
+            'category' => ['required', 'string', 'max:10'],
+            'effective_from' => ['required', 'date'],
+            'supervisor_id' => ['nullable', 'integer', 'exists:employees,id'],
+            'effective_until' => ['nullable', 'date'],
         ]);
 
         $employee = Employee::findOrFail($request->input('employee_id'));
         $assignment = $this->assignmentService->assign(
             $employee,
             (int) $request->input('unit_id'),
-            $request->input('position_title'),
-            $request->input('assignment_type'),
-            new \DateTimeImmutable($request->input('start_date')),
-            $request->input('sk_number')
+            $request->validated('category'),
+            new \DateTimeImmutable($request->validated('effective_from')),
+            $request->input('supervisor_id'),
+            $request->input('effective_until') ? new \DateTimeImmutable($request->input('effective_until')) : null
         );
 
         return response()->json(['success' => true, 'data' => $assignment], 201);
@@ -52,9 +56,11 @@ class EmployeeAssignmentController extends Controller
 
     public function terminate(Request $request, EmployeeAssignment $assignment): JsonResponse
     {
-        $request->validate(['end_date' => ['required', 'date']]);
+        $this->authorize('update', $assignment);
 
-        $this->assignmentService->terminate($assignment, new \DateTimeImmutable($request->input('end_date')));
+        $request->validate(['effective_until' => ['required', 'date']]);
+
+        $this->assignmentService->terminate($assignment, new \DateTimeImmutable($request->validated('effective_until')));
 
         return response()->json(['success' => true, 'message' => 'Assignment terminated.']);
     }

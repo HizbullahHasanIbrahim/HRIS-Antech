@@ -13,6 +13,8 @@ class DepartmentController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', Department::class);
+
         $query = Department::with('parent')
             ->when($request->input('unit_type'), fn ($q, $t) => $q->where('unit_type', $t))
             ->when($request->input('search'), fn ($q, $s) => $q->where('name', 'like', "%{$s}%"));
@@ -22,6 +24,8 @@ class DepartmentController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        $this->authorize('create', Department::class);
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:100'],
             'unit_type' => ['required', 'string', 'in:unit,bidang,bagian'],
@@ -36,6 +40,8 @@ class DepartmentController extends Controller
 
     public function update(Request $request, Department $department): JsonResponse
     {
+        $this->authorize('update', $department);
+
         $validated = $request->validate([
             'name' => ['sometimes', 'string', 'max:100'],
             'unit_type' => ['sometimes', 'string', 'in:unit,bidang,bagian'],
@@ -50,6 +56,8 @@ class DepartmentController extends Controller
 
     public function destroy(Department $department): JsonResponse
     {
+        $this->authorize('delete', $department);
+
         $department->delete();
 
         return response()->json(['success' => true, 'message' => 'Department deleted.']);

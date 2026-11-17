@@ -13,6 +13,8 @@ class EmployeeController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', Employee::class);
+
         $query = Employee::with(['user', 'department', 'supervisor'])
             ->when($request->input('unit_id'), fn ($q, $u) => $q->where('unit_id', $u))
             ->when($request->input('status'), fn ($q, $s) => $q->where('employment_status', $s))
@@ -24,6 +26,8 @@ class EmployeeController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        $this->authorize('create', Employee::class);
+
         $validated = $request->validate([
             'nip' => ['required', 'string', 'max:30', 'unique:employees,nip'],
             'full_name' => ['required', 'string', 'max:150'],
@@ -48,11 +52,15 @@ class EmployeeController extends Controller
 
     public function show(Employee $employee): JsonResponse
     {
+        $this->authorize('view', $employee);
+
         return response()->json(['success' => true, 'data' => $employee->load(['user', 'department', 'supervisor'])]);
     }
 
     public function update(Request $request, Employee $employee): JsonResponse
     {
+        $this->authorize('update', $employee);
+
         $validated = $request->validate([
             'full_name' => ['sometimes', 'string', 'max:150'],
             'category' => ['sometimes', 'string', 'in:dosen,tendik'],
@@ -71,6 +79,8 @@ class EmployeeController extends Controller
 
     public function destroy(Employee $employee): JsonResponse
     {
+        $this->authorize('delete', $employee);
+
         $employee->delete();
 
         return response()->json(['success' => true, 'message' => 'Employee deleted.']);

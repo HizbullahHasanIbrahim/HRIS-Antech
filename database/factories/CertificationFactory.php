@@ -18,9 +18,9 @@ class CertificationFactory extends Factory
             'employee_id' => Employee::factory(),
             'cert_type' => fake()->randomElement(['Serdos', 'Keahlian BNSP', 'Profesi']),
             'cert_number' => 'CERT-'.fake()->numerify('##########'),
-            'issued_by' => 'Kementerian Pendidikan Kebudayaan Riset dan Teknologi',
-            'issued_date' => now()->subYear()->toDateString(),
-            'expiry_date' => now()->addYears(4)->toDateString(),
+            'submitted_date' => now()->toDateString(),
+            'result_date' => null,
+            'status' => 'diajukan',
             'certificate_path' => 'certs/'.fake()->uuid().'.pdf',
         ];
     }

@@ -42,7 +42,7 @@ class HrisReportQueryService
                 });
         }
 
-        return $query->groupBy('departments.id')
+        return $query->groupBy(['departments.id', 'departments.name', 'departments.unit_type'])
             ->orderBy('departments.name')
             ->get();
     }
@@ -132,7 +132,7 @@ class HrisReportQueryService
      */
     public function reportPangkatTendik(?string $unitId = null, ?string $periode = null): Collection
     {
-        $staffRankHistories = StaffRankHistory::selectRaw('
+        $query = StaffRankHistory::selectRaw('
             employees.nip,
             employees.full_name,
             staff_rank_histories.rank_grade,

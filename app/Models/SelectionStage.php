@@ -18,9 +18,9 @@ class SelectionStage extends Model
     protected $fillable = [
         'application_id',
         'stage_name',
+        'stage_order',
         'score',
-        'status',
-        'scheduled_date',
+        'result',
         'assessed_by',
         'assessed_at',
         'notes',
@@ -28,7 +28,7 @@ class SelectionStage extends Model
 
     protected $casts = [
         'score' => 'decimal:2',
-        'scheduled_date' => 'date',
+        'stage_order' => 'integer',
         'assessed_at' => 'datetime',
     ];
 

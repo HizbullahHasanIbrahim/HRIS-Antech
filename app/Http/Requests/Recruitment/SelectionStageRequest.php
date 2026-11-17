@@ -18,11 +18,10 @@ class SelectionStageRequest extends FormRequest
         return [
             'application_id' => ['required', 'integer', 'exists:applications,id'],
             'stage_name' => ['required', 'string', 'max:50'],
-            'sequence' => ['required', 'integer', 'min:1'],
-            'scheduled_date' => ['nullable', 'date'],
-            'status' => ['nullable', 'string', 'in:menunggu,lolos,gugur'],
+            'stage_order' => ['required', 'integer', 'min:1'],
             'score' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'assessor_notes' => ['nullable', 'string'],
+            'result' => ['nullable', 'string', 'in:lolos,gugur'],
+            'notes' => ['nullable', 'string'],
         ];
     }
 }

@@ -67,6 +67,8 @@ class RetirementController extends Controller
 
     public function process(Request $request, Retirement $retirement): JsonResponse
     {
+        $this->authorize('process', $retirement);
+
         $processedBy = $request->user()->id;
         $retirement = $this->retirementService->processRetirement($retirement, $processedBy, $request->input('notes'));
 
@@ -75,6 +77,8 @@ class RetirementController extends Controller
 
     public function complete(Request $request, Retirement $retirement): JsonResponse
     {
+        $this->authorize('complete', $retirement);
+
         $request->validate([
             'sk_number' => ['required', 'string', 'max:100'],
             'sk_date' => ['required', 'date'],

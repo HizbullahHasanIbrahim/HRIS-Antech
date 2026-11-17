@@ -6,7 +6,6 @@ namespace Database\Factories;
 
 use App\Models\Employee;
 use App\Models\Retirement;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class RetirementFactory extends Factory
@@ -17,14 +16,15 @@ class RetirementFactory extends Factory
     {
         return [
             'employee_id' => Employee::factory(),
-            'pension_type' => fake()->randomElement(['bup', 'dini', 'meninggal']),
-            'proposed_date' => now()->toDateString(),
-            'effective_date' => now()->addMonths(6)->toDateString(),
-            'status' => 'diajukan',
+            'retirement_age' => fake()->randomElement([58, 60, 65]),
+            'planned_date' => now()->addMonths(6)->toDateString(),
+            'proposed_at' => now(),
+            'status' => 'diusulkan',
+            'processed_by' => null,
             'sk_number' => null,
             'sk_date' => null,
-            'reason' => fake('id_ID')->sentence(),
-            'processed_by' => User::factory(),
+            'completed_at' => null,
+            'notes' => fake('id_ID')->sentence(),
             'version' => 1,
         ];
     }

@@ -19,15 +19,15 @@ class Certification extends Model
         'employee_id',
         'cert_type',
         'cert_number',
-        'issued_by',
-        'issued_date',
-        'expiry_date',
+        'submitted_date',
+        'result_date',
+        'status',
         'certificate_path',
     ];
 
     protected $casts = [
-        'issued_date' => 'date',
-        'expiry_date' => 'date',
+        'submitted_date' => 'date',
+        'result_date' => 'date',
     ];
 
     public function employee(): BelongsTo

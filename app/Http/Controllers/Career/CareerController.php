@@ -126,9 +126,10 @@ class CareerController extends Controller
 
         $rank = $this->staffRankService->createRankHistory(
             $employee,
-            $request->validated('rank_level'),
+            $request->validated('rank_grade'),
             $request->validated('status'),
-            (int) $request->validated('approver_id')
+            (int) $request->validated('approver_id'),
+            $request->validated('functional_position')
         );
 
         return response()->json(['success' => true, 'data' => $rank], 201);

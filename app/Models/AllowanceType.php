@@ -17,8 +17,11 @@ class AllowanceType extends Model
     protected $table = 'allowance_types';
 
     protected $fillable = [
+        'code',
         'name',
-        'category',
+        'requires_doctorate',
+        'period_type',
+        'description',
         'is_active',
     ];
 

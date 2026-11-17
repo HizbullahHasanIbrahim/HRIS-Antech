@@ -19,18 +19,15 @@ class EmployeeAssignment extends Model
     protected $fillable = [
         'employee_id',
         'unit_id',
-        'position_title',
-        'assignment_type',
-        'start_date',
-        'end_date',
-        'sk_number',
-        'is_active',
+        'supervisor_id',
+        'category',
+        'effective_from',
+        'effective_until',
     ];
 
     protected $casts = [
-        'start_date' => 'date',
-        'end_date' => 'date',
-        'is_active' => 'boolean',
+        'effective_from' => 'date',
+        'effective_until' => 'date',
     ];
 
     public function employee(): BelongsTo
@@ -43,6 +40,11 @@ class EmployeeAssignment extends Model
         return $this->belongsTo(Department::class, 'unit_id');
     }
 
+    public function supervisor(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class, 'supervisor_id');
+    }
+
     public function scopeUnitScope(Builder $query, ?int $unitId): Builder
     {
         return $unitId ? $query->where('unit_id', $unitId) : $query;
@@ -50,6 +52,6 @@ class EmployeeAssignment extends Model
 
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('is_active', true);
+        return $query->whereNull('effective_until');
     }
 }
