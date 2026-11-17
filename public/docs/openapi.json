@@ -1,0 +1,167 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Antech Async HRIS API",
+    "description": "Human Resource Information System for BSDM UAD. 17 business processes (P-01..P-17), 6 reports (RPT-01..RPT-06).",
+    "version": "1.0.0"
+  },
+  "servers": [{ "url": "/api/v1", "description": "API v1" }],
+  "security": [{ "bearerAuth": [] }],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "Login", "tags": ["Auth"], "security": [],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["username","password"], "properties": { "username": { "type": "string" }, "password": { "type": "string" }, "remember": { "type": "boolean" } } } } } },
+        "responses": { "200": { "description": "Token issued" }, "422": { "description": "Invalid credentials" } }
+      }
+    },
+    "/auth/logout": { "post": { "summary": "Logout", "tags": ["Auth"], "responses": { "200": { "description": "Logged out" } } } },
+    "/auth/me": { "get": { "summary": "Current user", "tags": ["Auth"], "responses": { "200": { "description": "Profile" } } } },
+    "/auth/refresh": { "post": { "summary": "Refresh token", "tags": ["Auth"], "responses": { "200": { "description": "New token" } } } },
+
+    "/dashboard/stats": { "get": { "summary": "Dashboard aggregate stats", "tags": ["Dashboard"], "responses": { "200": { "description": "SDM, cuti, lembur, pensiun stats" } } } },
+
+    "/notifications": { "get": { "summary": "List notifications", "tags": ["Notifications"], "parameters": [{ "name": "page", "in": "query", "schema": { "type": "integer" } }], "responses": { "200": { "description": "Paginated" } } } },
+    "/notifications/unread": { "get": { "summary": "Unread notifications", "tags": ["Notifications"], "responses": { "200": { "description": "List" } } } },
+    "/notifications/{id}/read": { "post": { "summary": "Mark read", "tags": ["Notifications"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Marked" } } } },
+    "/notifications/read-all": { "post": { "summary": "Mark all read", "tags": ["Notifications"], "responses": { "200": { "description": "Marked" } } } },
+    "/notifications/{id}": { "delete": { "summary": "Delete notification", "tags": ["Notifications"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Deleted" } } } },
+
+    "/upload/cv": { "post": { "summary": "Upload applicant CV", "tags": ["Upload"], "security": [], "requestBody": { "content": { "multipart/form-data": { "schema": { "type": "object", "properties": { "applicant_id": { "type": "integer" }, "file": { "type": "string", "format": "binary" } } } } } }, "responses": { "200": { "description": "Uploaded" } } } },
+    "/upload/certification": { "post": { "summary": "Upload certification document", "tags": ["Upload"], "requestBody": { "content": { "multipart/form-data": { "schema": { "type": "object", "properties": { "employee_id": { "type": "integer" }, "cert_type": { "type": "string" }, "cert_number": { "type": "string" }, "submitted_date": { "type": "string", "format": "date" }, "file": { "type": "string", "format": "binary" } } } } } }, "responses": { "200": { "description": "Uploaded" } } } },
+
+    "/leave-requests": { "post": { "summary": "Create leave request (P-04)", "tags": ["Attendance"], "responses": { "201": { "description": "Created" } } } },
+    "/leave-requests/{id}/approve": { "post": { "summary": "Approve leave", "tags": ["Attendance"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Approved" } } } },
+    "/leave-requests/{id}/reject": { "post": { "summary": "Reject leave", "tags": ["Attendance"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Rejected" } } } },
+    "/leave-requests/{id}/cancel": { "post": { "summary": "Cancel leave", "tags": ["Attendance"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Cancelled" } } } },
+
+    "/overtime-requests": { "post": { "summary": "Create overtime request (P-05)", "tags": ["Attendance"], "responses": { "201": { "description": "Created" } } } },
+    "/overtime-requests/{id}/approve": { "post": { "summary": "Approve overtime", "tags": ["Attendance"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Approved" } } } },
+    "/overtime-requests/{id}/reject": { "post": { "summary": "Reject overtime", "tags": ["Attendance"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Rejected" } } } },
+    "/overtime-requests/{id}/cancel": { "post": { "summary": "Cancel overtime", "tags": ["Attendance"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Cancelled" } } } },
+
+    "/work-schedules": {
+      "get": { "summary": "List work schedules (P-06)", "tags": ["Attendance"], "responses": { "200": { "description": "List" } } },
+      "post": { "summary": "Create work schedule", "tags": ["Attendance"], "responses": { "201": { "description": "Created" } } }
+    },
+    "/work-schedules/{id}": { "delete": { "summary": "Delete schedule", "tags": ["Attendance"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Deleted" } } } },
+    "/work-schedules/{id}/assign": { "post": { "summary": "Assign schedule to employee", "tags": ["Attendance"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Assigned" } } } },
+
+    "/workload-reports": { "post": { "summary": "Create BKD/LKD report (P-12)", "tags": ["Performance"], "responses": { "201": { "description": "Created" } } } },
+    "/workload-reports/{id}/submit": { "post": { "summary": "Submit report", "tags": ["Performance"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Submitted" } } } },
+    "/workload-reports/{id}/validate": { "post": { "summary": "Validate report", "tags": ["Performance"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Validated" } } } },
+    "/workload-reports/{id}/revise": { "post": { "summary": "Revise final report", "tags": ["Performance"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Revised" } } } },
+
+    "/skp/targets": { "post": { "summary": "Create SKP target (P-13)", "tags": ["Performance"], "responses": { "201": { "description": "Created" } } } },
+    "/skp/targets/{id}/evaluate": { "post": { "summary": "Evaluate SKP", "tags": ["Performance"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Evaluated" } } } },
+    "/skp/targets/{id}/reject": { "post": { "summary": "Reject SKP", "tags": ["Performance"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Rejected" } } } },
+
+    "/vacancies": {
+      "get": { "summary": "List vacancies (P-01)", "tags": ["Recruitment"], "security": [], "responses": { "200": { "description": "List" } } },
+      "post": { "summary": "Create vacancy", "tags": ["Recruitment"], "responses": { "201": { "description": "Created" } } }
+    },
+    "/vacancies/{id}": { "get": { "summary": "Show vacancy", "tags": ["Recruitment"], "security": [], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Detail" } } } },
+    "/applicants": { "post": { "summary": "Register applicant (P-02)", "tags": ["Recruitment"], "security": [], "responses": { "201": { "description": "Created" } } } },
+    "/applications": { "post": { "summary": "Apply to vacancy", "tags": ["Recruitment"], "security": [], "responses": { "201": { "description": "Created" } } } },
+    "/applications/{id}": { "post": { "summary": "Update application status", "tags": ["Recruitment"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Updated" } } } },
+    "/applications/{id}/stages": { "post": { "summary": "Add selection stage (P-03)", "tags": ["Recruitment"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "201": { "description": "Created" } } } },
+    "/applications/{id}/stages/{stage}": { "put": { "summary": "Update stage result", "tags": ["Recruitment"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }, { "name": "stage", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Updated" } } } },
+
+    "/academic-ranks": {
+      "get": { "summary": "List academic rank histories (P-07)", "tags": ["Career"], "responses": { "200": { "description": "List" } } },
+      "post": { "summary": "Submit academic rank", "tags": ["Career"], "responses": { "201": { "description": "Created" } } }
+    },
+    "/academic-ranks/{id}": { "post": { "summary": "Approve academic rank", "tags": ["Career"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Approved" } } } },
+    "/academic-ranks/{id}/reject": { "post": { "summary": "Reject academic rank", "tags": ["Career"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Rejected" } } } },
+    "/staff-ranks": {
+      "get": { "summary": "List staff rank histories (P-08)", "tags": ["Career"], "responses": { "200": { "description": "List" } } },
+      "post": { "summary": "Submit staff rank", "tags": ["Career"], "responses": { "201": { "description": "Created" } } }
+    },
+    "/staff-ranks/{id}": { "post": { "summary": "Approve staff rank", "tags": ["Career"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Approved" } } } },
+    "/staff-ranks/{id}/reject": { "post": { "summary": "Reject staff rank", "tags": ["Career"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Rejected" } } } },
+    "/study-leaves": {
+      "get": { "summary": "List study leaves (P-09)", "tags": ["Career"], "responses": { "200": { "description": "List" } } },
+      "post": { "summary": "Submit study leave", "tags": ["Career"], "responses": { "201": { "description": "Created" } } }
+    },
+    "/study-leaves/{id}": { "post": { "summary": "Approve study leave", "tags": ["Career"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Approved" } } } },
+    "/study-leaves/{id}/reject": { "post": { "summary": "Reject study leave", "tags": ["Career"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Rejected" } } } },
+    "/certifications": {
+      "get": { "summary": "List certifications (P-10)", "tags": ["Career"], "responses": { "200": { "description": "List" } } },
+      "post": { "summary": "Create certification", "tags": ["Career"], "responses": { "201": { "description": "Created" } } }
+    },
+    "/certifications/{id}": { "delete": { "summary": "Delete certification", "tags": ["Career"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Deleted" } } } },
+    "/trainings": {
+      "get": { "summary": "List trainings (P-11)", "tags": ["Career"], "responses": { "200": { "description": "List" } } },
+      "post": { "summary": "Create training", "tags": ["Career"], "responses": { "201": { "description": "Created" } } }
+    },
+    "/trainings/{id}/complete": { "post": { "summary": "Complete training", "tags": ["Career"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Completed" } } } },
+    "/trainings/{id}/cancel": { "post": { "summary": "Cancel training", "tags": ["Career"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Cancelled" } } } },
+
+    "/bpjs": {
+      "get": { "summary": "List BPJS memberships (P-14)", "tags": ["Welfare"], "responses": { "200": { "description": "List (masked)" } } },
+      "post": { "summary": "Register BPJS", "tags": ["Welfare"], "responses": { "201": { "description": "Created" } } }
+    },
+    "/bpjs/{id}/cancel": { "post": { "summary": "Cancel BPJS", "tags": ["Welfare"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Cancelled" } } } },
+    "/allowances": {
+      "get": { "summary": "List allowance requests (P-15)", "tags": ["Welfare"], "responses": { "200": { "description": "List" } } },
+      "post": { "summary": "Create allowance request", "tags": ["Welfare"], "responses": { "201": { "description": "Created" } } }
+    },
+    "/allowances/{id}/approve": { "post": { "summary": "Approve allowance", "tags": ["Welfare"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Approved" } } } },
+    "/allowances/{id}/cancel": { "post": { "summary": "Cancel allowance", "tags": ["Welfare"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Cancelled" } } } },
+
+    "/retirements": {
+      "get": { "summary": "List retirements (P-16)", "tags": ["Retirement"], "responses": { "200": { "description": "List" } } },
+      "post": { "summary": "Propose retirement", "tags": ["Retirement"], "responses": { "201": { "description": "Created" } } }
+    },
+    "/retirements/{id}": { "get": { "summary": "Show retirement", "tags": ["Retirement"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Detail" } } } },
+    "/retirements/{id}/process": { "post": { "summary": "Process retirement", "tags": ["Retirement"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Processed" } } } },
+    "/retirements/{id}/cancel": { "post": { "summary": "Cancel retirement", "tags": ["Retirement"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Cancelled" } } } },
+    "/retirements/{id}/complete": { "post": { "summary": "Complete retirement", "tags": ["Retirement"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Completed" } } } },
+
+    "/departments": {
+      "get": { "summary": "List departments", "tags": ["Organization"], "responses": { "200": { "description": "List" } } },
+      "post": { "summary": "Create department", "tags": ["Organization"], "responses": { "201": { "description": "Created" } } }
+    },
+    "/departments/{id}": {
+      "put": { "summary": "Update department", "tags": ["Organization"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Updated" } } },
+      "delete": { "summary": "Delete department", "tags": ["Organization"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Deleted" } } }
+    },
+    "/employees": {
+      "get": { "summary": "List employees", "tags": ["Organization"], "responses": { "200": { "description": "List" } } },
+      "post": { "summary": "Create employee", "tags": ["Organization"], "responses": { "201": { "description": "Created" } } }
+    },
+    "/employees/{id}": {
+      "get": { "summary": "Show employee", "tags": ["Organization"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Detail" } } },
+      "put": { "summary": "Update employee", "tags": ["Organization"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Updated" } } },
+      "delete": { "summary": "Delete employee", "tags": ["Organization"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Deleted" } } }
+    },
+    "/employee-assignments": {
+      "get": { "summary": "List assignments", "tags": ["Organization"], "responses": { "200": { "description": "List" } } },
+      "post": { "summary": "Create assignment", "tags": ["Organization"], "responses": { "201": { "description": "Created" } } }
+    },
+    "/employee-assignments/{id}/terminate": { "post": { "summary": "Terminate assignment", "tags": ["Organization"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Terminated" } } } },
+
+    "/reports/sdm-summary": { "get": { "summary": "RPT-01 SDM summary", "tags": ["Reports"], "parameters": [{ "name": "unit_id", "in": "query", "schema": { "type": "integer" } }, { "name": "periode", "in": "query", "schema": { "type": "string" } }], "responses": { "200": { "description": "Report data" } } } },
+    "/reports/cuti-lembur": { "get": { "summary": "RPT-02 leave & overtime", "tags": ["Reports"], "responses": { "200": { "description": "Report data" } } } },
+    "/reports/karir-dosen": { "get": { "summary": "RPT-03 lecturer career", "tags": ["Reports"], "responses": { "200": { "description": "Report data" } } } },
+    "/reports/pangkat-tendik": { "get": { "summary": "RPT-04 staff rank", "tags": ["Reports"], "responses": { "200": { "description": "Report data" } } } },
+    "/reports/bkd-lkd": { "get": { "summary": "RPT-05 BKD/LKD", "tags": ["Reports"], "responses": { "200": { "description": "Report data" } } } },
+    "/reports/skp": { "get": { "summary": "RPT-06 SKP", "tags": ["Reports"], "responses": { "200": { "description": "Report data" } } } },
+
+    "/reports/export/sdm-summary": { "get": { "summary": "Export RPT-01 CSV", "tags": ["Exports"], "responses": { "200": { "description": "CSV stream", "content": { "text/csv": { "schema": { "type": "string" } } } } } } },
+    "/reports/export/cuti-lembur": { "get": { "summary": "Export RPT-02 CSV", "tags": ["Exports"], "responses": { "200": { "description": "CSV stream" } } } },
+    "/reports/export/karir-dosen": { "get": { "summary": "Export RPT-03 CSV", "tags": ["Exports"], "responses": { "200": { "description": "CSV stream" } } } },
+    "/reports/export/pangkat-tendik": { "get": { "summary": "Export RPT-04 CSV", "tags": ["Exports"], "responses": { "200": { "description": "CSV stream" } } } },
+    "/reports/export/bkd-lkd": { "get": { "summary": "Export RPT-05 CSV", "tags": ["Exports"], "responses": { "200": { "description": "CSV stream" } } } },
+    "/reports/export/skp": { "get": { "summary": "Export RPT-06 CSV", "tags": ["Exports"], "responses": { "200": { "description": "CSV stream" } } } },
+
+    "/search/employees": { "get": { "summary": "Fulltext employee search (NFR-04)", "tags": ["Search"], "parameters": [{ "name": "q", "in": "query", "required": true, "schema": { "type": "string" } }, { "name": "unit_id", "in": "query", "schema": { "type": "integer" } }], "responses": { "200": { "description": "Results" } } } },
+    "/search/applications": { "get": { "summary": "Search applications", "tags": ["Search"], "parameters": [{ "name": "q", "in": "query", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Results" } } } },
+    "/search/vacancies": { "get": { "summary": "Search vacancies", "tags": ["Search"], "parameters": [{ "name": "q", "in": "query", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Results" } } } }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer" }
+    }
+  }
+}

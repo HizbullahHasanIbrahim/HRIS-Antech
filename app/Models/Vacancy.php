@@ -41,6 +41,11 @@ class Vacancy extends Model
         return $this->belongsTo(Department::class, 'unit_id');
     }
 
+    public function unit(): BelongsTo
+    {
+        return $this->belongsTo(Department::class, 'unit_id');
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

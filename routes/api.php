@@ -3,13 +3,18 @@
 use App\Http\Controllers\Attendance\LeaveRequestController;
 use App\Http\Controllers\Attendance\OvertimeRequestController;
 use App\Http\Controllers\Attendance\WorkScheduleController;
+use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Career\CareerController;
+use App\Http\Controllers\Common\FileUploadController;
+use App\Http\Controllers\Dashboard\DashboardController;
+use App\Http\Controllers\Notifications\NotificationController;
 use App\Http\Controllers\Organization\DepartmentController;
 use App\Http\Controllers\Organization\EmployeeAssignmentController;
 use App\Http\Controllers\Organization\EmployeeController;
 use App\Http\Controllers\Performance\SkpController;
 use App\Http\Controllers\Performance\WorkloadReportController;
 use App\Http\Controllers\Recruitment\RecruitmentController;
+use App\Http\Controllers\Reporting\ExportController;
 use App\Http\Controllers\Reporting\ReportController;
 use App\Http\Controllers\Retirement\RetirementController;
 use App\Http\Controllers\Welfare\AllowanceRequestController;
@@ -21,15 +26,37 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+// Auth routes (public)
+Route::prefix('v1/auth')->middleware('throttle:auth')->group(function () {
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:api');
+    Route::get('/me', [AuthController::class, 'me'])->middleware('auth:api');
+    Route::post('/refresh', [AuthController::class, 'refresh'])->middleware('auth:api');
+});
+
 // Public recruitment routes (no auth required)
-Route::prefix('v1')->group(function () {
+Route::prefix('v1')->middleware('throttle:api')->group(function () {
     Route::get('/vacancies', [RecruitmentController::class, 'indexVacancies']);
     Route::get('/vacancies/{vacancy}', [RecruitmentController::class, 'showVacancy']);
     Route::post('/applicants', [RecruitmentController::class, 'storeApplicant']);
     Route::post('/applications', [RecruitmentController::class, 'storeApplication']);
+    Route::post('/upload/cv', [FileUploadController::class, 'cv']);
 });
 
-Route::middleware(['auth:api', 'unit.scope'])->prefix('v1')->group(function () {
+Route::middleware(['auth:api', 'unit.scope', 'throttle:api'])->prefix('v1')->group(function () {
+    // Dashboard Stats
+    Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/unread', [NotificationController::class, 'unread']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
+
+    // File Upload (Protected)
+    Route::post('/upload/certification', [FileUploadController::class, 'certification']);
+
     // Leave Requests (P-04)
     Route::post('/leave-requests', [LeaveRequestController::class, 'store']);
     Route::post('/leave-requests/{leaveRequest}/approve', [LeaveRequestController::class, 'approve']);
@@ -120,4 +147,21 @@ Route::middleware(['auth:api', 'unit.scope'])->prefix('v1')->group(function () {
     Route::get('/reports/pangkat-tendik', [ReportController::class, 'pangkatTendik']);
     Route::get('/reports/bkd-lkd', [ReportController::class, 'bkdLkd']);
     Route::get('/reports/skp', [ReportController::class, 'skp']);
+
+    // Report Exports (CSV) - rate limited
+    Route::middleware('throttle:export')->group(function () {
+        Route::get('/reports/export/sdm-summary', [ExportController::class, 'sdm']);
+        Route::get('/reports/export/cuti-lembur', [ExportController::class, 'cutiLembur']);
+        Route::get('/reports/export/karir-dosen', [ExportController::class, 'karirDosen']);
+        Route::get('/reports/export/pangkat-tendik', [ExportController::class, 'pangkatTendik']);
+        Route::get('/reports/export/bkd-lkd', [ExportController::class, 'bkdLkd']);
+        Route::get('/reports/export/skp', [ExportController::class, 'skp']);
+    });
+
+    // Search endpoints - rate limited
+    Route::middleware('throttle:search')->group(function () {
+        Route::get('/search/employees', [ReportController::class, 'searchEmployee']);
+        Route::get('/search/applications', [ReportController::class, 'searchApplication']);
+        Route::get('/search/vacancies', [ReportController::class, 'searchVacancy']);
+    });
 });

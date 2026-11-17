@@ -153,4 +153,9 @@ class Employee extends Model
     {
         return $query->where('employment_status', 'aktif');
     }
+
+    public function scopeSearch(Builder $query, string $keyword): Builder
+    {
+        return $query->whereRaw('MATCH(full_name) AGAINST(? IN BOOLEAN MODE)', [$keyword]);
+    }
 }
