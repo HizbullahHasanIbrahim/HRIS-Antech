@@ -52,8 +52,8 @@ class HrisReportQueryService
      */
     public function reportCutLembur(?string $unitId = null, ?string $periode = null): Collection
     {
-        $start = $periode ? Carbon::parse($periode)->startOfMonth->format('Y-m-d') : null;
-        $end = $periode ? Carbon::parse($periode)->endOfMonth->format('Y-m-d') : null;
+        $start = $periode ? Carbon::parse($periode)->startOfMonth()->format('Y-m-d') : null;
+        $end = $periode ? Carbon::parse($periode)->endOfMonth()->format('Y-m-d') : null;
 
         $leaveCounts = LeaveRequest::selectRaw('
             employee_id,
@@ -132,10 +132,10 @@ class HrisReportQueryService
      */
     public function reportPangkatTendik(?string $unitId = null, ?string $periode = null): Collection
     {
-        $query = StaffRankHistory::selectRaw('
+        $staffRankHistories = StaffRankHistory::selectRaw('
             employees.nip,
             employees.full_name,
-            staff_rank_histories.rank_level,
+            staff_rank_histories.rank_grade,
             staff_rank_histories.status,
             staff_rank_histories.effective_date')
             ->join('employees', 'staff_rank_histories.employee_id', '=', 'employees.id');

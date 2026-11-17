@@ -21,6 +21,14 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+// Public recruitment routes (no auth required)
+Route::prefix('v1')->group(function () {
+    Route::get('/vacancies', [RecruitmentController::class, 'indexVacancies']);
+    Route::get('/vacancies/{vacancy}', [RecruitmentController::class, 'showVacancy']);
+    Route::post('/applicants', [RecruitmentController::class, 'storeApplicant']);
+    Route::post('/applications', [RecruitmentController::class, 'storeApplication']);
+});
+
 Route::middleware(['auth:api', 'unit.scope'])->prefix('v1')->group(function () {
     // Leave Requests (P-04)
     Route::post('/leave-requests', [LeaveRequestController::class, 'store']);
@@ -53,12 +61,7 @@ Route::middleware(['auth:api', 'unit.scope'])->prefix('v1')->group(function () {
 
     // Recruitment (P-01, P-02, P-03)
     Route::post('/vacancies', [RecruitmentController::class, 'storeVacancy']);
-    Route::get('/vacancies', [RecruitmentController::class, 'indexVacancies']);
-    Route::get('/vacancies/{vacancy}', [RecruitmentController::class, 'showVacancy']);
-    Route::post('/applicants', [RecruitmentController::class, 'storeApplicant']);
-    Route::get('/applicants', [RecruitmentController::class, 'indexApplicants']);
-    Route::post('/applications', [RecruitmentController::class, 'storeApplication']);
-    Route::put('/applications/{application}', [RecruitmentController::class, 'updateApplicationStatus']);
+    Route::post('/applications/{application}', [RecruitmentController::class, 'updateApplicationStatus']);
     Route::post('/applications/{application}/stages', [RecruitmentController::class, 'storeSelectionStage']);
     Route::put('/applications/{application}/stages/{stage}', [RecruitmentController::class, 'updateSelectionStageResult']);
 

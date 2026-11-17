@@ -39,6 +39,7 @@ class BpjsMembership extends Model
     public function getMaskedNumberAttribute(): string
     {
         $num = (string) $this->membership_number;
-        return strlen($num) > 4 ? str_repeat('*', strlen($num) - 4) . substr($num, -4) : $num;
+
+        return strlen($num) > 4 ? str_repeat('*', strlen($num) - 4).substr($num, -4) : $num;
     }
 }

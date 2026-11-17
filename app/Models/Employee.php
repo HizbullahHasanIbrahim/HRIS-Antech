@@ -49,6 +49,11 @@ class Employee extends Model
         return $this->belongsTo(Department::class, 'unit_id');
     }
 
+    public function department(): BelongsTo
+    {
+        return $this->unit();
+    }
+
     public function supervisor(): BelongsTo
     {
         return $this->belongsTo(self::class, 'supervisor_id');

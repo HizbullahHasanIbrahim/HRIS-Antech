@@ -21,7 +21,7 @@ return new class extends Migration
             $table->dateTime('completed_at')->nullable();
             $table->text('notes')->nullable();
             $table->unsignedInteger('version')->default(1);
-            $table->unsignedBigInteger('active_retirement_emp_id')->virtualAs("CASE WHEN status <> 'dibatalkan' THEN employee_id ELSE NULL END");
+            $table->unsignedBigInteger('active_retirement_emp_id')->virtualAs("CASE WHEN status <> 'dibatalkan' AND deleted_at IS NULL THEN employee_id ELSE NULL END");
             $table->dateTime('created_at');
             $table->dateTime('updated_at');
             $table->dateTime('deleted_at')->nullable();

@@ -16,7 +16,7 @@ class VacancyFactory extends Factory
     {
         return [
             'unit_id' => Department::factory(),
-            'title' => 'Rekrutmen Dosen / Tenaga Kependidikan ' . fake()->jobTitle(),
+            'title' => 'Rekrutmen Dosen / Tenaga Kependidikan '.fake()->jobTitle(),
             'position_type' => fake()->randomElement(['dosen', 'tendik']),
             'quota' => fake()->numberBetween(1, 5),
             'open_date' => now()->toDateString(),

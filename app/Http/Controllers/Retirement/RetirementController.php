@@ -18,6 +18,8 @@ class RetirementController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', Retirement::class);
+
         $employee = $request->user()->employee;
         if (! $employee) {
             return response()->json(['message' => 'No employee profile.'], 422);
@@ -32,6 +34,8 @@ class RetirementController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        $this->authorize('create', Retirement::class);
+
         $employee = $request->user()->employee;
         if (! $employee) {
             return response()->json(['message' => 'No employee profile.'], 422);
@@ -56,6 +60,8 @@ class RetirementController extends Controller
 
     public function show(Retirement $retirement): JsonResponse
     {
+        $this->authorize('view', $retirement);
+
         return response()->json(['success' => true, 'data' => $retirement->load('employee')]);
     }
 
@@ -83,13 +89,20 @@ class RetirementController extends Controller
         return response()->json(['success' => true, 'data' => $retirement]);
     }
 
-    public function cancel(Retirement $retirement): JsonResponse
+    public function cancel(Request $request, Retirement $retirement): JsonResponse
     {
-        $retirement->update([
-            'status' => 'dibatalkan',
-            'version' => $retirement->version + 1,
+        $this->authorize('cancel', $retirement);
+
+        $request->validate([
+            'reason' => ['required', 'string'],
         ]);
 
-        return response()->json(['success' => true, 'message' => 'Retirement proposal cancelled.']);
+        $retirement = $this->retirementService->cancelRetirement(
+            $retirement,
+            $request->user()->id,
+            $request->input('reason')
+        );
+
+        return response()->json(['success' => true, 'data' => $retirement]);
     }
 }

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('status', 10)->default('aktif');
             $table->date('end_date')->nullable();
             $table->dateTime('archived_at')->nullable();
-            $table->unsignedBigInteger('active_employee_id')->virtualAs("CASE WHEN status = 'aktif' THEN employee_id ELSE NULL END");
+            $table->unsignedBigInteger('active_employee_id')->virtualAs("CASE WHEN status = 'aktif' AND deleted_at IS NULL THEN employee_id ELSE NULL END");
             $table->dateTime('created_at');
             $table->dateTime('updated_at');
             $table->dateTime('deleted_at')->nullable();

@@ -15,6 +15,7 @@ class EmployeeFactory extends Factory
     public function definition(): array
     {
         $gender = fake()->randomElement(['L', 'P']);
+
         return [
             'nip' => fake()->unique()->numerify('1990########00#'),
             'nidn' => fake()->unique()->numerify('05########'),

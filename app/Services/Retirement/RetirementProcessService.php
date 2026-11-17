@@ -160,6 +160,48 @@ class RetirementProcessService
     }
 
     /**
+     * Cancel a retirement proposal (RULE-10, RULE-11).
+     */
+    public function cancelRetirement(Retirement $retirement, ?int $actorId = null, ?string $reason = null): Retirement
+    {
+        if (! in_array($retirement->status, ['diusulkan', 'diproses'], true)) {
+            throw new BusinessRuleViolationException('Status pensiun tidak dapat dibatalkan.');
+        }
+
+        if ($reason !== null && trim($reason) === '') {
+            throw new BusinessRuleViolationException('Alasan pembatalan wajib diisi.');
+        }
+
+        return DB::transaction(function () use ($retirement, $actorId, $reason) {
+            DB::table('employees')->where('id', $retirement->employee_id)->lockForUpdate()->first();
+
+            $updated = Retirement::where('id', $retirement->id)
+                ->where('version', $retirement->version)
+                ->update([
+                    'status' => 'dibatalkan',
+                    'notes' => $reason,
+                    'version' => $retirement->version + 1,
+                ]);
+
+            if ($updated === 0) {
+                throw new ConcurrencyConflictException('Usulan pensiun telah dimodifikasi oleh pengguna lain.');
+            }
+
+            $this->activityLog->log(
+                $actorId,
+                'CANCEL_RETIREMENT',
+                'Retirement',
+                $retirement->id,
+                $retirement->status,
+                'dibatalkan',
+                $reason,
+            );
+
+            return $retirement->refresh();
+        });
+    }
+
+    /**
      * Verify all pending requests for employee are resolved (EX-09).
      */
     protected function areAllRequestsResolved(int $employeeId): bool

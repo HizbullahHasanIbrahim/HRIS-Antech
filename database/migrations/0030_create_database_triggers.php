@@ -112,6 +112,56 @@ return new class extends Migration
                 END IF;
             END
         ");
+
+        // Self-Supervision Guard: employees
+        DB::unprepared("
+            CREATE TRIGGER trg_employees_self_supervision_ins
+            BEFORE INSERT ON employees
+            FOR EACH ROW
+            BEGIN
+                IF NEW.supervisor_id IS NOT NULL AND NEW.id = NEW.supervisor_id THEN
+                    SIGNAL SQLSTATE '45000'
+                    SET MESSAGE_TEXT = 'RULE-14 VIOLATION: Pegawai tidak boleh menjadi atasan sendiri.';
+                END IF;
+            END
+        ");
+
+        DB::unprepared("
+            CREATE TRIGGER trg_employees_self_supervision_upd
+            BEFORE UPDATE ON employees
+            FOR EACH ROW
+            BEGIN
+                IF NEW.supervisor_id IS NOT NULL AND NEW.id = NEW.supervisor_id THEN
+                    SIGNAL SQLSTATE '45000'
+                    SET MESSAGE_TEXT = 'RULE-14 VIOLATION: Pegawai tidak boleh menjadi atasan sendiri.';
+                END IF;
+            END
+        ");
+
+        // Self-Supervision Guard: employee_assignments
+        DB::unprepared("
+            CREATE TRIGGER trg_employee_assignments_self_supervision_ins
+            BEFORE INSERT ON employee_assignments
+            FOR EACH ROW
+            BEGIN
+                IF NEW.supervisor_id IS NOT NULL AND NEW.id = NEW.supervisor_id THEN
+                    SIGNAL SQLSTATE '45000'
+                    SET MESSAGE_TEXT = 'RULE-14 VIOLATION: Pegawai tidak boleh menjadi atasan sendiri.';
+                END IF;
+            END
+        ");
+
+        DB::unprepared("
+            CREATE TRIGGER trg_employee_assignments_self_supervision_upd
+            BEFORE UPDATE ON employee_assignments
+            FOR EACH ROW
+            BEGIN
+                IF NEW.supervisor_id IS NOT NULL AND NEW.id = NEW.supervisor_id THEN
+                    SIGNAL SQLSTATE '45000'
+                    SET MESSAGE_TEXT = 'RULE-14 VIOLATION: Pegawai tidak boleh menjadi atasan sendiri.';
+                END IF;
+            END
+        ");
     }
 
     public function down(): void
@@ -127,6 +177,8 @@ return new class extends Migration
             'staff_rank_histories',
             'workload_reports_self_validation',
             'perf_targets_self_appraisal',
+            'employees_self_supervision',
+            'employee_assignments_self_supervision',
         ];
 
         foreach ($tables as $t) {
@@ -148,5 +200,9 @@ return new class extends Migration
         DB::unprepared('DROP TRIGGER IF EXISTS trg_workload_reports_self_validation_upd');
         DB::unprepared('DROP TRIGGER IF EXISTS trg_perf_targets_self_appraisal_ins');
         DB::unprepared('DROP TRIGGER IF EXISTS trg_perf_targets_self_appraisal_upd');
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_employees_self_supervision_ins');
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_employees_self_supervision_upd');
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_employee_assignments_self_supervision_ins');
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_employee_assignments_self_supervision_upd');
     }
 };

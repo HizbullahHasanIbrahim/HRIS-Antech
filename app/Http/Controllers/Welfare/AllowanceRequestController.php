@@ -45,6 +45,7 @@ class AllowanceRequestController extends Controller
             $request->validated('period_label'),
             (float) $request->validated('amount'),
             now(),
+            (int) $request->validated('approver_id')
         );
 
         return response()->json(['success' => true, 'data' => $allowance], 201);

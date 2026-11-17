@@ -15,7 +15,7 @@ class DepartmentFactory extends Factory
     {
         return [
             'parent_id' => null,
-            'name' => fake('id_ID')->unique()->words(2, true) . ' BSDM',
+            'name' => fake('id_ID')->unique()->words(2, true).' BSDM',
             'unit_type' => fake()->randomElement(['biro', 'bidang', 'urusan', 'unit']),
             'is_active' => true,
         ];

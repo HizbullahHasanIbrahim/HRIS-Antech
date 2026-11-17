@@ -24,6 +24,8 @@ class WorkloadReportController extends Controller
             return response()->json(['message' => 'No employee profile.'], 422);
         }
 
+        $this->authorize('create', WorkloadReport::class);
+
         $report = $this->reportService->createReport(
             $employee,
             $request->only(['teaching', 'research', 'service', 'support']),
@@ -37,6 +39,8 @@ class WorkloadReportController extends Controller
 
     public function submit(WorkloadReport $report): JsonResponse
     {
+        $this->authorize('update', $report);
+
         $report = $this->reportService->submitReport($report);
 
         return response()->json(['success' => true, 'data' => $report]);
@@ -44,6 +48,8 @@ class WorkloadReportController extends Controller
 
     public function validateReport(WorkloadReport $report): JsonResponse
     {
+        $this->authorize('validate', $report);
+
         $report = $this->reportService->validateReport($report);
 
         return response()->json(['success' => true, 'data' => $report]);

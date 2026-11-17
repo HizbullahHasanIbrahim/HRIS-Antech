@@ -21,7 +21,7 @@ return new class extends Migration
             $table->dateTime('decided_at')->nullable();
             $table->text('decision_note')->nullable();
             $table->unsignedInteger('version')->default(1);
-            $table->string('active_allowance_key', 64)->virtualAs("CASE WHEN status NOT IN ('ditolak', 'dibatalkan') THEN CONCAT(employee_id, ':', allowance_type_id, ':', period_label) ELSE NULL END");
+            $table->string('active_allowance_key', 64)->virtualAs("CASE WHEN status NOT IN ('ditolak', 'dibatalkan') AND deleted_at IS NULL THEN CONCAT(employee_id, ':', allowance_type_id, ':', period_label) ELSE NULL END");
             $table->dateTime('created_at');
             $table->dateTime('updated_at');
             $table->dateTime('deleted_at')->nullable();

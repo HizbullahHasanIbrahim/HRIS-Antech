@@ -34,11 +34,12 @@ class LeaveRequestService
     ): LeaveRequest {
         $this->validateNoSelfApproval($employee, $approverId);
         $this->validateDateRange($startDate, $endDate);
-        $this->validateNoOverlappingRequests($employee, $startDate, $endDate);
 
         return DB::transaction(function () use ($employee, $leaveTypeId, $startDate, $endDate, $reason, $approverId) {
             // Pessimistic parent-row mutex (SDD 5, EX-02/EX-07/EX-08)
             DB::table('employees')->where('id', $employee->id)->lockForUpdate()->first();
+
+            $this->validateNoOverlappingRequests($employee, $startDate, $endDate);
 
             $totalDays = $this->calculateWorkingDays($startDate, $endDate);
             $this->validateLeaveBalance($employee, $leaveTypeId, $totalDays);

@@ -97,20 +97,22 @@ class RecruitmentController extends Controller
     // Selection Stage endpoints
     public function storeSelectionStage(SelectionStageRequest $request): JsonResponse
     {
-        $stage = SelectionStage::create($request->validated());
+        $validated = $request->validated();
+
+        $stage = SelectionStage::create($validated);
 
         return response()->json(['success' => true, 'data' => $stage], 201);
     }
 
     public function updateSelectionStageResult(Request $request, SelectionStage $selectionStage): JsonResponse
     {
-        $request->validate([
+        $validated = $request->validate([
             'status' => ['required', 'string', 'in:lolos,gugur'],
             'score' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'assessor_notes' => ['nullable', 'string'],
         ]);
 
-        $selectionStage->update($request->validated());
+        $selectionStage->update($validated);
 
         return response()->json(['success' => true, 'data' => $selectionStage->refresh()]);
     }

@@ -16,7 +16,7 @@ class RoleFactory extends Factory
         return [
             'name' => fake()->unique()->randomElement([
                 'admin_bsdm', 'kepala_unit', 'pegawai', 'asesor_bkd', 'tim_rekrutmen',
-                'pimpinan_universitas', 'staf_layanan', 'verifikator'
+                'pimpinan_universitas', 'staf_layanan', 'verifikator',
             ]),
             'description' => fake('id_ID')->sentence(),
         ];

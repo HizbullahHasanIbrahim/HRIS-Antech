@@ -22,7 +22,7 @@ class EmployeeAssignmentFactory extends Factory
             'assignment_type' => 'struktural',
             'start_date' => now()->toDateString(),
             'end_date' => null,
-            'sk_number' => 'SK/' . fake()->numerify('###/UAD/2026'),
+            'sk_number' => 'SK/'.fake()->numerify('###/UAD/2026'),
             'is_active' => true,
         ];
     }

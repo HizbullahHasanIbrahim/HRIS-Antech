@@ -24,7 +24,7 @@ return new class extends Migration
             $table->smallInteger('version')->default(1);
             $table->boolean('is_current')->default(true);
             $table->text('revision_reason')->nullable();
-            $table->unsignedBigInteger('current_employee_id')->virtualAs('CASE WHEN is_current = 1 THEN employee_id ELSE NULL END');
+            $table->unsignedBigInteger('current_employee_id')->virtualAs('CASE WHEN is_current = 1 AND deleted_at IS NULL THEN employee_id ELSE NULL END');
             $table->dateTime('created_at');
             $table->dateTime('updated_at');
             $table->dateTime('deleted_at')->nullable();

@@ -24,7 +24,7 @@ class StudyLeaveFactory extends Factory
             'expected_end_date' => now()->addYears(3)->toDateString(),
             'actual_end_date' => null,
             'status' => 'aktif',
-            'sk_number' => 'SK-TB/' . fake()->numerify('###/2026'),
+            'sk_number' => 'SK-TB/'.fake()->numerify('###/2026'),
             'created_by' => User::factory(),
         ];
     }

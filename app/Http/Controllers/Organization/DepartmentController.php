@@ -22,28 +22,28 @@ class DepartmentController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => ['required', 'string', 'max:100'],
             'unit_type' => ['required', 'string', 'in:unit,bidang,bagian'],
             'parent_id' => ['nullable', 'integer', 'exists:departments,id'],
             'is_active' => ['boolean'],
         ]);
 
-        $dept = Department::create($request->validated());
+        $dept = Department::create($validated);
 
         return response()->json(['success' => true, 'data' => $dept], 201);
     }
 
     public function update(Request $request, Department $department): JsonResponse
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => ['sometimes', 'string', 'max:100'],
             'unit_type' => ['sometimes', 'string', 'in:unit,bidang,bagian'],
             'parent_id' => ['nullable', 'integer', 'exists:departments,id'],
             'is_active' => ['boolean'],
         ]);
 
-        $department->update($request->validated());
+        $department->update($validated);
 
         return response()->json(['success' => true, 'data' => $department->fresh()]);
     }

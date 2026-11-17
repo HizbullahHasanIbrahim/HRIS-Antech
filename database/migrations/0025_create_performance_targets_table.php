@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('rating', 30)->nullable();
             $table->dateTime('approved_at')->nullable();
             $table->unsignedInteger('version')->default(1);
-            $table->string('active_target_key', 45)->virtualAs("CASE WHEN status <> 'ditolak' THEN CONCAT(employee_id, ':', period_label) ELSE NULL END");
+            $table->string('active_target_key', 45)->virtualAs("CASE WHEN status <> 'ditolak' AND deleted_at IS NULL THEN CONCAT(employee_id, ':', period_label) ELSE NULL END");
             $table->dateTime('created_at');
             $table->dateTime('updated_at');
             $table->dateTime('deleted_at')->nullable();

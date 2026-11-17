@@ -18,7 +18,7 @@ class ApplicationFactory extends Factory
         return [
             'vacancy_id' => Vacancy::factory(),
             'applicant_id' => Applicant::factory(),
-            'cv_path' => 'resumes/' . fake()->uuid() . '.pdf',
+            'cv_path' => 'resumes/'.fake()->uuid().'.pdf',
             'status' => 'terkirim',
             'applied_at' => now(),
         ];

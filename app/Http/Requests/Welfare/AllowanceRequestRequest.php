@@ -19,6 +19,7 @@ class AllowanceRequestRequest extends FormRequest
             'allowance_type_id' => ['required', 'integer', 'exists:allowance_types,id'],
             'period_label' => ['required', 'string', 'max:20'],
             'amount' => ['required', 'numeric', 'min:0'],
+            'approver_id' => ['required', 'integer', 'exists:employees,id'],
         ];
     }
 }

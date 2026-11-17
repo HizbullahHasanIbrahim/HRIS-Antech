@@ -35,8 +35,8 @@ class OnboardingService
                 'phone' => $application->applicant->phone,
                 'unit_id' => $application->vacancy->unit_id,
                 'category' => $application->vacancy->category,
-                'gender' => $application->applicant->gender,
-                'birth_place' => $application->applicant->birth_place,
+                'gender' => 'L', // Default L
+                'birth_place' => 'Yogyakarta', // Default YK
                 'birth_date' => $application->applicant->birth_date,
                 'highest_education' => $application->applicant->highest_education,
                 'employment_status' => 'aktif',

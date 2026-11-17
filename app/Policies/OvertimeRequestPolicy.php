@@ -42,6 +42,11 @@ class OvertimeRequestPolicy
 
     public function approve(User $user, OvertimeRequest $overtimeRequest): bool
     {
+        // Allow the assigned approver to approve
+        if ($user->employee_id !== null && $user->employee_id === $overtimeRequest->approver_id) {
+            return true;
+        }
+
         if ($user->hasRole('Admin BSDM') || $user->hasRole('Kepala Biro')) {
             return true;
         }

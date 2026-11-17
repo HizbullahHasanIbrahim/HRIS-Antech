@@ -24,7 +24,7 @@ class EmployeeController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $request->validate([
+        $validated = $request->validate([
             'nip' => ['required', 'string', 'max:30', 'unique:employees,nip'],
             'full_name' => ['required', 'string', 'max:150'],
             'category' => ['required', 'string', 'in:dosen,tendik'],
@@ -41,7 +41,7 @@ class EmployeeController extends Controller
             'join_date' => ['required', 'date'],
         ]);
 
-        $employee = Employee::create($request->validated());
+        $employee = Employee::create($validated);
 
         return response()->json(['success' => true, 'data' => $employee], 201);
     }
@@ -53,7 +53,7 @@ class EmployeeController extends Controller
 
     public function update(Request $request, Employee $employee): JsonResponse
     {
-        $request->validate([
+        $validated = $request->validate([
             'full_name' => ['sometimes', 'string', 'max:150'],
             'category' => ['sometimes', 'string', 'in:dosen,tendik'],
             'phone' => ['nullable', 'string', 'max:20'],
@@ -64,7 +64,7 @@ class EmployeeController extends Controller
             'employment_status' => ['sometimes', 'string', 'in:aktif,nonaktif,pensiun'],
         ]);
 
-        $employee->update($request->validated());
+        $employee->update($validated);
 
         return response()->json(['success' => true, 'data' => $employee->fresh()]);
     }
