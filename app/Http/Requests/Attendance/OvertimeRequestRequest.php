@@ -16,9 +16,10 @@ class OvertimeRequestRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'overtime_date' => ['required', 'date'],
-            'duration_hours' => ['required', 'numeric'],
-            'reason' => ['required', 'string', 'max:500'],
+            'work_date' => ['required', 'date'],
+            'start_time' => ['required', 'date_format:H:i:s'],
+            'end_time' => ['required', 'date_format:H:i:s', 'after:start_time'],
+            'reason' => ['required', 'string', 'max:1000'],
             'approver_id' => ['required', 'integer'],
         ];
     }

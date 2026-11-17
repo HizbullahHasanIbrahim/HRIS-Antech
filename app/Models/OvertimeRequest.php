@@ -18,10 +18,10 @@ class OvertimeRequest extends Model
 
     protected $fillable = [
         'employee_id',
-        'overtime_date',
+        'work_date',
         'start_time',
         'end_time',
-        'duration_hours',
+        'total_hours',
         'reason',
         'status',
         'approver_id',
@@ -32,8 +32,8 @@ class OvertimeRequest extends Model
     ];
 
     protected $casts = [
-        'overtime_date' => 'date',
-        'duration_hours' => 'decimal:2',
+        'work_date' => 'date',
+        'total_hours' => 'decimal:2',
         'submitted_at' => 'datetime',
         'decided_at' => 'datetime',
         'version' => 'integer',

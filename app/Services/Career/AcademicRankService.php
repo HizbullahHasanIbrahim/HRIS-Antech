@@ -85,7 +85,7 @@ class AcademicRankService
             $rank->refresh();
 
             $this->activityLog->log(
-                $approver->id,
+                $approver->user?->id,
                 'APPROVE_ACADEMIC_RANK',
                 'AcademicRankHistory',
                 $rank->id,

@@ -20,11 +20,14 @@ class Vacancy extends Model
     protected $fillable = [
         'unit_id',
         'title',
-        'position_type',
+        'category',
+        'description',
+        'min_qualification',
         'quota',
         'open_date',
         'close_date',
         'status',
+        'created_by',
     ];
 
     protected $casts = [
@@ -33,9 +36,14 @@ class Vacancy extends Model
         'close_date' => 'date',
     ];
 
-    public function unit(): BelongsTo
+    public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class, 'unit_id');
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function applications(): HasMany

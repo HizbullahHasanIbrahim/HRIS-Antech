@@ -19,7 +19,13 @@ class Applicant extends Model
         'full_name',
         'email',
         'phone',
-        'nik',
+        'birth_date',
+        'highest_education',
+        'cv_path',
+    ];
+
+    protected $casts = [
+        'birth_date' => 'date',
     ];
 
     public function applications(): HasMany

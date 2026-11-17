@@ -20,13 +20,16 @@ class Application extends Model
     protected $fillable = [
         'vacancy_id',
         'applicant_id',
-        'cv_path',
-        'status',
         'applied_at',
+        'aik_score',
+        'status',
+        'decided_at',
     ];
 
     protected $casts = [
         'applied_at' => 'datetime',
+        'aik_score' => 'decimal:2',
+        'decided_at' => 'datetime',
     ];
 
     public function vacancy(): BelongsTo

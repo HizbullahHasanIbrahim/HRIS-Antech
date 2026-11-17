@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services\Reporting;
 
+use App\Models\AcademicRankHistory;
 use App\Models\AllowanceRequest;
 use App\Models\Employee;
 use App\Models\LeaveRequest;
 use App\Models\OvertimeRequest;
 use App\Models\PerformanceTarget;
+use App\Models\StaffRankHistory;
 use Illuminate\Support\Collection;
 
 class HrisReportQueryService
@@ -59,9 +61,9 @@ class HrisReportQueryService
 
         $overtimeCounts = OvertimeRequest::selectRaw('
             employee_id,
-            SUM(CASE WHEN status = "disetujui" THEN duration_hours ELSE 0 END) as total_hours_lembur')
+            SUM(CASE WHEN status = "disetujui" THEN total_hours ELSE 0 END) as total_hours_lembur')
             ->when($unitId, fn ($q) => $q->whereHas('employee', fn ($e) => $e->where('unit_id', $unitId)))
-            ->when($periode, fn ($q) => $q->whereBetween('overtime_date', [$periode.' 01', $periode.' 31']))
+            ->when($periode, fn ($q) => $q->whereBetween('work_date', [$periode.' 01', $periode.' 31']))
             ->groupBy('employee_id')
             ->get();
 

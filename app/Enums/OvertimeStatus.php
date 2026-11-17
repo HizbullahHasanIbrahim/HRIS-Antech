@@ -1,16 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Enums;
 
 enum OvertimeStatus: string
 {
+    case DRAFT = 'draft';
     case SUBMITTED = 'diajukan';
     case APPROVED = 'disetujui';
     case REJECTED = 'ditolak';
     case CANCELLED = 'dibatalkan';
 
-    public function isTerminal(): bool
+    public function label(): string
     {
-        return in_array($this, [self::APPROVED, self::REJECTED, self::CANCELLED]);
+        return match ($this) {
+            self::DRAFT => 'Draft',
+            self::SUBMITTED => 'Diajukan',
+            self::APPROVED => 'Disetujui',
+            self::REJECTED => 'Ditolak',
+            self::CANCELLED => 'Dibatalkan',
+        };
     }
 }
