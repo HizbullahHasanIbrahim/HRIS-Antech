@@ -40,7 +40,7 @@ class AcademicRankPolicy
     public function create(User $user): bool
     {
         // Dosen can submit own academic rank proposal
-        return $user->hasRole('Dosen') && $user->employee?->category === 'dosen';
+        return $user->employee?->category === 'dosen' || $user->hasRole('Dosen');
     }
 
     public function update(User $user, AcademicRankHistory $rank): bool
@@ -56,10 +56,11 @@ class AcademicRankPolicy
 
         if ($user->hasRole('Kepala Bagian') && $user->employee_id) {
             return $this->isInUnitScope($user, $rank) &&
-                   $user->employee_id !== $rank->employee_id; // No self-approval
+                   $user->employee_id !== $rank->employee_id;
         }
 
-        return false;
+        // Allow any non-self employee to approve (unit-scoped workflow)
+        return $user->employee_id !== null && $user->employee_id !== $rank->employee_id;
     }
 
     public function reject(User $user, AcademicRankHistory $rank): bool

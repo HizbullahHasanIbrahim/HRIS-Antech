@@ -24,6 +24,8 @@ class LeaveRequestController extends Controller
             return response()->json(['message' => 'Authenticated user has no employee profile.'], 422);
         }
 
+        $this->authorize('create', LeaveRequest::class);
+
         $leaveRequest = $this->leaveRequestService->createRequest(
             $employee,
             (int) $request->validated('leave_type_id'),
@@ -41,6 +43,8 @@ class LeaveRequestController extends Controller
 
     public function approve(Request $request, LeaveRequest $leaveRequest): JsonResponse
     {
+        $this->authorize('approve', $leaveRequest);
+
         $approver = $request->user()->employee;
         if (! $approver) {
             return response()->json(['message' => 'Authenticated user has no employee profile.'], 422);
@@ -60,6 +64,8 @@ class LeaveRequestController extends Controller
 
     public function reject(Request $request, LeaveRequest $leaveRequest): JsonResponse
     {
+        $this->authorize('reject', $leaveRequest);
+
         $request->validate(['decision_note' => ['required', 'string']]);
 
         $approver = $request->user()->employee;
@@ -81,6 +87,8 @@ class LeaveRequestController extends Controller
 
     public function cancel(LeaveRequest $leaveRequest): JsonResponse
     {
+        $this->authorize('cancel', $leaveRequest);
+
         $updated = $this->leaveRequestService->cancelRequest($leaveRequest);
 
         return response()->json([

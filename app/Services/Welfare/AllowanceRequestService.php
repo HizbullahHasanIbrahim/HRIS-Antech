@@ -24,9 +24,10 @@ class AllowanceRequestService
         AllowanceType $allowanceType,
         string $periodLabel,
         float $amount,
-        \DateTimeInterface $submittedAt
+        \DateTimeInterface $submittedAt,
+        int $approverId
     ): AllowanceRequest {
-        return DB::transaction(function () use ($employee, $allowanceType, $periodLabel, $amount, $submittedAt) {
+        return DB::transaction(function () use ($employee, $allowanceType, $periodLabel, $amount, $submittedAt, $approverId) {
             // Pessimistic lock on parent employee row (SDD-5.11)
             DB::table('employees')->where('id', $employee->id)->lockForUpdate()->first();
 
@@ -48,6 +49,11 @@ class AllowanceRequestService
                 }
             }
 
+            // Prevent self-approval (RULE-14)
+            if ($employee->id === $approverId) {
+                throw new \RuntimeException('Tidak boleh menyetujui permintaan tunjangan sendiri.');
+            }
+
             $request = AllowanceRequest::create([
                 'employee_id' => $employee->id,
                 'allowance_type_id' => $allowanceType->id,
@@ -55,11 +61,12 @@ class AllowanceRequestService
                 'amount' => $amount,
                 'status' => 'diajukan',
                 'submitted_at' => $submittedAt,
+                'approver_id' => $approverId,
                 'version' => 1,
             ]);
 
             $this->activityLog->log(
-                null,
+                $employee->user?->id,
                 'CREATE_ALLOWANCE_REQUEST',
                 'AllowanceRequest',
                 $request->id,
@@ -102,7 +109,7 @@ class AllowanceRequestService
             $request->refresh();
 
             $this->activityLog->log(
-                $approver->id,
+                $approver->user?->id,
                 'APPROVE_ALLOWANCE_REQUEST',
                 'AllowanceRequest',
                 $request->id,

@@ -24,6 +24,8 @@ class OvertimeRequestController extends Controller
             return response()->json(['message' => 'No employee profile.'], 422);
         }
 
+        $this->authorize('create', OvertimeRequest::class);
+
         $overtime = $this->overtimeService->createRequest(
             $employee,
             new \DateTimeImmutable($request->validated('work_date')),
@@ -38,6 +40,8 @@ class OvertimeRequestController extends Controller
 
     public function approve(Request $request, OvertimeRequest $overtimeRequest): JsonResponse
     {
+        $this->authorize('approve', $overtimeRequest);
+
         $approver = $request->user()->employee;
         if (! $approver) {
             return response()->json(['message' => 'No employee profile.'], 422);
@@ -50,6 +54,8 @@ class OvertimeRequestController extends Controller
 
     public function reject(Request $request, OvertimeRequest $overtimeRequest): JsonResponse
     {
+        $this->authorize('reject', $overtimeRequest);
+
         $request->validate(['decision_note' => ['required', 'string']]);
 
         $approver = $request->user()->employee;
@@ -58,6 +64,15 @@ class OvertimeRequestController extends Controller
         }
 
         $updated = $this->overtimeService->rejectRequest($overtimeRequest, $approver, $request->input('decision_note'));
+
+        return response()->json(['success' => true, 'data' => $updated]);
+    }
+
+    public function cancel(OvertimeRequest $overtimeRequest): JsonResponse
+    {
+        $this->authorize('cancel', $overtimeRequest);
+
+        $updated = $this->overtimeService->cancelRequest($overtimeRequest);
 
         return response()->json(['success' => true, 'data' => $updated]);
     }

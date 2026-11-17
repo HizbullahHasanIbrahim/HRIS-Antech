@@ -23,7 +23,7 @@ class ActivityLogService
         ?array $details = null
     ): ActivityLog {
         return ActivityLog::create([
-            'actor_id' => $actorId ?? 1, // Ponytaill: Default to actor 1 if null as per user instruction.
+            'actor_id' => $actorId,
             'action' => $action,
             'entity_type' => $entityType,
             'entity_id' => $entityId,

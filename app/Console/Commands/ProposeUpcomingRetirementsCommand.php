@@ -72,7 +72,7 @@ class ProposeUpcomingRetirementsCommand extends Command
             $effectiveDate = $retirementDate;
 
             // Use transaction with pessimistic lock
-            DB::transaction(function () use ($employee, $proposedDate, $effectiveDate, &$created) {
+            DB::transaction(function () use ($employee, $proposedDate, $effectiveDate, &$created, $retirementAge) {
                 DB::table('employees')->where('id', $employee->id)->lockForUpdate()->first();
 
                 // Double-check after lock

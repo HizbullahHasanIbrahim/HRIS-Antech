@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Attendance\LeaveRequestController;
+use App\Http\Controllers\Attendance\OvertimeRequestController;
 use App\Http\Controllers\Attendance\WorkScheduleController;
 use App\Http\Controllers\Career\CareerController;
 use App\Http\Controllers\Organization\DepartmentController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\Performance\SkpController;
 use App\Http\Controllers\Performance\WorkloadReportController;
 use App\Http\Controllers\Recruitment\RecruitmentController;
 use App\Http\Controllers\Reporting\ReportController;
+use App\Http\Controllers\Retirement\RetirementController;
 use App\Http\Controllers\Welfare\AllowanceRequestController;
 use App\Http\Controllers\Welfare\BpjsController;
 use Illuminate\Http\Request;
@@ -19,12 +21,18 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::middleware(['auth:api'])->prefix('v1')->group(function () {
+Route::middleware(['auth:api', 'unit.scope'])->prefix('v1')->group(function () {
     // Leave Requests (P-04)
     Route::post('/leave-requests', [LeaveRequestController::class, 'store']);
     Route::post('/leave-requests/{leaveRequest}/approve', [LeaveRequestController::class, 'approve']);
     Route::post('/leave-requests/{leaveRequest}/reject', [LeaveRequestController::class, 'reject']);
     Route::post('/leave-requests/{leaveRequest}/cancel', [LeaveRequestController::class, 'cancel']);
+
+    // Overtime Requests (P-05)
+    Route::post('/overtime-requests', [OvertimeRequestController::class, 'store']);
+    Route::post('/overtime-requests/{overtimeRequest}/approve', [OvertimeRequestController::class, 'approve']);
+    Route::post('/overtime-requests/{overtimeRequest}/reject', [OvertimeRequestController::class, 'reject']);
+    Route::post('/overtime-requests/{overtimeRequest}/cancel', [OvertimeRequestController::class, 'cancel']);
 
     // Work Schedules (P-06)
     Route::get('/work-schedules', [WorkScheduleController::class, 'index']);
@@ -87,6 +95,14 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
     Route::get('/allowances', [AllowanceRequestController::class, 'index']);
     Route::post('/allowances/{allowance}/approve', [AllowanceRequestController::class, 'approve']);
     Route::post('/allowances/{allowance}/cancel', [AllowanceRequestController::class, 'cancel']);
+
+    // Retirement (P-16)
+    Route::post('/retirements', [RetirementController::class, 'store']);
+    Route::get('/retirements', [RetirementController::class, 'index']);
+    Route::get('/retirements/{retirement}', [RetirementController::class, 'show']);
+    Route::post('/retirements/{retirement}/process', [RetirementController::class, 'process']);
+    Route::post('/retirements/{retirement}/cancel', [RetirementController::class, 'cancel']);
+    Route::post('/retirements/{retirement}/complete', [RetirementController::class, 'complete']);
 
     // Organization (Departments, Employees, Assignments)
     Route::apiResource('/departments', DepartmentController::class, ['only' => ['index', 'store', 'update', 'destroy']]);

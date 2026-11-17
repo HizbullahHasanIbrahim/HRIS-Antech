@@ -26,6 +26,8 @@ class SkpController extends Controller
             return response()->json(['message' => 'No employee profile.'], 422);
         }
 
+        $this->authorize('create', PerformanceTarget::class);
+
         $target = $this->skpService->createTarget(
             $employee,
             $request->validated('period_label'),
@@ -39,6 +41,8 @@ class SkpController extends Controller
 
     public function evaluate(SkpEvaluationRequest $request, PerformanceTarget $target): JsonResponse
     {
+        $this->authorize('evaluate', $target);
+
         $evaluator = $request->user()->employee;
         if (! $evaluator) {
             return response()->json(['message' => 'No employee profile.'], 422);
@@ -55,6 +59,8 @@ class SkpController extends Controller
 
     public function reject(Request $request, PerformanceTarget $target): JsonResponse
     {
+        $this->authorize('reject', $target);
+
         $request->validate(['decision_note' => ['required', 'string']]);
 
         $evaluator = $request->user()->employee;

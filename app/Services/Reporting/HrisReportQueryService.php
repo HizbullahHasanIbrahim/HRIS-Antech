@@ -11,6 +11,8 @@ use App\Models\LeaveRequest;
 use App\Models\OvertimeRequest;
 use App\Models\PerformanceTarget;
 use App\Models\StaffRankHistory;
+use App\Models\WorkloadReport;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
 class HrisReportQueryService
@@ -50,12 +52,15 @@ class HrisReportQueryService
      */
     public function reportCutLembur(?string $unitId = null, ?string $periode = null): Collection
     {
+        $start = $periode ? Carbon::parse($periode)->startOfMonth->format('Y-m-d') : null;
+        $end = $periode ? Carbon::parse($periode)->endOfMonth->format('Y-m-d') : null;
+
         $leaveCounts = LeaveRequest::selectRaw('
             employee_id,
             COUNT(*) as total_requests,
             SUM(CASE WHEN status = "disetujui" THEN total_days ELSE 0 END) as total_days_terverifikasi')
             ->when($unitId, fn ($q) => $q->whereHas('employee', fn ($e) => $e->where('unit_id', $unitId)))
-            ->when($periode, fn ($q) => $q->whereBetween('start_date', [$periode.' 01', $periode.' 31']))
+            ->when($start, fn ($q) => $q->whereBetween('start_date', [$start, $end]))
             ->groupBy('employee_id')
             ->get();
 
@@ -63,7 +68,7 @@ class HrisReportQueryService
             employee_id,
             SUM(CASE WHEN status = "disetujui" THEN total_hours ELSE 0 END) as total_hours_lembur')
             ->when($unitId, fn ($q) => $q->whereHas('employee', fn ($e) => $e->where('unit_id', $unitId)))
-            ->when($periode, fn ($q) => $q->whereBetween('work_date', [$periode.' 01', $periode.' 31']))
+            ->when($start, fn ($q) => $q->whereBetween('work_date', [$start, $end]))
             ->groupBy('employee_id')
             ->get();
 
@@ -72,20 +77,31 @@ class HrisReportQueryService
             COUNT(*) as total_tunjangan_requests,
             SUM(CASE WHEN status = "selesai" THEN 1 ELSE 0 END) as total_disetujui')
             ->when($unitId, fn ($q) => $q->whereHas('employee', fn ($e) => $e->where('unit_id', $unitId)))
-            ->when($periode, fn ($q) => $q->whereBetween('submitted_at', [$periode.' 01', $periode.' 31']))
+            ->when($start, fn ($q) => $q->whereBetween('submitted_at', [$start, $end]))
             ->groupBy('employee_id')
             ->get();
 
-        $merged = $leaveCounts->merge($overtimeCounts)->merge($allowanceCounts);
+        $leaveKeyed = $leaveCounts->keyBy('employee_id');
+        $overtimeKeyed = $overtimeCounts->keyBy('employee_id');
+        $allowanceKeyed = $allowanceCounts->keyBy('employee_id');
 
-        return $merged->map(function ($item) {
+        $allEmployeeIds = $leaveKeyed->keys()
+            ->merge($overtimeKeyed->keys())
+            ->merge($allowanceKeyed->keys())
+            ->unique();
+
+        return $allEmployeeIds->map(function ($employeeId) use ($leaveKeyed, $overtimeKeyed, $allowanceKeyed) {
+            $leave = $leaveKeyed->get($employeeId);
+            $overtime = $overtimeKeyed->get($employeeId);
+            $allowance = $allowanceKeyed->get($employeeId);
+
             return [
-                'employee_id' => $item->employee_id,
-                'leave_requests' => $item->total_requests ?? 0,
-                'leave_days_terverifikasi' => $item->total_days_terverifikasi ?? 0,
-                'overtime_hours' => $item->total_hours_lembur ?? 0,
-                'allowance_requests' => $item->total_tunjangan_requests ?? 0,
-                'allowance_approved' => $item->total_disetujui ?? 0,
+                'employee_id' => $employeeId,
+                'leave_requests' => $leave->total_requests ?? 0,
+                'leave_days_terverifikasi' => $leave->total_days_terverifikasi ?? 0,
+                'overtime_hours' => $overtime->total_hours_lembur ?? 0,
+                'allowance_requests' => $allowance->total_tunjangan_requests ?? 0,
+                'allowance_approved' => $allowance->total_disetujui ?? 0,
             ];
         });
     }

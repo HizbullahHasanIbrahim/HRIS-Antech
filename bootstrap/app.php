@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\ClearAuthGuardsMiddleware;
 use App\Http\Middleware\EnforceUnitScopeMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -17,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'unit.scope' => EnforceUnitScopeMiddleware::class,
         ]);
+        $middleware->prepend(ClearAuthGuardsMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

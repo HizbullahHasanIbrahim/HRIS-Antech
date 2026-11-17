@@ -28,8 +28,9 @@ class BpjsService
             // Pessimistic lock on parent employee row (SDD-5.10)
             DB::table('employees')->where('id', $employee->id)->lockForUpdate()->first();
 
-            // Check for existing active membership
+            // Check for existing active membership of the same type
             $existing = BpjsMembership::where('employee_id', $employee->id)
+                ->where('bpjs_type', $bpjsType)
                 ->where('status', 'aktif')
                 ->first();
 
@@ -50,14 +51,14 @@ class BpjsService
             ]);
 
             $this->activityLog->log(
-                null,
+                $employee->user?->id,
                 'REGISTER_BPJS_MEMBERSHIP',
                 'BpjsMembership',
                 $membership->id,
                 null,
                 'aktif',
                 null,
-                ['employee_id' => $employee->id, 'membership_number' => $membershipNumber]
+                ['employee_id' => $employee->id, 'membership_number' => $membershipNumber, 'bpjs_type' => $bpjsType]
             );
 
             return $membership;
@@ -86,7 +87,7 @@ class BpjsService
             ]);
 
             $this->activityLog->log(
-                null,
+                $membership->employee?->user?->id,
                 'CANCEL_BPJS_MEMBERSHIP',
                 'BpjsMembership',
                 $membership->id,

@@ -41,6 +41,8 @@ class CareerController extends Controller
             return response()->json(['message' => 'No employee profile.'], 422);
         }
 
+        $this->authorize('viewAny', AcademicRankHistory::class);
+
         $query = AcademicRankHistory::where('employee_id', $employee->id)
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s));
 
@@ -53,6 +55,8 @@ class CareerController extends Controller
         if (! $employee) {
             return response()->json(['message' => 'No employee profile.'], 422);
         }
+
+        $this->authorize('create', AcademicRankHistory::class);
 
         $rank = $this->academicRankService->createRankHistory(
             $employee,
@@ -67,6 +71,8 @@ class CareerController extends Controller
 
     public function approveAcademicRank(Request $request, AcademicRankHistory $rank): JsonResponse
     {
+        $this->authorize('approve', $rank);
+
         $approver = $request->user()->employee;
         if (! $approver) {
             return response()->json(['message' => 'No employee profile.'], 422);
@@ -79,6 +85,8 @@ class CareerController extends Controller
 
     public function rejectAcademicRank(Request $request, AcademicRankHistory $rank): JsonResponse
     {
+        $this->authorize('reject', $rank);
+
         $request->validate(['decision_note' => ['required', 'string']]);
 
         $approver = $request->user()->employee;
@@ -99,6 +107,8 @@ class CareerController extends Controller
             return response()->json(['message' => 'No employee profile.'], 422);
         }
 
+        $this->authorize('viewAny', StaffRankHistory::class);
+
         $query = StaffRankHistory::where('employee_id', $employee->id)
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s));
 
@@ -112,6 +122,8 @@ class CareerController extends Controller
             return response()->json(['message' => 'No employee profile.'], 422);
         }
 
+        $this->authorize('create', StaffRankHistory::class);
+
         $rank = $this->staffRankService->createRankHistory(
             $employee,
             $request->validated('rank_level'),
@@ -124,6 +136,8 @@ class CareerController extends Controller
 
     public function approveStaffRank(Request $request, StaffRankHistory $rank): JsonResponse
     {
+        $this->authorize('approve', $rank);
+
         $approver = $request->user()->employee;
         if (! $approver) {
             return response()->json(['message' => 'No employee profile.'], 422);
@@ -136,6 +150,8 @@ class CareerController extends Controller
 
     public function rejectStaffRank(Request $request, StaffRankHistory $rank): JsonResponse
     {
+        $this->authorize('reject', $rank);
+
         $request->validate(['decision_note' => ['required', 'string']]);
 
         $approver = $request->user()->employee;
@@ -156,6 +172,8 @@ class CareerController extends Controller
             return response()->json(['message' => 'No employee profile.'], 422);
         }
 
+        $this->authorize('viewAny', StudyLeave::class);
+
         $query = StudyLeave::where('employee_id', $employee->id)
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s));
 
@@ -168,6 +186,8 @@ class CareerController extends Controller
         if (! $employee) {
             return response()->json(['message' => 'No employee profile.'], 422);
         }
+
+        $this->authorize('create', StudyLeave::class);
 
         $studyLeave = $this->studyLeaveService->createStudyLeave(
             $employee,
@@ -185,6 +205,8 @@ class CareerController extends Controller
 
     public function approveStudyLeave(Request $request, StudyLeave $studyLeave): JsonResponse
     {
+        $this->authorize('approve', $studyLeave);
+
         $approver = $request->user()->employee;
         if (! $approver) {
             return response()->json(['message' => 'No employee profile.'], 422);
@@ -197,6 +219,8 @@ class CareerController extends Controller
 
     public function rejectStudyLeave(Request $request, StudyLeave $studyLeave): JsonResponse
     {
+        $this->authorize('reject', $studyLeave);
+
         $request->validate(['decision_note' => ['required', 'string']]);
 
         $approver = $request->user()->employee;
@@ -217,6 +241,8 @@ class CareerController extends Controller
             return response()->json(['message' => 'No employee profile.'], 422);
         }
 
+        $this->authorize('viewAny', Certification::class);
+
         $query = Certification::where('employee_id', $employee->id);
 
         return response()->json(['success' => true, 'data' => $query->paginate()]);
@@ -228,6 +254,8 @@ class CareerController extends Controller
         if (! $employee) {
             return response()->json(['message' => 'No employee profile.'], 422);
         }
+
+        $this->authorize('create', Certification::class);
 
         $certificatePath = null;
         if ($request->hasFile('certificate_file')) {
@@ -248,6 +276,8 @@ class CareerController extends Controller
 
     public function destroyCertification(Certification $certification): JsonResponse
     {
+        $this->authorize('delete', $certification);
+
         $this->certificationService->deleteCertification($certification);
 
         return response()->json(['success' => true, 'message' => 'Certification deleted.']);
@@ -261,6 +291,8 @@ class CareerController extends Controller
             return response()->json(['message' => 'No employee profile.'], 422);
         }
 
+        $this->authorize('viewAny', Training::class);
+
         $query = Training::where('employee_id', $employee->id)
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s));
 
@@ -273,6 +305,8 @@ class CareerController extends Controller
         if (! $employee) {
             return response()->json(['message' => 'No employee profile.'], 422);
         }
+
+        $this->authorize('create', Training::class);
 
         $training = $this->trainingService->createTraining(
             $employee,
@@ -290,6 +324,8 @@ class CareerController extends Controller
 
     public function completeTraining(Request $request, Training $training): JsonResponse
     {
+        $this->authorize('complete', $training);
+
         $request->validate([
             'certificate_number' => ['nullable', 'string', 'max:100'],
             'certificate_file' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
@@ -311,6 +347,8 @@ class CareerController extends Controller
 
     public function cancelTraining(Request $request, Training $training): JsonResponse
     {
+        $this->authorize('cancel', $training);
+
         $request->validate(['reason' => ['required', 'string']]);
 
         $training = $this->trainingService->cancelTraining($training, $request->input('reason'));
