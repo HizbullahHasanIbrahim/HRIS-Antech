@@ -5,10 +5,22 @@ use App\Exceptions\ConcurrencyConflictException;
 use App\Exceptions\UnauthorizedActionException;
 use App\Http\Middleware\ClearAuthGuardsMiddleware;
 use App\Http\Middleware\EnforceUnitScopeMiddleware;
+use App\Http\Middleware\HandleInertiaRequests;
+use Illuminate\Auth\Middleware\Authenticate;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Foundation\Http\Middleware\TransformsRequest;
+use Illuminate\Foundation\Http\Middleware\TrimStrings;
+use Illuminate\Foundation\Http\Middleware\ValidatePostSize;
 use Illuminate\Http\Request;
+use Illuminate\Session\Middleware\AuthenticateSession;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -20,8 +32,22 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'unit.scope' => EnforceUnitScopeMiddleware::class,
+            'auth' => Authenticate::class,
         ]);
         $middleware->prepend(ClearAuthGuardsMiddleware::class);
+        $middleware->web(append: [
+            EncryptCookies::class,
+            AddQueuedCookiesToResponse::class,
+            StartSession::class,
+            AuthenticateSession::class,
+            ShareErrorsFromSession::class,
+            ValidatePostSize::class,
+            TransformsRequest::class,
+            ConvertEmptyStringsToNull::class,
+            TrimStrings::class,
+            PreventRequestForgery::class,
+            HandleInertiaRequests::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

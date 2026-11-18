@@ -9,6 +9,7 @@ use App\Http\Requests\Attendance\LeaveRequestRequest;
 use App\Models\LeaveRequest;
 use App\Services\Attendance\LeaveRequestService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class LeaveRequestController extends Controller
 {

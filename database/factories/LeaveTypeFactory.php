@@ -14,10 +14,10 @@ class LeaveTypeFactory extends Factory
     public function definition(): array
     {
         return [
-            'type' => fake()->unique()->randomElement(['Cuti', 'Izin', 'Libur']),
+            'type' => 'Cuti '.fake()->unique()->numberBetween(1, 999999),
             'name' => fake()->randomElement(['Cuti Tahunan', 'Cuti Melahirkan', 'Cuti Sakit', 'Cuti Alasan Penting', 'Cuti Besar']),
             'annual_quota' => fake()->numberBetween(5, 30),
-            'applies_to' => fake()->randomElement(['PNS', 'Honorer', 'Honorer Dosen', 'Honorer Pegawai Negeri Sipil', 'Honorer PNS']),
+            'applies_to' => fake()->randomElement(['PNS', 'Honorer', 'Dosen', 'Pegawai']),
             'is_active' => true,
         ];
     }

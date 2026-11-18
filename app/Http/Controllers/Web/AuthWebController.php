@@ -1,0 +1,57 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\Web;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
+
+class AuthWebController extends Controller
+{
+    public function showLogin()
+    {
+        return Inertia::render('Auth/Login');
+    }
+
+    public function login(LoginRequest $request): RedirectResponse
+    {
+        $user = User::where('username', $request->string('username'))->first();
+
+        if (! $user || ! Hash::check($request->string('password'), $user->password_hash)) {
+            throw ValidationException::withMessages([
+                'username' => ['Kredensial tidak sesuai.'],
+            ]);
+        }
+
+        if (! $user->is_active) {
+            return back()->withErrors([
+                'username' => 'Akun tidak aktif.',
+            ]);
+        }
+
+        Auth::login($user, $request->boolean('remember'));
+
+        $request->session()->regenerate();
+
+        return redirect()->intended('/dashboard');
+    }
+
+    public function logout(Request $request): RedirectResponse
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login');
+    }
+}

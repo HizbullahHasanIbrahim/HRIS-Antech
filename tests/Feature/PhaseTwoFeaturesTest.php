@@ -9,6 +9,7 @@ use App\Models\Employee;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Vacancy;
+use Database\Seeders\MasterDataSeeder;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
@@ -17,6 +18,7 @@ class PhaseTwoFeaturesTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->seed(MasterDataSeeder::class);
         config([
             'database.default' => 'mysql',
             'database.connections.mysql.database' => 'antech_async_hris',

@@ -18,6 +18,7 @@ class UserFactory extends Factory
             'employee_id' => null,
             'username' => fake()->unique()->userName(),
             'password_hash' => Hash::make('password'),
+            'api_token' => 'api_token_'.fake()->unique()->sha256(),
             'is_active' => true,
             'last_login_at' => now(),
         ];
