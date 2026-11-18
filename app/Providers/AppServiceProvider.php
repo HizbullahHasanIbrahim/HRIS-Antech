@@ -9,6 +9,7 @@ use App\Models\Retirement;
 use App\Models\StaffRankHistory;
 use App\Policies\AcademicRankPolicy;
 use App\Policies\BpjsPolicy;
+use App\Policies\ReportPolicy;
 use App\Policies\RetirementPolicy;
 use App\Policies\SkpPolicy;
 use App\Policies\StaffRankPolicy;
@@ -37,6 +38,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(BpjsMembership::class, BpjsPolicy::class);
         Gate::policy(PerformanceTarget::class, SkpPolicy::class);
         Gate::policy(Retirement::class, RetirementPolicy::class);
+
+        Gate::define('view-reports', [ReportPolicy::class, 'viewAny']);
 
         // Rate limiters
         RateLimiter::for('api', function ($request) {

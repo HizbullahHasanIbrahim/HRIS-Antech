@@ -16,24 +16,22 @@ class WorkScheduleService
     ) {}
 
     public function createSchedule(
-        string $name,
-        string $scheduleType,
-        \DateTimeInterface $effectiveStart,
-        \DateTimeInterface $effectiveEnd,
-        array $days
+        string $category,
+        \DateTimeInterface $validFrom,
+        \DateTimeInterface $validUntil,
+        array $days,
+        bool $isPublished,
+        \DateTimeInterface $publishedAt,
+        int $createdBy
     ): WorkSchedule {
-        return DB::transaction(function () use ($name, $scheduleType, $effectiveStart, $effectiveEnd, $days) {
-            // Deactivate any existing active schedules of same type
-            WorkSchedule::where('schedule_type', $scheduleType)
-                ->where('is_active', true)
-                ->update(['is_active' => false]);
-
+        return DB::transaction(function () use ($category, $validFrom, $validUntil, $days, $isPublished, $publishedAt, $createdBy) {
             $schedule = WorkSchedule::create([
-                'name' => $name,
-                'schedule_type' => $scheduleType,
-                'effective_start' => $effectiveStart,
-                'effective_end' => $effectiveEnd,
-                'is_active' => true,
+                'category' => $category,
+                'valid_from' => $validFrom,
+                'valid_until' => $validUntil,
+                'is_published' => $isPublished,
+                'published_at' => $publishedAt,
+                'created_by' => $createdBy,
             ]);
 
             foreach ($days as $day) {
@@ -48,12 +46,12 @@ class WorkScheduleService
             }
 
             $this->activityLog->log(
-                null,
+                $createdBy,
                 'CREATE_WORK_SCHEDULE',
                 'WorkSchedule',
                 $schedule->id,
                 null,
-                'aktif',
+                $isPublished ? 'dipublikasi' : 'tidak dipublikasi',
             );
 
             return $schedule->load('days');
@@ -71,7 +69,7 @@ class WorkScheduleService
                 'WorkSchedule',
                 $schedule->id,
                 null,
-                $schedule->is_active ? 'aktif' : 'nonaktif',
+                $schedule->is_published ? 'dipublikasi' : 'tidak dipublikasi',
             );
 
             return $schedule->fresh();
@@ -88,7 +86,7 @@ class WorkScheduleService
                 'DELETE_WORK_SCHEDULE',
                 'WorkSchedule',
                 $schedule->id,
-                'aktif',
+                'dipublikasi',
                 'dihapus',
             );
         });
@@ -99,14 +97,13 @@ class WorkScheduleService
         DB::transaction(function () use ($employeeId, $scheduleId) {
             // Just log the assignment
             $this->activityLog->log(
-                null,
-                'ASSIGN_WORK_SCHEDULE',
-                'Employee',
                 $employeeId,
+                'ASSIGN_WORK_SCHEDULE',
+                'WorkSchedule',
+                $scheduleId,
+                'assigned',
                 null,
-                'aktif',
-                null,
-                ['schedule_id' => $scheduleId]
+                ['employee_id' => $employeeId, 'schedule_id' => $scheduleId]
             );
         });
     }

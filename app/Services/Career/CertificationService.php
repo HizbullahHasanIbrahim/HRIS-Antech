@@ -18,11 +18,12 @@ class CertificationService
     public function createCertification(
         Employee $employee,
         string $certType,
-        string $certNumber,
         \DateTimeInterface $submittedDate,
+        string $certNumber,
+        string $certLevel,
         ?string $certificatePath = null
     ): Certification {
-        return DB::transaction(function () use ($employee, $certType, $certNumber, $submittedDate, $certificatePath) {
+        return DB::transaction(function () use ($employee, $certType, $submittedDate, $certNumber, $certLevel, $certificatePath) {
             DB::table('employees')->where('id', $employee->id)->lockForUpdate()->first();
 
             $certification = Certification::create([
@@ -30,8 +31,9 @@ class CertificationService
                 'cert_type' => $certType,
                 'cert_number' => $certNumber,
                 'submitted_date' => $submittedDate,
-                'status' => 'diajukan',
+                'certification_level' => $certLevel,
                 'certificate_path' => $certificatePath,
+                'status' => 'diajukan',
             ]);
 
             $this->activityLog->log(
@@ -57,7 +59,7 @@ class CertificationService
                 'DELETE_CERTIFICATION',
                 'Certification',
                 $certification->id,
-                'aktif',
+                'diajukan',
                 'dihapus',
             );
         });

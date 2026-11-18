@@ -18,26 +18,23 @@ class StudyLeaveService
     public function createStudyLeave(
         Employee $employee,
         string $studyProgram,
-        string $institution,
+        string $university,
         \DateTimeInterface $startDate,
         \DateTimeInterface $endDate,
-        string $fundingSource,
-        ?string $scholarshipName,
+        string $scholarshipName,
         int $supervisorId
     ): StudyLeave {
-        return DB::transaction(function () use ($employee, $studyProgram, $institution, $startDate, $endDate, $fundingSource, $scholarshipName, $supervisorId) {
+        return DB::transaction(function () use ($employee, $studyProgram, $university, $startDate, $endDate, $scholarshipName) {
             DB::table('employees')->where('id', $employee->id)->lockForUpdate()->first();
 
             $studyLeave = StudyLeave::create([
                 'employee_id' => $employee->id,
                 'study_program' => $studyProgram,
-                'institution' => $institution,
+                'university' => $university,
                 'start_date' => $startDate,
-                'end_date' => $endDate,
-                'funding_source' => $fundingSource,
+                'expected_end_date' => $endDate,
                 'scholarship_name' => $scholarshipName,
-                'status' => 'diajukan',
-                'supervisor_id' => $supervisorId,
+                'status' => 'direncanakan',
             ]);
 
             $this->activityLog->log(
@@ -46,7 +43,7 @@ class StudyLeaveService
                 'StudyLeave',
                 $studyLeave->id,
                 null,
-                'diajukan',
+                'direncanakan',
             );
 
             return $studyLeave;
@@ -55,16 +52,15 @@ class StudyLeaveService
 
     public function approveStudyLeave(StudyLeave $studyLeave, Employee $approver): StudyLeave
     {
-        if ($studyLeave->status !== 'diajukan') {
-            throw new \RuntimeException('Hanya pengajuan studi lanjut yang diajukan yang dapat disetujui.');
+        if ($studyLeave->status !== 'direncanakan') {
+            throw new \RuntimeException('Hanya pengajuan studi lanjut yang direncanakan yang dapat disetujui.');
         }
 
         return DB::transaction(function () use ($studyLeave, $approver) {
             DB::table('employees')->where('id', $studyLeave->employee_id)->lockForUpdate()->first();
 
             $studyLeave->update([
-                'status' => 'disetujui',
-                'approved_at' => now(),
+                'status' => 'berjalan',
             ]);
 
             $this->activityLog->log(
@@ -72,8 +68,8 @@ class StudyLeaveService
                 'APPROVE_STUDY_LEAVE',
                 'StudyLeave',
                 $studyLeave->id,
-                'diajukan',
-                'disetujui',
+                'direncanakan',
+                'berjalan',
             );
 
             return $studyLeave->refresh();
@@ -82,17 +78,16 @@ class StudyLeaveService
 
     public function rejectStudyLeave(StudyLeave $studyLeave, Employee $approver, string $decisionNote): StudyLeave
     {
-        if ($studyLeave->status !== 'diajukan') {
-            throw new \RuntimeException('Hanya pengajuan studi lanjut yang diajukan yang dapat ditolak.');
+        if ($studyLeave->status !== 'direncanakan') {
+            throw new \RuntimeException('Hanya pengajuan studi lanjut yang direncanakan yang dapat ditolak.');
         }
 
         return DB::transaction(function () use ($studyLeave, $approver, $decisionNote) {
             DB::table('employees')->where('id', $studyLeave->employee_id)->lockForUpdate()->first();
 
             $studyLeave->update([
-                'status' => 'ditolak',
-                'decision_note' => $decisionNote,
-                'approved_at' => now(),
+                'status' => 'dibatalkan',
+                'mentoring_notes' => $decisionNote,
             ]);
 
             $this->activityLog->log(
@@ -100,9 +95,8 @@ class StudyLeaveService
                 'REJECT_STUDY_LEAVE',
                 'StudyLeave',
                 $studyLeave->id,
-                'diajukan',
-                'ditolak',
-                $decisionNote,
+                'direncanakan',
+                'dibatalkan',
             );
 
             return $studyLeave->refresh();

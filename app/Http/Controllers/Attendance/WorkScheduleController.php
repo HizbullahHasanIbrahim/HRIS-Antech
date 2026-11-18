@@ -22,7 +22,7 @@ class WorkScheduleController extends Controller
         $this->authorize('viewAny', WorkSchedule::class);
 
         $query = WorkSchedule::with('days')
-            ->when($request->input('type'), fn ($q, $t) => $q->where('schedule_type', $t));
+            ->when($request->input('category'), fn ($q, $c) => $q->where('category', $c));
 
         return response()->json(['success' => true, 'data' => $query->paginate()]);
     }
@@ -32,11 +32,21 @@ class WorkScheduleController extends Controller
         $this->authorize('create', WorkSchedule::class);
 
         $schedule = $this->scheduleService->createSchedule(
-            $request->validated('name'),
-            $request->validated('schedule_type'),
-            new \DateTimeImmutable($request->validated('effective_start')),
-            new \DateTimeImmutable($request->validated('effective_end')),
-            $request->validated('days')
+            $request->validated('category'),
+            new \DateTimeImmutable($request->validated('valid_from')),
+            new \DateTimeImmutable($request->validated('valid_until')),
+            array_map(function ($day) {
+                return [
+                    'day_of_week' => array_search($day['day_of_week'], ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']) + 1,
+                    'start_time' => $day['start_time'],
+                    'end_time' => $day['end_time'],
+                    'break_start' => $day['break_start'] ?? null,
+                    'break_end' => $day['break_end'] ?? null,
+                ];
+            }, $request->validated('days')),
+            $request->validated('is_published'),
+            new \DateTimeImmutable(),
+            (int) $request->user()->id
         );
 
         return response()->json(['success' => true, 'data' => $schedule], 201);

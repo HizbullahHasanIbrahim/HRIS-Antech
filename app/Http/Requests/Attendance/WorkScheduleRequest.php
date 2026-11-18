@@ -16,10 +16,10 @@ class WorkScheduleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:100'],
-            'schedule_type' => ['required', 'string', 'in:reguler,shift,khusus'],
-            'effective_start' => ['required', 'date'],
-            'effective_end' => ['required', 'date', 'after_or_equal:effective_start'],
+            'category' => ['required', 'string', 'in:reguler,shift,khusus'],
+            'valid_from' => ['required', 'date'],
+            'valid_until' => ['required', 'date', 'after_or_equal:valid_from'],
+            'is_published' => ['nullable', 'boolean'],
             'days' => ['required', 'array', 'min:1'],
             'days.*.day_of_week' => ['required', 'string', 'in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu,Minggu'],
             'days.*.start_time' => ['required', 'date_format:H:i:s'],

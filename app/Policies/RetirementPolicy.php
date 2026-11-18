@@ -52,4 +52,30 @@ class RetirementPolicy
 
         return $user->employee_id === $retirement->employee_id;
     }
+
+    public function process(User $user, Retirement $retirement): bool
+    {
+        if (! in_array($retirement->status, ['diusulkan', 'diproses'], true)) {
+            return false;
+        }
+
+        if ($user->hasRole('Admin BSDM') || $user->hasRole('Kepala Biro')) {
+            return true;
+        }
+
+        return $user->employee_id === $retirement->employee_id;
+    }
+
+    public function complete(User $user, Retirement $retirement): bool
+    {
+        if ($retirement->status !== 'diproses') {
+            return false;
+        }
+
+        if ($user->hasRole('Admin BSDM') || $user->hasRole('Kepala Biro')) {
+            return true;
+        }
+
+        return $user->employee_id === $retirement->employee_id;
+    }
 }
