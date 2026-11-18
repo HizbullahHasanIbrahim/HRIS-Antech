@@ -17,6 +17,25 @@ class OvertimeRequestController extends Controller
         protected OvertimeRequestService $overtimeService
     ) {}
 
+    public function index(Request $request): JsonResponse
+    {
+        $employee = $request->user()->employee;
+        if (! $employee) {
+            return response()->json(['message' => 'No employee profile.'], 422);
+        }
+
+        $this->authorize('viewAny', OvertimeRequest::class);
+
+        $query = OvertimeRequest::with('employee')
+            ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s));
+
+        if (! $request->user()->hasRole('Admin BSDM') && ! $request->user()->hasRole('Kepala Biro') && ! $request->user()->hasRole('Kepala Bagian') && ! $request->user()->hasRole('Staff HR')) {
+            $query->where('employee_id', $employee->id);
+        }
+
+        return response()->json(['success' => true, 'data' => $query->paginate()]);
+    }
+
     public function store(OvertimeRequestRequest $request): JsonResponse
     {
         $employee = $request->user()->employee;

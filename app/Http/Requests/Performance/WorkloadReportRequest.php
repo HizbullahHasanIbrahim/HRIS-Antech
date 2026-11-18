@@ -16,9 +16,13 @@ class WorkloadReportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'period_label' => ['required', 'string', 'max:20'],
             'academic_year' => ['required', 'string', 'max:10'],
             'semester' => ['required', 'string', 'max:10'],
+            'teaching_credit' => ['required', 'numeric', 'min:0'],
+            'research_credit' => ['required', 'numeric', 'min:0'],
+            'service_credit' => ['required', 'numeric', 'min:0'],
+            'support_credit' => ['required', 'numeric', 'min:0'],
+            'validator_id' => ['required', 'integer'],
         ];
     }
 }

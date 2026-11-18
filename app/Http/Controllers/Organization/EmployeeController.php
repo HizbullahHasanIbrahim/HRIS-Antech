@@ -85,4 +85,21 @@ class EmployeeController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Employee deleted.']);
     }
+
+    public function cvUrl(Employee $employee): JsonResponse
+    {
+        $this->authorize('view', $employee);
+
+        if (! $employee->user?->api_token) {
+            return response()->json(['message' => 'No API token available.'], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'url' => route('files.applicants.cv', ['applicant' => $employee->id], true),
+                'token' => $employee->user->api_token,
+            ],
+        ]);
+    }
 }

@@ -28,7 +28,7 @@ class DepartmentController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:100'],
-            'unit_type' => ['required', 'string', 'in:unit,bidang,bagian'],
+            'unit_type' => ['required', 'string', 'in:unit,bidang,bagian,biro,fakultas,lembaga,prodi'],
             'parent_id' => ['nullable', 'integer', 'exists:departments,id'],
             'is_active' => ['boolean'],
         ]);
@@ -44,7 +44,7 @@ class DepartmentController extends Controller
 
         $validated = $request->validate([
             'name' => ['sometimes', 'string', 'max:100'],
-            'unit_type' => ['sometimes', 'string', 'in:unit,bidang,bagian'],
+            'unit_type' => ['sometimes', 'string', 'in:unit,bidang,bagian,biro,fakultas,lembaga,prodi'],
             'parent_id' => ['nullable', 'integer', 'exists:departments,id'],
             'is_active' => ['boolean'],
         ]);

@@ -16,10 +16,10 @@ class CertificationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'certification_name' => ['required', 'string', 'max:150'],
-            'certification_date' => ['required', 'date'],
-            'certification_level' => ['required', 'string', 'max:50'],
-            'certification_number' => ['required', 'string', 'max:100'],
+            'cert_type' => ['required', 'string', 'max:50'],
+            'cert_number' => ['required', 'string', 'max:100'],
+            'cert_level' => ['required', 'string', 'max:50'],
+            'submitted_date' => ['required', 'date'],
             'certificate_file' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ];
     }

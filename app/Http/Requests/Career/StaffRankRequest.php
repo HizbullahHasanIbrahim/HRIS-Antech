@@ -18,7 +18,7 @@ class StaffRankRequest extends FormRequest
         return [
             'rank_grade' => ['required', 'string', 'max:50'],
             'functional_position' => ['nullable', 'string', 'max:100'],
-            'status' => ['required', 'string', 'in:diajukan,disetujui,dibatalkan'],
+            'status' => ['sometimes', 'string', 'in:diajukan,disetujui,dibatalkan'],
             'approver_id' => ['required', 'integer'],
         ];
     }

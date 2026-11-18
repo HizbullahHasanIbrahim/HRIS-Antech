@@ -17,6 +17,25 @@ class WorkloadReportController extends Controller
         protected WorkloadReportService $reportService
     ) {}
 
+    public function index(Request $request): JsonResponse
+    {
+        $employee = $request->user()->employee;
+        if (! $employee) {
+            return response()->json(['message' => 'No employee profile.'], 422);
+        }
+
+        $this->authorize('viewAny', WorkloadReport::class);
+
+        $query = WorkloadReport::with('employee')
+            ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s));
+
+        if (! $request->user()->hasRole('Admin BSDM') && ! $request->user()->hasRole('Kepala Biro') && ! $request->user()->hasRole('Kepala Bagian') && ! $request->user()->hasRole('Staff HR')) {
+            $query->where('employee_id', $employee->id);
+        }
+
+        return response()->json(['success' => true, 'data' => $query->paginate()]);
+    }
+
     public function store(WorkloadReportRequest $request): JsonResponse
     {
         $employee = $request->user()->employee;
@@ -28,10 +47,15 @@ class WorkloadReportController extends Controller
 
         $report = $this->reportService->createReport(
             $employee,
-            $request->only(['teaching', 'research', 'service', 'support']),
+            [
+                'teaching' => $request->validated('teaching_credit'),
+                'research' => $request->validated('research_credit'),
+                'service' => $request->validated('service_credit'),
+                'support' => $request->validated('support_credit'),
+            ],
             $request->validated('academic_year'),
             $request->validated('semester'),
-            (int) $request->input('validator_id')
+            (int) $request->validated('validator_id')
         );
 
         return response()->json(['success' => true, 'data' => $report], 201);

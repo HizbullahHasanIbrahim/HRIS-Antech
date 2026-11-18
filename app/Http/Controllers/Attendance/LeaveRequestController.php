@@ -9,13 +9,32 @@ use App\Http\Requests\Attendance\LeaveRequestRequest;
 use App\Models\LeaveRequest;
 use App\Services\Attendance\LeaveRequestService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class LeaveRequestController extends Controller
 {
     public function __construct(
         protected LeaveRequestService $leaveRequestService
     ) {}
+
+    public function index(Request $request): JsonResponse
+    {
+        $employee = $request->user()->employee;
+        if (! $employee) {
+            return response()->json(['message' => 'Authenticated user has no employee profile.'], 422);
+        }
+
+        $this->authorize('viewAny', LeaveRequest::class);
+
+        $query = LeaveRequest::with(['leaveType', 'employee', 'approver'])
+            ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
+            ->when($request->input('leave_type_id'), fn ($q, $id) => $q->where('leave_type_id', $id));
+
+        if (! $request->user()->hasRole('Admin BSDM') && ! $request->user()->hasRole('Kepala Biro')) {
+            $query->where('employee_id', $employee->id);
+        }
+
+        return response()->json(['success' => true, 'data' => $query->paginate()]);
+    }
 
     public function store(LeaveRequestRequest $request): JsonResponse
     {

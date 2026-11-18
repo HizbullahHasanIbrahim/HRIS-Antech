@@ -23,12 +23,10 @@ class FileUploadController extends Controller
 
         $applicant = Applicant::findOrFail($request->input('applicant_id'));
 
-        // Delete old CV if exists
         if ($applicant->cv_path) {
             Storage::disk('private')->delete($applicant->cv_path);
         }
 
-        // Store new CV
         $path = $request->file('file')->store('applicants/cv', 'private');
 
         $applicant->update(['cv_path' => $path]);
@@ -52,7 +50,6 @@ class FileUploadController extends Controller
 
         $employee = Employee::findOrFail($request->input('employee_id'));
 
-        // Store new certificate
         $path = $request->file('file')->store('employees/certificates', 'private');
 
         $cert = Certification::create([
@@ -69,5 +66,27 @@ class FileUploadController extends Controller
             'data' => ['certificate_path' => $path],
             'message' => 'Sertifikat berhasil diupload.',
         ]);
+    }
+
+    public function downloadCV(Applicant $applicant): \Illuminate\Http\Response
+    {
+        $this->authorize('view', $applicant);
+
+        if (! $applicant->cv_path) {
+            abort(404, 'CV not found.');
+        }
+
+        return Storage::disk('private')->response($applicant->cv_path);
+    }
+
+    public function downloadCertificate(Certification $certification): \Illuminate\Http\Response
+    {
+        $this->authorize('view', $certification);
+
+        if (! $certification->certificate_path) {
+            abort(404, 'Certificate file not found.');
+        }
+
+        return Storage::disk('private')->response($certification->certificate_path);
     }
 }

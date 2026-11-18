@@ -16,7 +16,7 @@ class SelectionStageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'application_id' => ['required', 'integer', 'exists:applications,id'],
+            'application_id' => ['nullable', 'integer', 'exists:applications,id'],
             'stage_name' => ['required', 'string', 'max:50'],
             'stage_order' => ['required', 'integer', 'min:1'],
             'score' => ['nullable', 'numeric', 'min:0', 'max:100'],

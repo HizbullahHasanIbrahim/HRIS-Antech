@@ -45,8 +45,8 @@ class EmployeeAssignmentController extends Controller
         $assignment = $this->assignmentService->assign(
             $employee,
             (int) $request->input('unit_id'),
-            $request->validated('category'),
-            new \DateTimeImmutable($request->validated('effective_from')),
+            $request->input('category'),
+            new \DateTimeImmutable($request->input('effective_from')),
             $request->input('supervisor_id'),
             $request->input('effective_until') ? new \DateTimeImmutable($request->input('effective_until')) : null
         );
@@ -60,7 +60,7 @@ class EmployeeAssignmentController extends Controller
 
         $request->validate(['effective_until' => ['required', 'date']]);
 
-        $this->assignmentService->terminate($assignment, new \DateTimeImmutable($request->validated('effective_until')));
+        $this->assignmentService->terminate($assignment, new \DateTimeImmutable($request->input('effective_until')));
 
         return response()->json(['success' => true, 'message' => 'Assignment terminated.']);
     }

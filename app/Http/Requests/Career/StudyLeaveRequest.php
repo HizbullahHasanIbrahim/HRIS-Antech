@@ -16,8 +16,8 @@ class StudyLeaveRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'university' => ['required', 'string', 'max:150'],
             'study_program' => ['required', 'string', 'max:150'],
-            'institution' => ['required', 'string', 'max:150'],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
             'funding_source' => ['required', 'string', 'in:mandiri,beasiswa,lembaga'],

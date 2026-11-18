@@ -28,8 +28,11 @@ class AllowanceRequestController extends Controller
         $this->authorize('viewAny', AllowanceRequest::class);
 
         $query = AllowanceRequest::with('allowanceType')
-            ->where('employee_id', $employee->id)
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s));
+
+        if (! $request->user()->hasRole('Admin BSDM') && ! $request->user()->hasRole('Kepala Biro')) {
+            $query->where('employee_id', $employee->id);
+        }
 
         return response()->json(['success' => true, 'data' => $query->paginate()]);
     }

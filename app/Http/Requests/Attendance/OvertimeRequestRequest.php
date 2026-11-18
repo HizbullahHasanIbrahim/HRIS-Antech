@@ -17,8 +17,8 @@ class OvertimeRequestRequest extends FormRequest
     {
         return [
             'work_date' => ['required', 'date'],
-            'start_time' => ['required', 'date_format:H:i:s'],
-            'end_time' => ['required', 'date_format:H:i:s', 'after:start_time'],
+            'start_time' => ['required', 'date_format:H:i'],
+            'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
             'reason' => ['required', 'string', 'max:1000'],
             'approver_id' => ['required', 'integer'],
         ];

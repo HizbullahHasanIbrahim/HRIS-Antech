@@ -43,8 +43,12 @@ class CareerController extends Controller
 
         $this->authorize('viewAny', AcademicRankHistory::class);
 
-        $query = AcademicRankHistory::where('employee_id', $employee->id)
+        $query = AcademicRankHistory::with('employee')
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s));
+
+        if (! $request->user()->hasRole('Admin BSDM') && ! $request->user()->hasRole('Kepala Biro')) {
+            $query->where('employee_id', $employee->id);
+        }
 
         return response()->json(['success' => true, 'data' => $query->paginate()]);
     }
@@ -109,8 +113,12 @@ class CareerController extends Controller
 
         $this->authorize('viewAny', StaffRankHistory::class);
 
-        $query = StaffRankHistory::where('employee_id', $employee->id)
+        $query = StaffRankHistory::with('employee')
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s));
+
+        if (! $request->user()->hasRole('Admin BSDM') && ! $request->user()->hasRole('Kepala Biro')) {
+            $query->where('employee_id', $employee->id);
+        }
 
         return response()->json(['success' => true, 'data' => $query->paginate()]);
     }
@@ -124,10 +132,12 @@ class CareerController extends Controller
 
         $this->authorize('create', StaffRankHistory::class);
 
+        $status = $request->validated('status') ?? 'diajukan';
+
         $rank = $this->staffRankService->createRankHistory(
             $employee,
             $request->validated('rank_grade'),
-            $request->validated('status'),
+            $status,
             (int) $request->validated('approver_id'),
             $request->validated('functional_position')
         );
@@ -175,8 +185,12 @@ class CareerController extends Controller
 
         $this->authorize('viewAny', StudyLeave::class);
 
-        $query = StudyLeave::where('employee_id', $employee->id)
+        $query = StudyLeave::with('employee')
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s));
+
+        if (! $request->user()->hasRole('Admin BSDM') && ! $request->user()->hasRole('Kepala Biro')) {
+            $query->where('employee_id', $employee->id);
+        }
 
         return response()->json(['success' => true, 'data' => $query->paginate()]);
     }
@@ -193,7 +207,7 @@ class CareerController extends Controller
         $studyLeave = $this->studyLeaveService->createStudyLeave(
             $employee,
             $request->validated('study_program'),
-            $request->validated('institution'),
+            $request->validated('university'),
             new \DateTimeImmutable($request->validated('start_date')),
             new \DateTimeImmutable($request->validated('end_date')),
             $request->validated('funding_source'),
@@ -244,7 +258,11 @@ class CareerController extends Controller
 
         $this->authorize('viewAny', Certification::class);
 
-        $query = Certification::where('employee_id', $employee->id);
+        $query = Certification::with('employee');
+
+        if (! $request->user()->hasRole('Admin BSDM') && ! $request->user()->hasRole('Kepala Biro')) {
+            $query->where('employee_id', $employee->id);
+        }
 
         return response()->json(['success' => true, 'data' => $query->paginate()]);
     }
@@ -265,10 +283,10 @@ class CareerController extends Controller
 
         $certification = $this->certificationService->createCertification(
             $employee,
-            $request->validated('certification_name'),
-            new \DateTimeImmutable($request->validated('certification_date')),
-            $request->validated('certification_level'),
-            $request->validated('certification_number'),
+            $request->validated('cert_type'),
+            $request->validated('cert_number'),
+            new \DateTimeImmutable($request->validated('submitted_date')),
+            $request->validated('cert_level'),
             $certificatePath
         );
 
@@ -294,8 +312,12 @@ class CareerController extends Controller
 
         $this->authorize('viewAny', Training::class);
 
-        $query = Training::where('employee_id', $employee->id)
+        $query = Training::with('employee')
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s));
+
+        if (! $request->user()->hasRole('Admin BSDM') && ! $request->user()->hasRole('Kepala Biro')) {
+            $query->where('employee_id', $employee->id);
+        }
 
         return response()->json(['success' => true, 'data' => $query->paginate()]);
     }

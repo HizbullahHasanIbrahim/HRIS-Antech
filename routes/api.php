@@ -1,7 +1,10 @@
 <?php
 
+use App\Http\Controllers\Attendance\LeaveBalanceController;
 use App\Http\Controllers\Attendance\LeaveRequestController;
+use App\Http\Controllers\Attendance\LeaveTypeController;
 use App\Http\Controllers\Attendance\OvertimeRequestController;
+use App\Http\Controllers\Welfare\AllowanceTypeController;
 use App\Http\Controllers\Attendance\WorkScheduleController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Career\CareerController;
@@ -57,13 +60,26 @@ Route::middleware(['auth:api', 'unit.scope', 'throttle:api'])->prefix('v1')->gro
     // File Upload (Protected)
     Route::post('/upload/certification', [FileUploadController::class, 'certification']);
 
+    // Private file downloads
+    Route::get('/files/applicants/{applicant}/cv', [FileUploadController::class, 'downloadCV']);
+    Route::get('/files/certifications/{certification}', [FileUploadController::class, 'downloadCertificate']);
+
+    // Master data dropdowns
+    Route::get('/leave-types', [LeaveTypeController::class, 'index']);
+    Route::get('/allowance-types', [AllowanceTypeController::class, 'index']);
+
     // Leave Requests (P-04)
+    Route::get('/leave-requests', [LeaveRequestController::class, 'index']);
     Route::post('/leave-requests', [LeaveRequestController::class, 'store']);
     Route::post('/leave-requests/{leaveRequest}/approve', [LeaveRequestController::class, 'approve']);
     Route::post('/leave-requests/{leaveRequest}/reject', [LeaveRequestController::class, 'reject']);
     Route::post('/leave-requests/{leaveRequest}/cancel', [LeaveRequestController::class, 'cancel']);
 
+    // Leave Balances
+    Route::get('/leave-balances', [LeaveBalanceController::class, 'index']);
+
     // Overtime Requests (P-05)
+    Route::get('/overtime-requests', [OvertimeRequestController::class, 'index']);
     Route::post('/overtime-requests', [OvertimeRequestController::class, 'store']);
     Route::post('/overtime-requests/{overtimeRequest}/approve', [OvertimeRequestController::class, 'approve']);
     Route::post('/overtime-requests/{overtimeRequest}/reject', [OvertimeRequestController::class, 'reject']);
@@ -76,12 +92,14 @@ Route::middleware(['auth:api', 'unit.scope', 'throttle:api'])->prefix('v1')->gro
     Route::post('/work-schedules/{workSchedule}/assign', [WorkScheduleController::class, 'assign']);
 
     // Performance BKD/LKD (P-12)
+    Route::get('/workload-reports', [WorkloadReportController::class, 'index']);
     Route::post('/workload-reports', [WorkloadReportController::class, 'store']);
     Route::post('/workload-reports/{report}/submit', [WorkloadReportController::class, 'submit']);
     Route::post('/workload-reports/{report}/validate', [WorkloadReportController::class, 'validateReport']);
     Route::post('/workload-reports/{report}/revise', [WorkloadReportController::class, 'revise']);
 
     // SKP Targets & Evaluations (P-13)
+    Route::get('/skp/targets', [SkpController::class, 'index']);
     Route::post('/skp/targets', [SkpController::class, 'storeTarget']);
     Route::post('/skp/targets/{target}/evaluate', [SkpController::class, 'evaluate']);
     Route::post('/skp/targets/{target}/reject', [SkpController::class, 'reject']);
@@ -139,6 +157,10 @@ Route::middleware(['auth:api', 'unit.scope', 'throttle:api'])->prefix('v1')->gro
     Route::apiResource('/employees', EmployeeController::class, ['only' => ['index', 'store', 'show', 'update', 'destroy']]);
     Route::apiResource('/employee-assignments', EmployeeAssignmentController::class, ['only' => ['index', 'store']]);
     Route::post('/employee-assignments/{assignment}/terminate', [EmployeeAssignmentController::class, 'terminate']);
+
+    // Employee detail with CV URL
+    Route::get('/employees/{employee}/cv', [EmployeeController::class, 'cvUrl'])
+        ->middleware('can:view,employee');
 
     // Reports (P-17)
     Route::get('/reports/sdm-summary', [ReportController::class, 'summarySdm']);
