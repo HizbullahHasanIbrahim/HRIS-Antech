@@ -10,7 +10,7 @@
     >
       <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
         <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" />
-        <div class="relative w-full max-w-sm bg-white rounded-xl shadow-lg border border-subtle p-6">
+        <div class="relative w-full max-w-sm bg-surface rounded-xl shadow-lg border border-subtle p-6">
           <div class="flex items-center gap-3 mb-4">
             <div class="w-10 h-10 bg-status-warning-bg rounded-full flex items-center justify-center shrink-0">
               <AlertTriangleIcon class="w-5 h-5 text-status-warning" />

@@ -28,10 +28,10 @@
         <tbody class="divide-y divide-subtle">
           <tr v-if="loading" v-for="i in 5" :key="i">
             <td v-for="col in columns" :key="col.key" class="px-4 py-3">
-              <div class="h-4 bg-slate-200 rounded animate-pulse" />
+              <div class="h-4 bg-subtle rounded animate-pulse" />
             </td>
             <td v-if="$slots.actions" class="px-4 py-3 text-right">
-              <div class="h-4 w-12 bg-slate-200 rounded animate-pulse ml-auto" />
+              <div class="h-4 w-12 bg-subtle rounded animate-pulse ml-auto" />
             </td>
           </tr>
 
@@ -51,7 +51,7 @@
             v-else
             v-for="(row, idx) in rows"
             :key="row.id ?? idx"
-            class="hover:bg-canvas transition-colors odd:bg-white even:bg-slate-50/50"
+            class="hover:bg-canvas transition-colors"
           >
             <td v-for="col in columns" :key="col.key" :class="col.class || 'px-4 py-3 text-main'">
               <slot :name="col.key" :row="row" :value="row[col.key]">

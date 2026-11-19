@@ -25,7 +25,7 @@
     >
       <div
         v-if="open"
-        class="fixed top-0 right-0 h-full z-50 w-full max-w-[520px] bg-white shadow-xl flex flex-col"
+        class="fixed top-0 right-0 h-full z-50 w-full max-w-[520px] bg-surface shadow-xl flex flex-col"
         role="dialog"
         aria-modal="true"
       >

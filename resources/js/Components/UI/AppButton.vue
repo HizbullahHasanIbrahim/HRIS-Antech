@@ -39,7 +39,7 @@ const buttonClasses = computed(() => {
 
   const variants = {
     primary: 'bg-brand-primary text-white hover:bg-brand-primary-dark focus:ring-brand-primary',
-    secondary: 'bg-white text-main border border-control hover:bg-surface focus:ring-brand-primary',
+    secondary: 'bg-surface text-main border border-control hover:bg-canvas focus:ring-brand-primary',
     danger: 'bg-status-danger text-white hover:bg-status-danger/90 focus:ring-status-danger',
     ghost: 'text-main hover:bg-surface focus:ring-brand-primary',
   };
