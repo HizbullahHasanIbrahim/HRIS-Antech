@@ -15,7 +15,7 @@
 - Maintain existing data structures and API contracts
 - Use existing UI components (`AppButton`, `Card`, `StatusBadge`, `ApexChart`)
 - Ensure all interactive elements are keyboard accessible
-- Preserve responsive behavior across breakpoints
+- Ensure responsive layout across all breakpoints
 - No breaking changes to route handlers
 
 ## Review Focus
