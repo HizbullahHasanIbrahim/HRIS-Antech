@@ -10,6 +10,7 @@ use App\Models\Certification;
 use App\Models\Employee;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 
 class FileUploadController extends Controller
@@ -68,7 +69,7 @@ class FileUploadController extends Controller
         ]);
     }
 
-    public function downloadCV(Applicant $applicant): \Illuminate\Http\Response
+    public function downloadCV(Applicant $applicant): Response
     {
         $this->authorize('view', $applicant);
 
@@ -79,7 +80,7 @@ class FileUploadController extends Controller
         return Storage::disk('private')->response($applicant->cv_path);
     }
 
-    public function downloadCertificate(Certification $certification): \Illuminate\Http\Response
+    public function downloadCertificate(Certification $certification): Response
     {
         $this->authorize('view', $certification);
 

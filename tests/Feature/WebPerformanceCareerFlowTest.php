@@ -129,7 +129,7 @@ class WebPerformanceCareerFlowTest extends TestCase
                 ->has('bkdReports.data')
                 ->has('lkdReports.data')
                 ->where('bkdReports.data.0.employee.category', 'dosen')
-                ->where('lkdReports.data.0.employee.category', 'tendik')
+                ->where('lkdReports.data.0.employee.category', 'dosen')
             );
     }
 }

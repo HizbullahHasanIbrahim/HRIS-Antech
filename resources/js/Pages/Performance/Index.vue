@@ -26,7 +26,7 @@
             : 'border-transparent text-muted hover:text-main'
         ]"
       >
-        LKD (Beban Kerja Tendik)
+        LKD (Laporan Kinerja Dosen)
       </button>
       <button
         @click="activeTab = 'skp'"

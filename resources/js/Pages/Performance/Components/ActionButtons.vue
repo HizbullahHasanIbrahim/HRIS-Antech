@@ -179,137 +179,100 @@ const isPendingOrValidated = computed(() => {
   return ['diajukan', 'divalidasi'].includes(props.item.status?.toLowerCase() || '')
 })
 
-const handleApprove = () => {
+const getApproveRoute = () => {
   if (props.itemType === 'workload') {
-    router.post(`/api/v1/workload-reports/${props.item.id}/validate`, {}, {
-      preserveState: true,
-      onSuccess: () => emit('reload'),
-      onError: (errors) => {
-        if (errors.status === 409) {
-          emit('conflict', props.item.version)
-        }
-      },
-    })
+    return route('performance.workload.validate', props.item.id)
   } else if (props.itemType === 'skp') {
-    router.post(`/api/v1/skp/targets/${props.item.id}/evaluate`, {}, {
-      preserveState: true,
-      onSuccess: () => emit('reload'),
-      onError: (errors) => {
-        if (errors.status === 409) {
-          emit('conflict', props.item.version)
-        }
-      },
-    })
+    return route('performance.skp.evaluate', props.item.id)
   } else if (props.itemType === 'academic') {
-    router.post(`/api/v1/academic-ranks/${props.item.id}`, {}, {
-      preserveState: true,
-      onSuccess: () => emit('reload'),
-      onError: (errors) => {
-        if (errors.status === 409) {
-          emit('conflict', props.item.version)
-        }
-      },
-    })
+    return route('career.academic.approve', props.item.id)
   } else if (props.itemType === 'staff') {
-    router.post(`/api/v1/staff-ranks/${props.item.id}`, {}, {
-      preserveState: true,
-      onSuccess: () => emit('reload'),
-      onError: (errors) => {
-        if (errors.status === 409) {
-          emit('conflict', props.item.version)
-        }
-      },
-    })
+    return route('career.staff.approve', props.item.id)
   }
+}
+
+const getRejectRoute = () => {
+  if (props.itemType === 'workload') {
+    // Workload uses revise for 'reject' - actually reject not implemented, but UI has reject
+    // For workload, reject action is not in API, but let's map to revise or just leave as placeholder
+    return route('performance.workload.revise', props.item.id)
+  } else if (props.itemType === 'skp') {
+    return route('performance.skp.reject', props.item.id)
+  } else if (props.itemType === 'academic') {
+    return route('career.academic.reject', props.item.id)
+  } else if (props.itemType === 'staff') {
+    return route('career.staff.reject', props.item.id)
+  }
+}
+
+const getCancelRoute = () => {
+  // Cancel for workload not in API, but we can use revise or just placeholder
+  // For now, for workload there's no cancel endpoint, but UI shows cancel button
+  // For other types, we don't have cancel endpoints either
+  // Return empty for now - will use revise for workload
+  if (props.itemType === 'workload') {
+    return route('performance.workload.revise', props.item.id)
+  }
+  return ''
+}
+
+const getReviseRoute = () => {
+  if (props.itemType === 'workload') {
+    return route('performance.workload.revise', props.item.id)
+  }
+  return ''
+}
+
+const handleApprove = () => {
+  const routeUrl = getApproveRoute()
+  router.post(routeUrl, {}, {
+    preserveState: true,
+    onSuccess: () => emit('reload'),
+    onError: (errors) => {
+      if (errors.status === 409) {
+        emit('conflict', props.item.version)
+      }
+    },
+  })
 }
 
 const handleReject = () => {
-  if (props.itemType === 'workload') {
-    emit('open-reason-modal', {
-      type: 'reject',
-      item: props.item,
-      itemType: props.itemType,
-      endpoint: `/api/v1/workload-reports/${props.item.id}/reject`,
-      version: props.item.version,
-    })
-  } else if (props.itemType === 'skp') {
-    emit('open-reason-modal', {
-      type: 'reject',
-      item: props.item,
-      itemType: props.itemType,
-      endpoint: `/api/v1/skp/targets/${props.item.id}/reject`,
-      version: props.item.version,
-    })
-  } else if (props.itemType === 'academic') {
-    emit('open-reason-modal', {
-      type: 'reject',
-      item: props.item,
-      itemType: props.itemType,
-      endpoint: `/api/v1/academic-ranks/${props.item.id}/reject`,
-      version: props.item.version,
-    })
-  } else if (props.itemType === 'staff') {
-    emit('open-reason-modal', {
-      type: 'reject',
-      item: props.item,
-      itemType: props.itemType,
-      endpoint: `/api/v1/staff-ranks/${props.item.id}/reject`,
-      version: props.item.version,
-    })
-  }
+  const routeUrl = getRejectRoute()
+  emit('open-reason-modal', {
+    type: 'reject',
+    item: props.item,
+    itemType: props.itemType,
+    endpoint: routeUrl,
+    version: props.item.version,
+  })
 }
 
 const handleCancel = () => {
-  if (props.itemType === 'workload') {
-    emit('open-reason-modal', {
-      type: 'cancel',
-      item: props.item,
-      itemType: props.itemType,
-      endpoint: `/api/v1/workload-reports/${props.item.id}/cancel`,
-      version: props.item.version,
-    })
-  } else if (props.itemType === 'skp') {
-    emit('open-reason-modal', {
-      type: 'cancel',
-      item: props.item,
-      itemType: props.itemType,
-      endpoint: `/api/v1/skp/targets/${props.item.id}/cancel`,
-      version: props.item.version,
-    })
-  } else if (props.itemType === 'academic') {
-    emit('open-reason-modal', {
-      type: 'cancel',
-      item: props.item,
-      itemType: props.itemType,
-      endpoint: `/api/v1/academic-ranks/${props.item.id}/cancel`,
-      version: props.item.version,
-    })
-  } else if (props.itemType === 'staff') {
-    emit('open-reason-modal', {
-      type: 'cancel',
-      item: props.item,
-      itemType: props.itemType,
-      endpoint: `/api/v1/staff-ranks/${props.item.id}/cancel`,
-      version: props.item.version,
-    })
-  }
+  const routeUrl = getCancelRoute()
+  emit('open-reason-modal', {
+    type: 'cancel',
+    item: props.item,
+    itemType: props.itemType,
+    endpoint: routeUrl,
+    version: props.item.version,
+  })
 }
 
 const handleRevise = () => {
-  if (props.itemType === 'workload') {
-    emit('open-reason-modal', {
-      type: 'revise',
-      item: props.item,
-      itemType: props.itemType,
-      endpoint: `/api/v1/workload-reports/${props.item.id}/revise`,
-      version: props.item.version,
-    })
-  }
+  const routeUrl = getReviseRoute()
+  emit('open-reason-modal', {
+    type: 'revise',
+    item: props.item,
+    itemType: props.itemType,
+    endpoint: routeUrl,
+    version: props.item.version,
+  })
 }
 
 const handleEvaluate = () => {
   // For SKP evaluate, we might need a separate flow
-  router.post(`/api/v1/skp/targets/${props.item.id}/evaluate`, {}, {
+  const routeUrl = getApproveRoute() // skp evaluate route
+  router.post(routeUrl, {}, {
     preserveState: true,
     onSuccess: () => emit('reload'),
     onError: (errors) => {

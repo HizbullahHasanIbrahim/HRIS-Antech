@@ -47,6 +47,7 @@
           <span v-else>Masuk</span>
         </button>
 
+        <p v-if="form.errors.username" class="text-status-danger text-sm mt-2 text-center">{{ form.errors.username }}</p>
         <p v-if="form.errors.general" class="text-status-danger text-sm mt-4 text-center">{{ form.errors.general }}</p>
       </form>
 

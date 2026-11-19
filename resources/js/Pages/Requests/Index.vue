@@ -44,6 +44,7 @@
       :loading="loading"
       searchable
       :search-placeholder="`Cari data ${activeTab}...`"
+      :pagination="currentPagination"
       @search="handleSearch"
     >
       <template #status="{ row }">
@@ -133,8 +134,13 @@
                 <textarea v-model="leaveForm.reason" required rows="2" class="w-full border border-control rounded-lg p-2 text-sm resize-none" placeholder="Tuliskan keterangan..." />
               </div>
               <div>
-                <label class="block text-sm font-medium text-main mb-1">Atasan Penyetuju (ID Pegawai)</label>
-                <input type="number" v-model="leaveForm.approver_id" required class="w-full border border-control rounded-lg p-2 text-sm" placeholder="Contoh: 1" />
+                <label class="block text-sm font-medium text-main mb-1">Atasan Penyetuju</label>
+                <select v-model="leaveForm.approver_id" required class="w-full border border-control rounded-lg p-2 text-sm bg-white">
+                  <option value="">-- Pilih Atasan --</option>
+                  <option v-for="a in props.approvers" :key="a.id" :value="a.id">
+                    {{ a.name }} (NIP: {{ a.nip }})
+                  </option>
+                </select>
               </div>
             </div>
 
@@ -159,16 +165,26 @@
                 <textarea v-model="overtimeForm.reason" required rows="2" class="w-full border border-control rounded-lg p-2 text-sm resize-none" placeholder="Tuliskan uraian pekerjaan lembur..." />
               </div>
               <div>
-                <label class="block text-sm font-medium text-main mb-1">Atasan Penyetuju (ID Pegawai)</label>
-                <input type="number" v-model="overtimeForm.approver_id" required class="w-full border border-control rounded-lg p-2 text-sm" placeholder="Contoh: 1" />
+                <label class="block text-sm font-medium text-main mb-1">Atasan Penyetuju</label>
+                <select v-model="overtimeForm.approver_id" required class="w-full border border-control rounded-lg p-2 text-sm bg-white">
+                  <option value="">-- Pilih Atasan --</option>
+                  <option v-for="a in props.approvers" :key="a.id" :value="a.id">
+                    {{ a.name }} (NIP: {{ a.nip }})
+                  </option>
+                </select>
               </div>
             </div>
 
             <!-- Form Tunjangan -->
             <div v-if="formType === 'allowance'" class="space-y-3">
               <div>
-                <label class="block text-sm font-medium text-main mb-1">ID Tipe Tunjangan</label>
-                <input type="number" v-model="allowanceForm.allowance_type_id" required class="w-full border border-control rounded-lg p-2 text-sm" placeholder="ID Tipe Tunjangan" />
+                <label class="block text-sm font-medium text-main mb-1">Jenis Tunjangan</label>
+                <select v-model="allowanceForm.allowance_type_id" required class="w-full border border-control rounded-lg p-2 text-sm bg-white">
+                  <option value="">-- Pilih Jenis Tunjangan --</option>
+                  <option v-for="at in props.allowanceTypes" :key="at.id" :value="at.id">
+                    {{ at.name }} ({{ at.code }})
+                  </option>
+                </select>
               </div>
               <div>
                 <label class="block text-sm font-medium text-main mb-1">Label Periode</label>
@@ -179,8 +195,13 @@
                 <input type="number" v-model="allowanceForm.amount" required class="w-full border border-control rounded-lg p-2 text-sm" placeholder="Contoh: 1500000" />
               </div>
               <div>
-                <label class="block text-sm font-medium text-main mb-1">Atasan Penyetuju (ID Pegawai)</label>
-                <input type="number" v-model="allowanceForm.approver_id" required class="w-full border border-control rounded-lg p-2 text-sm" placeholder="Contoh: 1" />
+                <label class="block text-sm font-medium text-main mb-1">Atasan Penyetuju</label>
+                <select v-model="allowanceForm.approver_id" required class="w-full border border-control rounded-lg p-2 text-sm bg-white">
+                  <option value="">-- Pilih Atasan --</option>
+                  <option v-for="a in props.approvers" :key="a.id" :value="a.id">
+                    {{ a.name }} (NIP: {{ a.nip }})
+                  </option>
+                </select>
               </div>
             </div>
 
@@ -241,6 +262,17 @@ import StatusBadge from '../../Components/UI/StatusBadge.vue';
 import ReasonModal from '../../Components/UI/ReasonModal.vue';
 import ConflictModal from '../../Components/UI/ConflictModal.vue';
 
+interface PaginatedResponse<T> {
+  data: T[];
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
+  from: number | null;
+  to: number | null;
+  links: Array<{ url: string | null; label: string; active: boolean }>;
+}
+
 interface LeaveRequestItem {
   id: number;
   employee_id: number;
@@ -253,10 +285,12 @@ interface LeaveRequestItem {
 }
 
 const props = withDefaults(defineProps<{
-  leaveRequests?: LeaveRequestItem[];
-  overtimeRequests?: any[];
-  allowanceRequests?: any[];
+  leaveRequests?: PaginatedResponse<LeaveRequestItem>;
+  overtimeRequests?: PaginatedResponse<any>;
+  allowanceRequests?: PaginatedResponse<any>;
   leaveTypes?: any[];
+  approvers?: { id: number; name: string; nip: string }[];
+  allowanceTypes?: { id: number; name: string; code: string }[];
   authUserId?: number;
   isApprover?: boolean;
 }>(), {
@@ -264,6 +298,8 @@ const props = withDefaults(defineProps<{
   overtimeRequests: () => [],
   allowanceRequests: () => [],
   leaveTypes: () => [],
+  approvers: () => [],
+  allowanceTypes: () => [],
   authUserId: 0,
   isApprover: false,
 });
@@ -309,12 +345,18 @@ const tabs = [
 ];
 
 const counts = computed(() => ({
-  leave: props.leaveRequests.length,
-  overtime: props.overtimeRequests.length,
-  allowance: props.allowanceRequests.length,
+  leave: props.leaveRequests?.total ?? 0,
+  overtime: props.overtimeRequests?.total ?? 0,
+  allowance: props.allowanceRequests?.total ?? 0,
 }));
 
 const currentItems = computed(() => {
+  if (activeTab.value === 'leave') return props.leaveRequests?.data ?? [];
+  if (activeTab.value === 'overtime') return props.overtimeRequests?.data ?? [];
+  return props.allowanceRequests?.data ?? [];
+});
+
+const currentPagination = computed(() => {
   if (activeTab.value === 'leave') return props.leaveRequests;
   if (activeTab.value === 'overtime') return props.overtimeRequests;
   return props.allowanceRequests;
@@ -376,9 +418,13 @@ const openCancelModal = (row: any) => {
 
 const approve = (row: any) => {
   submitting.value = true;
-  const prefix = activeTab.value === 'leave' ? 'leave-requests' : (activeTab.value === 'overtime' ? 'overtime-requests' : 'allowances');
-  
-  router.post(`/api/v1/${prefix}/${row.id}/approve`, {
+  const endpoint = activeTab.value === 'leave'
+    ? route('requests.leave.approve', row.id)
+    : activeTab.value === 'overtime'
+      ? route('requests.overtime.approve', row.id)
+      : route('requests.allowance.approve', row.id);
+
+  Inertia.post(endpoint, {
     version: row.version,
   }, {
     preserveScroll: true,
@@ -390,6 +436,7 @@ const approve = (row: any) => {
     },
     onFinish: () => {
       submitting.value = false;
+      getCounts();
     },
   });
 };
@@ -397,10 +444,16 @@ const approve = (row: any) => {
 const handleConfirmReason = (reason: string) => {
   if (!selectedItem.value) return;
   submitting.value = true;
-  const prefix = activeTab.value === 'leave' ? 'leave-requests' : (activeTab.value === 'overtime' ? 'overtime-requests' : 'allowances');
-  const endpoint = `/api/v1/${prefix}/${selectedItem.value.id}/${modalAction.value}`;
-  
-  router.post(endpoint, {
+
+  const baseRoute = activeTab.value === 'leave'
+    ? 'requests.leave'
+    : activeTab.value === 'overtime'
+      ? 'requests.overtime'
+      : 'requests.allowance';
+
+  const endpoint = route(`${baseRoute}.${modalAction.value}`, selectedItem.value.id);
+
+  Inertia.post(endpoint, {
     reason,
     decision_note: reason,
     version: selectedItem.value.version,
@@ -416,27 +469,30 @@ const handleConfirmReason = (reason: string) => {
     },
     onFinish: () => {
       submitting.value = false;
+      getCounts();
     },
   });
 };
 
 const submitCreate = () => {
   submitting.value = true;
-  let endpoint = '/api/v1/leave-requests';
+  let endpoint = route('requests.leave.create');
   let payload: any = leaveForm.value;
 
   if (formType.value === 'overtime') {
-    endpoint = '/api/v1/overtime-requests';
+    endpoint = route('requests.overtime.create');
     payload = overtimeForm.value;
   } else if (formType.value === 'allowance') {
-    endpoint = '/api/v1/allowances';
+    endpoint = route('requests.allowance.create');
     payload = allowanceForm.value;
   }
 
-  router.post(endpoint, payload, {
+  Inertia.post(endpoint, payload, {
     preserveScroll: true,
     onSuccess: () => {
       createModalOpen.value = false;
+      submitCsv.value = false;
+      getCounts();
     },
     onFinish: () => {
       submitting.value = false;

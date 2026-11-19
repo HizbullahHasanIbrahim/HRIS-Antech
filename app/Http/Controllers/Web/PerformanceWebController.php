@@ -33,7 +33,7 @@ class PerformanceWebController extends Controller
         $lkdQuery = WorkloadReport::query()
             ->with(['employee.department', 'validator'])
             ->where('is_current', true)
-            ->whereHas('employee', fn ($q) => $q->where('category', 'tendik'))
+            ->whereHas('employee', fn ($q) => $q->where('category', 'dosen'))
             ->when($request->input('search'), fn ($q, $s) => $q->whereHas('employee', fn ($eq) => $eq->where('full_name', 'like', "%{$s}%")))
             ->when(! $isAdminOrHead, fn ($q) => $q->where('employee_id', $scopeEmployeeId))
             ->orderByDesc('academic_year')

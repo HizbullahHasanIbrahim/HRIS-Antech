@@ -33,7 +33,7 @@ class MasterDataSeeder extends Seeder
         foreach ($roles as $roleName) {
             $roleModels[$roleName] = Role::firstOrCreate(
                 ['name' => $roleName],
-                ['description' => 'Peran ' . $roleName]
+                ['description' => 'Peran '.$roleName]
             );
         }
 

@@ -45,7 +45,7 @@ class WorkScheduleController extends Controller
                 ];
             }, $request->validated('days')),
             $request->validated('is_published'),
-            new \DateTimeImmutable(),
+            new \DateTimeImmutable,
             (int) $request->user()->id
         );
 
