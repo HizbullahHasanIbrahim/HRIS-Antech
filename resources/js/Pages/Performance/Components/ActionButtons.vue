@@ -23,6 +23,7 @@
         <AppButton
           variant="secondary"
           size="sm"
+          v-if="canCancel"
           @click="handleCancel"
         >
           Batalkan
@@ -67,6 +68,7 @@
         <AppButton
           variant="secondary"
           size="sm"
+          v-if="canCancel"
           @click="handleCancel"
         >
           Batalkan
@@ -117,6 +119,7 @@
         <AppButton
           variant="secondary"
           size="sm"
+          v-if="canCancel"
           @click="handleCancel"
         >
           Batalkan
@@ -147,6 +150,7 @@
         <AppButton
           variant="secondary"
           size="sm"
+          v-if="canCancel"
           @click="handleCancel"
         >
           Batalkan
@@ -206,15 +210,16 @@ const getRejectRoute = () => {
 }
 
 const getCancelRoute = () => {
-  // Cancel for workload not in API, but we can use revise or just placeholder
-  // For now, for workload there's no cancel endpoint, but UI shows cancel button
-  // For other types, we don't have cancel endpoints either
-  // Return empty for now - will use revise for workload
+  // Cancel endpoints exist only for workload
   if (props.itemType === 'workload') {
-    return route('performance.workload.revise', props.item.id)
+    return route('performance.workload.cancel', props.item.id)
   }
   return ''
 }
+
+const canCancel = computed(() => {
+  return !!getCancelRoute()
+})
 
 const getReviseRoute = () => {
   if (props.itemType === 'workload') {

@@ -15,7 +15,7 @@ class AuditWebController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = ActivityLog::with('actor')
+        $query = ActivityLog::with('actor.employee')
             ->latest()
             ->when($request->filled('search'), function ($q) use ($request) {
                 $q->where(function ($query) use ($request) {
@@ -33,8 +33,8 @@ class AuditWebController extends Controller
         $logs = $query->getCollection()->map(fn (ActivityLog $log) => [
             'id' => $log->id,
             'action' => $log->action,
-            'actor_name' => $log->actor?->full_name ?? 'System',
-            'actor_email' => $log->actor?->email ?? null,
+            'actor_name' => $log->actor?->employee?->full_name ?? $log->actor?->username ?? 'System',
+            'actor_email' => $log->actor?->employee?->email ?? null,
             'entity_type' => $log->entity_type,
             'entity_id' => $log->entity_id,
             'old_status' => $log->old_status,

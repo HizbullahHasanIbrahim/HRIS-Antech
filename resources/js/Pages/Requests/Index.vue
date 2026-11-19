@@ -4,104 +4,103 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
         <h1 class="text-2xl font-bold text-main">Pengajuan Kepegawaian</h1>
-        <p class="text-sm text-muted">Pengelolaan cuti, lembur, dan tunjangan pegawai.</p>
+        <p class="text-sm text-muted mt-1">Pengelolaan cuti, lembur, dan tunjangan pegawai.</p>
       </div>
-      <button
-        type="button"
-        @click="openCreateModal"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-brand-primary text-white text-sm font-semibold rounded-lg hover:bg-brand-primary-dark transition-colors"
-      >
-        <PlusIcon class="w-4 h-4" />
+      <AppButton variant="primary" @click="openCreateModal">
+        <PlusIcon class="w-4 h-4 mr-2" aria-hidden="true" />
         Ajukan Baru
-      </button>
+      </AppButton>
     </div>
 
     <!-- Modul Tabs -->
-    <div class="border-b border-subtle flex gap-6 text-sm font-medium">
+    <div class="border-b border-subtle flex gap-6 text-sm font-medium overflow-x-auto">
       <button
         v-for="tab in tabs"
         :key="tab.id"
         @click="activeTab = tab.id"
         :class="[
-          'pb-3 border-b-2 transition-colors flex items-center gap-2',
+          'pb-3 border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap',
           activeTab === tab.id
             ? 'border-brand-primary text-brand-primary font-semibold'
             : 'border-transparent text-muted hover:text-main'
         ]"
       >
-        <component :is="tab.icon" class="w-4 h-4" />
+        <component :is="tab.icon" class="w-4 h-4" aria-hidden="true" />
         {{ tab.label }}
-        <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-mono">
+        <span class="text-xs bg-canvas text-muted px-2 py-0.5 rounded-full font-mono">
           {{ counts[tab.id] || 0 }}
         </span>
       </button>
     </div>
 
     <!-- Data Table -->
-    <DataTable
-      :columns="currentColumns"
-      :rows="currentItems"
-      :loading="loading"
-      searchable
-      :search-placeholder="`Cari data ${activeTab}...`"
-      :pagination="currentPagination"
-      @search="handleSearch"
-    >
-      <template #status="{ row }">
-        <StatusBadge :status="row.status" />
+    <Card>
+      <template #default>
+        <DataTable
+          :columns="currentColumns"
+          :rows="currentItems"
+          :loading="loading"
+          searchable
+          :search-placeholder="`Cari data ${activeTab}...`"
+          :pagination="currentPagination"
+          @search="handleSearch"
+        >
+          <template #status="{ row }">
+            <StatusBadge :status="row.status" />
+          </template>
+
+          <template #actions="{ row }">
+            <div class="flex items-center justify-end gap-2">
+              <!-- Action: Approve -->
+              <button
+                v-if="canApprove(row)"
+                @click="approve(row)"
+                title="Setujui"
+                class="p-1.5 text-status-success hover:bg-status-success-bg rounded focus:outline-none focus:ring-2 focus:ring-status-success"
+              >
+                <CheckCircleIcon class="w-4 h-4" aria-hidden="true" />
+              </button>
+
+              <!-- Action: Reject (Requires Reason RULE-12) -->
+              <button
+                v-if="canReject(row)"
+                @click="openRejectModal(row)"
+                title="Tolak"
+                class="p-1.5 text-status-danger hover:bg-status-danger-bg rounded focus:outline-none focus:ring-2 focus:ring-status-danger"
+              >
+                <XCircleIcon class="w-4 h-4" aria-hidden="true" />
+              </button>
+
+              <!-- Action: Cancel (Requires Reason RULE-12) -->
+              <button
+                v-if="canCancel(row)"
+                @click="openCancelModal(row)"
+                title="Batalkan"
+                class="p-1.5 text-muted hover:text-main hover:bg-canvas rounded focus:outline-none focus:ring-2 focus:ring-muted"
+              >
+                <BanIcon class="w-4 h-4" aria-hidden="true" />
+              </button>
+            </div>
+          </template>
+        </DataTable>
       </template>
-
-      <template #actions="{ row }">
-        <div class="flex items-center justify-end gap-2">
-          <!-- Action: Approve -->
-          <button
-            v-if="canApprove(row)"
-            @click="approve(row)"
-            title="Setujui"
-            class="p-1.5 text-status-success hover:bg-status-success-bg rounded"
-          >
-            <CheckCircleIcon class="w-4 h-4" />
-          </button>
-
-          <!-- Action: Reject (Requires Reason RULE-12) -->
-          <button
-            v-if="canReject(row)"
-            @click="openRejectModal(row)"
-            title="Tolak"
-            class="p-1.5 text-status-danger hover:bg-status-danger-bg rounded"
-          >
-            <XCircleIcon class="w-4 h-4" />
-          </button>
-
-          <!-- Action: Cancel (Requires Reason RULE-12) -->
-          <button
-            v-if="canCancel(row)"
-            @click="openCancelModal(row)"
-            title="Batalkan"
-            class="p-1.5 text-muted hover:text-main hover:bg-canvas rounded"
-          >
-            <BanIcon class="w-4 h-4" />
-          </button>
-        </div>
-      </template>
-    </DataTable>
+    </Card>
 
     <!-- Modal Form Pengajuan Baru -->
     <Teleport to="body">
-      <div v-if="createModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" @click="createModalOpen = false" />
-        <div class="relative w-full max-w-lg bg-white rounded-xl shadow-lg border border-subtle p-6 max-h-[90vh] overflow-y-auto">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-semibold text-main">Form Pengajuan Baru</h2>
-            <button @click="createModalOpen = false" class="text-muted hover:text-main">
-              <XIcon class="w-5 h-5" />
+      <div v-if="createModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" @click.self="createModalOpen = false">
+        <div class="bg-surface rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-subtle sticky top-0 bg-surface z-10">
+            <h2 class="text-xl font-bold text-main">Form Pengajuan Baru</h2>
+            <button @click="createModalOpen = false" class="text-muted hover:text-main transition-colors p-1 rounded-lg hover:bg-canvas focus:outline-none focus:ring-2 focus:ring-brand-primary">
+              <XIcon class="w-5 h-5" aria-hidden="true" />
             </button>
           </div>
 
-          <form @submit.prevent="submitCreate" class="space-y-4">
+          <form @submit.prevent="submitCreate" class="p-6 space-y-4">
             <div>
-              <label class="block text-sm font-medium text-main mb-1">Kategori Pengajuan</label>
-              <select v-model="formType" class="w-full border border-control rounded-lg p-2 text-sm bg-white">
+              <label for="form-type" class="block text-sm font-medium text-main mb-1.5">Kategori Pengajuan</label>
+              <select id="form-type" v-model="formType" class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true">
                 <option value="leave">Cuti Pegawai</option>
                 <option value="overtime">Lembur Kerja</option>
                 <option value="allowance">Tunjangan Fungsional</option>
@@ -111,9 +110,9 @@
             <!-- Form Cuti -->
             <div v-if="formType === 'leave'" class="space-y-3">
               <div>
-                <label class="block text-sm font-medium text-main mb-1">Jenis Cuti</label>
-                <select v-model="leaveForm.leave_type_id" required class="w-full border border-control rounded-lg p-2 text-sm bg-white">
-                  <option value="" disabled>Pilih jenis cuti</option>
+                <label for="leave-type" class="block text-sm font-medium text-main mb-1.5">Jenis Cuti</label>
+                <select id="leave-type" v-model="leaveForm.leave_type_id" required class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true">
+                  <option value="" disabled selected>Pilih jenis cuti</option>
                   <option v-for="t in leaveTypes" :key="t.id" :value="t.id">
                     {{ t.name }} (Kuota: {{ t.annual_quota }} hari)
                   </option>
@@ -121,23 +120,23 @@
               </div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="block text-sm font-medium text-main mb-1">Mulai</label>
-                  <input type="date" v-model="leaveForm.start_date" required class="w-full border border-control rounded-lg p-2 text-sm" />
+                  <label for="leave-start" class="block text-sm font-medium text-main mb-1.5">Mulai</label>
+                  <input id="leave-start" type="date" v-model="leaveForm.start_date" required class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true" />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-main mb-1">Selesai</label>
-                  <input type="date" v-model="leaveForm.end_date" required class="w-full border border-control rounded-lg p-2 text-sm" />
+                  <label for="leave-end" class="block text-sm font-medium text-main mb-1.5">Selesai</label>
+                  <input id="leave-end" type="date" v-model="leaveForm.end_date" required class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true" />
                 </div>
               </div>
               <div>
-                <label class="block text-sm font-medium text-main mb-1">Alasan</label>
-                <textarea v-model="leaveForm.reason" required rows="2" class="w-full border border-control rounded-lg p-2 text-sm resize-none" placeholder="Tuliskan keterangan..." />
+                <label for="leave-reason" class="block text-sm font-medium text-main mb-1.5">Alasan</label>
+                <textarea id="leave-reason" v-model="leaveForm.reason" required rows="2" class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main resize-none focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" placeholder="Tuliskan keterangan..." aria-required="true" />
               </div>
               <div>
-                <label class="block text-sm font-medium text-main mb-1">Atasan Penyetuju</label>
-                <select v-model="leaveForm.approver_id" required class="w-full border border-control rounded-lg p-2 text-sm bg-white">
+                <label for="leave-approver" class="block text-sm font-medium text-main mb-1.5">Atasan Penyetuju</label>
+                <select id="leave-approver" v-model="leaveForm.approver_id" required class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true">
                   <option value="">-- Pilih Atasan --</option>
-                  <option v-for="a in props.approvers" :key="a.id" :value="a.id">
+                  <option v-for="a in approvers" :key="a.id" :value="a.id">
                     {{ a.name }} (NIP: {{ a.nip }})
                   </option>
                 </select>
@@ -145,30 +144,30 @@
             </div>
 
             <!-- Form Lembur -->
-            <div v-if="formType === 'overtime'" class="space-y-3">
+            <div v-else-if="formType === 'overtime'" class="space-y-3">
               <div>
-                <label class="block text-sm font-medium text-main mb-1">Tanggal Lembur</label>
-                <input type="date" v-model="overtimeForm.work_date" required class="w-full border border-control rounded-lg p-2 text-sm" />
+                <label for="overtime-date" class="block text-sm font-medium text-main mb-1.5">Tanggal Lembur</label>
+                <input id="overtime-date" type="date" v-model="overtimeForm.work_date" required class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true" />
               </div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="block text-sm font-medium text-main mb-1">Mulai (Jam)</label>
-                  <input type="time" v-model="overtimeForm.start_time" required class="w-full border border-control rounded-lg p-2 text-sm" />
+                  <label for="overtime-start" class="block text-sm font-medium text-main mb-1.5">Mulai (Jam)</label>
+                  <input id="overtime-start" type="time" v-model="overtimeForm.start_time" required class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true" />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-main mb-1">Selesai (Jam)</label>
-                  <input type="time" v-model="overtimeForm.end_time" required class="w-full border border-control rounded-lg p-2 text-sm" />
+                  <label for="overtime-end" class="block text-sm font-medium text-main mb-1.5">Selesai (Jam)</label>
+                  <input id="overtime-end" type="time" v-model="overtimeForm.end_time" required class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true" />
                 </div>
               </div>
               <div>
-                <label class="block text-sm font-medium text-main mb-1">Uraian Tugas Lembur</label>
-                <textarea v-model="overtimeForm.reason" required rows="2" class="w-full border border-control rounded-lg p-2 text-sm resize-none" placeholder="Tuliskan uraian pekerjaan lembur..." />
+                <label for="overtime-reason" class="block text-sm font-medium text-main mb-1.5">Uraian Tugas Lembur</label>
+                <textarea id="overtime-reason" v-model="overtimeForm.reason" required rows="2" class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main resize-none focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" placeholder="Tuliskan uraian pekerjaan lembur..." aria-required="true" />
               </div>
               <div>
-                <label class="block text-sm font-medium text-main mb-1">Atasan Penyetuju</label>
-                <select v-model="overtimeForm.approver_id" required class="w-full border border-control rounded-lg p-2 text-sm bg-white">
+                <label for="overtime-approver" class="block text-sm font-medium text-main mb-1.5">Atasan Penyetuju</label>
+                <select id="overtime-approver" v-model="overtimeForm.approver_id" required class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true">
                   <option value="">-- Pilih Atasan --</option>
-                  <option v-for="a in props.approvers" :key="a.id" :value="a.id">
+                  <option v-for="a in approvers" :key="a.id" :value="a.id">
                     {{ a.name }} (NIP: {{ a.nip }})
                   </option>
                 </select>
@@ -176,50 +175,42 @@
             </div>
 
             <!-- Form Tunjangan -->
-            <div v-if="formType === 'allowance'" class="space-y-3">
+            <div v-else-if="formType === 'allowance'" class="space-y-3">
               <div>
-                <label class="block text-sm font-medium text-main mb-1">Jenis Tunjangan</label>
-                <select v-model="allowanceForm.allowance_type_id" required class="w-full border border-control rounded-lg p-2 text-sm bg-white">
+                <label for="allowance-type" class="block text-sm font-medium text-main mb-1.5">Jenis Tunjangan</label>
+                <select id="allowance-type" v-model="allowanceForm.allowance_type_id" required class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true">
                   <option value="">-- Pilih Jenis Tunjangan --</option>
-                  <option v-for="at in props.allowanceTypes" :key="at.id" :value="at.id">
+                  <option v-for="at in allowanceTypes" :key="at.id" :value="at.id">
                     {{ at.name }} ({{ at.code }})
                   </option>
                 </select>
               </div>
               <div>
-                <label class="block text-sm font-medium text-main mb-1">Label Periode</label>
-                <input type="text" v-model="allowanceForm.period_label" required class="w-full border border-control rounded-lg p-2 text-sm" placeholder="Contoh: 2026-03" />
+                <label for="allowance-period" class="block text-sm font-medium text-main mb-1.5">Label Periode</label>
+                <input id="allowance-period" type="text" v-model="allowanceForm.period_label" required class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" placeholder="Contoh: 2026-03" aria-required="true" />
               </div>
               <div>
-                <label class="block text-sm font-medium text-main mb-1">Nominal (Rp)</label>
-                <input type="number" v-model="allowanceForm.amount" required class="w-full border border-control rounded-lg p-2 text-sm" placeholder="Contoh: 1500000" />
+                <label for="allowance-amount" class="block text-sm font-medium text-main mb-1.5">Nominal (Rp)</label>
+                <input id="allowance-amount" type="number" v-model="allowanceForm.amount" required class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" placeholder="Contoh: 1500000" aria-required="true" />
               </div>
               <div>
-                <label class="block text-sm font-medium text-main mb-1">Atasan Penyetuju</label>
-                <select v-model="allowanceForm.approver_id" required class="w-full border border-control rounded-lg p-2 text-sm bg-white">
+                <label for="allowance-approver" class="block text-sm font-medium text-main mb-1.5">Atasan Penyetuju</label>
+                <select id="allowance-approver" v-model="allowanceForm.approver_id" required class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true">
                   <option value="">-- Pilih Atasan --</option>
-                  <option v-for="a in props.approvers" :key="a.id" :value="a.id">
+                  <option v-for="a in approvers" :key="a.id" :value="a.id">
                     {{ a.name }} (NIP: {{ a.nip }})
                   </option>
                 </select>
               </div>
             </div>
 
-            <div class="flex justify-end gap-2 pt-4 border-t border-subtle">
-              <button
-                type="button"
-                @click="createModalOpen = false"
-                class="px-4 py-2 border border-control rounded-lg text-sm text-main hover:bg-canvas"
-              >
+            <div class="flex justify-end gap-3 pt-4 border-t border-subtle">
+              <AppButton type="button" variant="secondary" @click="createModalOpen = false" :disabled="submitting">
                 Batal
-              </button>
-              <button
-                type="submit"
-                :disabled="submitting"
-                class="px-4 py-2 bg-brand-primary text-white rounded-lg text-sm font-semibold hover:bg-brand-primary-dark disabled:opacity-50"
-              >
+              </AppButton>
+              <AppButton type="submit" variant="primary" :loading="submitting">
                 Kirim
-              </button>
+              </AppButton>
             </div>
           </form>
         </div>
@@ -261,6 +252,8 @@ import DataTable from '../../Components/UI/DataTable.vue';
 import StatusBadge from '../../Components/UI/StatusBadge.vue';
 import ReasonModal from '../../Components/UI/ReasonModal.vue';
 import ConflictModal from '../../Components/UI/ConflictModal.vue';
+import AppButton from '../../Components/UI/AppButton.vue';
+import Card from '../../Components/UI/Card.vue';
 
 interface PaginatedResponse<T> {
   data: T[];

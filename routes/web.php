@@ -24,14 +24,22 @@ Route::get('/', function () {
 
 // Separate Auth Flow
 Route::get('/login', [AuthWebController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthWebController::class, 'login'])->name('login.submit');
+Route::post('/login', [AuthWebController::class, 'login'])->name('login.submit')->middleware('throttle:5,1');
 
 Route::get('/register', [AuthWebController::class, 'showRegister'])->name('register');
 Route::post('/register', [AuthWebController::class, 'register'])->name('register.submit');
+Route::post('/register/applicant', [AuthWebController::class, 'registerApplicant'])->name('register.applicant');
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard/Index');
+    Route::get('/dashboard', function (\App\Services\Dashboard\DashboardStatsService $service) {
+        return Inertia::render('Dashboard/Index', [
+            'stats' => $service->summary(),
+            'recentActivities' => \App\Models\ActivityLog::with('actor.employee')->latest()->take(5)->get()->map(fn ($log) => [
+                'action' => $log->action,
+                'actor_name' => $log->actor?->employee?->full_name ?? $log->actor?->username ?? 'System',
+                'time' => $log->created_at?->format('Y-m-d H:i:s'),
+            ]),
+        ]);
     })->name('dashboard');
 
     Route::get('/requests', [RequestWebController::class, 'index'])->name('requests.index');

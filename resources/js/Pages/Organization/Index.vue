@@ -1,15 +1,18 @@
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
-      <h1 class="text-2xl font-bold text-main">Organisasi & Pegawai</h1>
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-main">Organisasi & Pegawai</h1>
+        <p class="text-sm text-muted mt-1">Kelola departemen dan data pegawai organisasi.</p>
+      </div>
     </div>
 
     <!-- Tab Navigation -->
-    <div class="border-b border-subtle flex gap-6 text-sm font-medium">
+    <div class="border-b border-subtle flex gap-6 text-sm font-medium overflow-x-auto">
       <button
         @click="activeTab = 'departments'"
         :class="[
-          'pb-3 border-b-2 transition-colors',
+          'pb-3 border-b-2 transition-colors whitespace-nowrap',
           activeTab === 'departments'
             ? 'border-brand-primary text-brand-primary font-semibold'
             : 'border-transparent text-muted hover:text-main'
@@ -20,7 +23,7 @@
       <button
         @click="activeTab = 'employees'"
         :class="[
-          'pb-3 border-b-2 transition-colors',
+          'pb-3 border-b-2 transition-colors whitespace-nowrap',
           activeTab === 'employees'
             ? 'border-brand-primary text-brand-primary font-semibold'
             : 'border-transparent text-muted hover:text-main'
@@ -32,59 +35,63 @@
 
     <!-- Departments Tab -->
     <div v-if="activeTab === 'departments'">
-      <DataTable
-        :columns="departmentColumns"
-        :rows="departmentsData"
-        :loading="loading"
-        searchable
-        search-placeholder="Cari departemen..."
-        :pagination="departmentsPagination"
-        @search="handleSearch"
-      >
-        <template #name="{ row }">
-          <span class="font-medium text-main">{{ row.name }}</span>
-        </template>
-        <template #unit_type="{ row }">
-          <span class="capitalize">{{ row.unit_type }}</span>
-        </template>
-        <template #is_active="{ row }">
-          <StatusBadge :status="row.is_active ? 'aktif' : 'nonaktif'" />
-        </template>
-      </DataTable>
+      <Card :header="{ title: 'Daftar Departemen' }" class="mb-4">
+        <DataTable
+          :columns="departmentColumns"
+          :rows="departmentsData"
+          :loading="loading"
+          searchable
+          search-placeholder="Cari departemen..."
+          :pagination="departmentsPagination"
+          @search="handleSearch"
+        >
+          <template #name="{ row }">
+            <span class="font-medium text-main">{{ row.name }}</span>
+          </template>
+          <template #unit_type="{ row }">
+            <span class="capitalize">{{ row.unit_type }}</span>
+          </template>
+          <template #is_active="{ row }">
+            <StatusBadge :status="row.is_active ? 'aktif' : 'nonaktif'" />
+          </template>
+        </DataTable>
+      </Card>
     </div>
 
     <!-- Employees Tab -->
     <div v-if="activeTab === 'employees'">
-      <DataTable
-        :columns="employeeColumns"
-        :rows="employeesData"
-        :loading="loading"
-        searchable
-        search-placeholder="Cari pegawai..."
-        :pagination="employeesPagination"
-        @search="handleSearch"
-      >
-        <template #full_name="{ row }">
-          <button @click="openDetail(row)" class="font-medium text-brand-primary hover:underline">
-            {{ row.full_name }}
-          </button>
-        </template>
-        <template #nip="{ row }">
-          <span class="font-mono text-sm">{{ row.nip }}</span>
-        </template>
-        <template #category="{ row }">
-          <span>{{ row.category }}</span>
-        </template>
-        <template #unit="{ row }">
-          <span>{{ row.unit?.name || row.department?.name || '-' }}</span>
-        </template>
-        <template #status="{ row }">
-          <StatusBadge :status="row.employment_status" />
-        </template>
-        <template #actions="{ row }">
-          <AppButton variant="ghost" size="sm" @click="openDetail(row)">Detail</AppButton>
-        </template>
-      </DataTable>
+      <Card :header="{ title: 'Data Pegawai' }" class="mb-4">
+        <DataTable
+          :columns="employeeColumns"
+          :rows="employeesData"
+          :loading="loading"
+          searchable
+          search-placeholder="Cari pegawai..."
+          :pagination="employeesPagination"
+          @search="handleSearch"
+        >
+          <template #full_name="{ row }">
+            <button @click="openDetail(row)" class="font-medium text-brand-primary hover:underline">
+              {{ row.full_name }}
+            </button>
+          </template>
+          <template #nip="{ row }">
+            <span class="font-mono text-sm">{{ row.nip }}</span>
+          </template>
+          <template #category="{ row }">
+            <span>{{ row.category }}</span>
+          </template>
+          <template #unit="{ row }">
+            <span>{{ row.unit?.name || row.department?.name || '-' }}</span>
+          </template>
+          <template #status="{ row }">
+            <StatusBadge :status="row.employment_status" />
+          </template>
+          <template #actions="{ row }">
+            <AppButton variant="ghost" size="sm" @click="openDetail(row)">Detail</AppButton>
+          </template>
+        </DataTable>
+      </Card>
     </div>
 
     <!-- Employee Detail SideDrawer -->
@@ -138,6 +145,7 @@ import DataTable from '../../Components/UI/DataTable.vue'
 import StatusBadge from '../../Components/UI/StatusBadge.vue'
 import SideDrawer from '../../Components/UI/SideDrawer.vue'
 import AppButton from '../../Components/UI/AppButton.vue'
+import Card from '../../Components/UI/Card.vue'
 
 const props = defineProps<{
   departments: any

@@ -181,6 +181,7 @@ import DataTable from '../../Components/UI/DataTable.vue'
 import StatusBadge from '../../Components/UI/StatusBadge.vue'
 import ReasonModal from '../../Components/UI/ReasonModal.vue'
 import ConflictModal from '../../Components/UI/ConflictModal.vue'
+import AppButton from '../../Components/UI/AppButton.vue'
 import ActionButtons from './Components/ActionButtons.vue'
 
 const props = defineProps<{

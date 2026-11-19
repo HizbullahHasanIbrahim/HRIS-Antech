@@ -29,14 +29,9 @@ class RecruitmentWebController extends Controller
 
         $vacancies = $query->paginate(15)->withQueryString();
 
-        $applicantsQuery = Applicant::query();
-        if (! $isAdminOrHead && $employee) {
-            $applicantsQuery->where(function ($q) use ($employee) {
-                $q->where('unit_id', $employee->unit_id)
-                    ->orWhereNull('unit_id');
-            });
-        }
-        $applicants = $applicantsQuery->get(['id', 'full_name', 'email', 'nip']);
+        // ponytail: applicants table has no unit_id column, so no unit scoping here.
+        // Add scope when applicants gain a unit_id FK.
+        $applicants = Applicant::query()->get(['id', 'full_name', 'email', 'phone', 'highest_education']);
 
         return Inertia::render('Recruitment/Index', [
             'vacancies' => array_merge($vacancies->toArray(), [
@@ -102,9 +97,9 @@ class RecruitmentWebController extends Controller
         $isAdminOrHead = $user?->hasRole('Admin BSDM') || $user?->hasRole('Kepala Biro');
 
         $usersQuery = User::with('employee')
-            ->whereHas('employee', fn ($q) => $q->where('start_date', '>=', now()->subDays(30)))
+            ->whereHas('employee', fn ($q) => $q->where('join_date', '>=', now()->subDays(30)))
             ->when(! $isAdminOrHead && $employee, fn ($q) => $q->where('employee_id', $employee->id))
-            ->latest('employee.start_date');
+            ->latest('created_at');
 
         $users = $usersQuery->paginate(15)->withQueryString();
 
@@ -115,7 +110,7 @@ class RecruitmentWebController extends Controller
                     'name' => $u->employee?->full_name ?? '-',
                     'email' => $u->email,
                     'status' => $u->employee?->employment_status ?? 'tidak_aktif',
-                    'statusDate' => $u->employee?->start_date?->format('d/m/Y'),
+                    'statusDate' => $u->employee?->join_date?->format('d/m/Y'),
                 ])->values(),
             ]),
             'isAdminOrHead' => $isAdminOrHead,
@@ -130,17 +125,17 @@ class RecruitmentWebController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'category' => 'required|string|in:penegatan,tenaga_kontrak',
+            'category' => 'required|string|in:dosen,tenaga_kependidikan',
             'unit_id' => 'required|exists:departments,id',
             'quota' => 'required|integer|min:1',
             'open_date' => 'required|date',
             'close_date' => 'required|date|after_or_equal:open_date',
         ]);
 
-        $employee = $request->user()->employee;
+        $user = $request->user();
 
-        if (! $employee) {
-            return back()->withErrors(['message' => 'User has no employee profile.']);
+        if (! $user) {
+            return back()->withErrors(['message' => 'Unauthorized.']);
         }
 
         Vacancy::create([
@@ -148,11 +143,12 @@ class RecruitmentWebController extends Controller
             'title' => $request->title,
             'description' => $request->description,
             'category' => $request->category,
+            'min_qualification' => 'S1 / S2 / S3 Sesuai Bidang',
             'quota' => $request->quota,
             'open_date' => $request->open_date,
             'close_date' => $request->close_date,
             'status' => 'diajukan',
-            'created_by' => $employee->id,
+            'created_by' => $user->id,
         ]);
 
         return back()->with('success', 'Lowongan kerja berhasil dibuat.');

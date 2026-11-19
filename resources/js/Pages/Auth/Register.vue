@@ -52,20 +52,20 @@
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-main mb-1">Pendidikan Tertinggi</label>
-              <select v-model="pelamarForm.highest_education" class="w-full px-4 py-2 border border-control rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent bg-surface">
+              <label for="pelamar-birth" class="block text-sm font-medium text-main mb-1">Tanggal Lahir</label>
+              <input id="pelamar-birth" v-model="pelamarForm.birth_date" type="date" required class="w-full px-4 py-2 border border-control rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent" />
+            </div>
+            <div>
+              <label for="pelamar-edu" class="block text-sm font-medium text-main mb-1">Pendidikan Tertinggi</label>
+              <select id="pelamar-edu" v-model="pelamarForm.highest_education" class="w-full px-4 py-2 border border-control rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent bg-surface">
                 <option value="S1">S1</option>
                 <option value="S2">S2</option>
                 <option value="S3">S3</option>
               </select>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-main mb-1">Kategori</label>
-              <select v-model="pelamarForm.category" class="w-full px-4 py-2 border border-control rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent bg-surface">
-                <option value="dosen">Dosen</option>
-                <option value="tendik">Tendik</option>
-              </select>
-            </div>
+          </div>
+          <div v-if="pelamarForm.errors.email" class="text-sm text-status-danger">
+            {{ pelamarForm.errors.email }}
           </div>
           <button type="submit" :disabled="pelamarForm.processing" class="w-full bg-accent hover:bg-accent-hover text-white py-3 rounded-lg font-semibold transition-all">
             Kirim Pendaftaran Pelamar
@@ -111,6 +111,7 @@ const pelamarForm = useForm({
   full_name: '',
   email: '',
   phone: '',
+  birth_date: '',
   highest_education: 'S2',
   category: 'dosen',
 });
@@ -122,7 +123,7 @@ const aktivasiForm = useForm({
 });
 
 const submitPelamar = () => {
-  pelamarForm.post('/api/v1/applicants', {
+  pelamarForm.post('/register/applicant', {
     onSuccess: () => {
       alert('Pendaftaran berhasil dikirim!');
     },
