@@ -1,26 +1,31 @@
 <template>
-  <div class="space-y-8">
-    <h1 class="text-3xl font-bold text-main">Laporan Eksekutif</h1>
+  <div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+      <div>
+        <h1 class="text-3xl font-bold text-main">Laporan Eksekutif</h1>
+        <p class="text-sm text-muted mt-1">Laporan dan analitik SDM Universitas Ahmad Dahlan</p>
+      </div>
+    </div>
 
     <!-- KPI Metric Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-      <div class="bg-surface rounded-xl p-5 border border-subtle shadow-sm">
+      <div class="bg-surface rounded-xl p-5 border border-subtle shadow-sm hover:shadow-md transition-shadow">
         <p class="text-sm text-muted mb-1">Total Pegawai</p>
         <p class="text-3xl font-extrabold text-brand-primary">{{ kpi.totalEmployees }}</p>
       </div>
-      <div class="bg-surface rounded-xl p-5 border border-subtle shadow-sm">
+      <div class="bg-surface rounded-xl p-5 border border-subtle shadow-sm hover:shadow-md transition-shadow">
         <p class="text-sm text-muted mb-1">Total Dosen Aktif</p>
         <p class="text-3xl font-extrabold text-main">{{ kpi.totalDosen }}</p>
       </div>
-      <div class="bg-surface rounded-xl p-5 border border-subtle shadow-sm">
+      <div class="bg-surface rounded-xl p-5 border border-subtle shadow-sm hover:shadow-md transition-shadow">
         <p class="text-sm text-muted mb-1">Total Tendik Aktif</p>
         <p class="text-3xl font-extrabold text-main">{{ kpi.totalTendik }}</p>
       </div>
-      <div class="bg-surface rounded-xl p-5 border border-subtle shadow-sm">
+      <div class="bg-surface rounded-xl p-5 border border-subtle shadow-sm hover:shadow-md transition-shadow">
         <p class="text-sm text-muted mb-1">Pensiun Tahun Ini</p>
-        <p class="text-3xl font-extrabold text-danger">{{ kpi.pensiunThisYear }}</p>
+        <p class="text-3xl font-extrabold text-status-danger">{{ kpi.pensiunThisYear }}</p>
       </div>
-      <div class="bg-surface rounded-xl p-5 border border-subtle shadow-sm">
+      <div class="bg-surface rounded-xl p-5 border border-subtle shadow-sm hover:shadow-md transition-shadow">
         <p class="text-sm text-muted mb-1">Cuti/Lembur Bulan Ini</p>
         <p class="text-3xl font-extrabold text-status-warning">{{ kpi.leaveRequestsThisMonth }}</p>
       </div>
@@ -33,14 +38,32 @@
         <div v-if="charts.dosenRankDistribution.length > 0" class="h-80">
           <AsyncApexCharts ref="dosenChart" type="bar" height="100%" :options="dosenChartOptions" :series="dosenChartSeries" />
         </div>
-        <p v-else class="text-muted">Data dosen rank kosong.</p>
+        <div v-else class="h-80 flex items-center justify-center">
+          <div class="text-center">
+            <div class="mx-auto w-12 h-12 bg-canvas rounded-full flex items-center justify-center mb-3">
+              <svg class="w-6 h-6 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <p class="text-sm text-muted">Data dosen rank kosong.</p>
+          </div>
+        </div>
       </div>
       <div class="bg-surface p-6 rounded-xl border border-subtle">
         <h3 class="text-xl font-semibold text-main mb-4">Distribusi Pangkat Tendik</h3>
         <div v-if="charts.tendikRankDistribution.length > 0" class="h-80">
           <AsyncApexCharts ref="tendikChart" type="bar" height="100%" :options="tendikChartOptions" :series="tendikChartSeries" />
         </div>
-        <p v-else class="text-muted">Data tendik rank kosong.</p>
+        <div v-else class="h-80 flex items-center justify-center">
+          <div class="text-center">
+            <div class="mx-auto w-12 h-12 bg-canvas rounded-full flex items-center justify-center mb-3">
+              <svg class="w-6 h-6 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <p class="text-sm text-muted">Data tendik rank kosong.</p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -72,13 +95,15 @@
 
       <!-- Tabbed Views -->
       <div class="space-y-6">
-        <div class="flex border-b border-subtle overflow-x-auto">
+        <div class="flex border-b border-subtle overflow-x-auto" role="tablist" aria-label="Navigasi laporan">
           <button 
             v-for="key in reportKeys" 
             :key="key" 
             @click="activeTab = key"
+            :aria-selected="activeTab === key"
+            role="tab"
             :class="[
-              'pb-3 border-b-2 transition-colors whitespace-nowrap px-4 text-sm font-medium',
+              'pb-3 border-b-2 transition-colors whitespace-nowrap px-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-primary',
               activeTab === key
                 ? 'border-brand-primary text-brand-primary font-semibold'
                 : 'border-transparent text-muted hover:text-main'
@@ -89,14 +114,14 @@
         </div>
 
         <!-- Tab Content -->
-        <div :key="activeTab" class="p-4 bg-canvas rounded-b-xl border border-t-0 border-subtle">
+        <div :key="activeTab" class="p-4 bg-canvas rounded-b-xl border border-t-0 border-subtle" role="tabpanel">
           <div v-if="activeTab === 'sdm'" class="space-y-4">
             <h4 class="text-lg font-semibold text-main">Ringkasan SDM</h4>
-            <div class="flex gap-3">
+            <div class="flex gap-3 flex-wrap">
               <AppButton variant="primary" type="button" @click="downloadCsv('sdm')">
                 Unduh CSV
               </AppButton>
-              <p class="text-sm text-muted">Filter: Unit {{ filters.unit_id ? units.find(u => u.id === filters.unit_id)?.name : 'Semua Unit' }} | Periode: {{ filters.periode }}</p>
+              <p class="text-sm text-muted self-center">Filter: Unit {{ filters.unit_id ? units.find(u => u.id === filters.unit_id)?.name : 'Semua Unit' }} | Periode: {{ filters.periode }}</p>
             </div>
           </div>
           <div v-else-if="activeTab === 'cuti-lembur'" class="space-y-4">
