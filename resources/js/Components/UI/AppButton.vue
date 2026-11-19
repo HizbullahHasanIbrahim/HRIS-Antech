@@ -17,6 +17,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 interface Props {
   type?: 'button' | 'submit' | 'reset';
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
