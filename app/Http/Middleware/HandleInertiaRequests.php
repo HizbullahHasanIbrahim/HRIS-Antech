@@ -36,6 +36,14 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
+        $employee = $user?->employee()->with('department')->first();
+        $roles = $user ? $user->roles()->get(['roles.id', 'roles.name']) : collect();
+        $roleNames = $roles->pluck('name')->toArray();
+        $unitIds = $roles->map(fn ($r) => $r->pivot?->unit_id)->filter()->unique()->values()->toArray();
+        $isGlobal = $roles->isEmpty()
+            ? false
+            : $roles->contains(fn ($r) => is_null($r->pivot->unit_id)
+                || in_array($r->name, ['Admin BSDM', 'Super Admin', 'Kepala Biro', 'Wakil Rektor']));
 
         return [
             ...parent::share($request),
@@ -44,23 +52,31 @@ class HandleInertiaRequests extends Middleware
                     'id' => $user->id,
                     'username' => $user->username,
                     'employee_id' => $user->employee_id,
-                    'employee' => $user->employee ? [
-                        'id' => $user->employee->id,
-                        'full_name' => $user->employee->full_name,
-                        'nip' => $user->employee->nip,
-                        'category' => $user->employee->category,
-                    ] : null,
+                    'full_name' => $employee?->full_name,
+                    'avatar_url' => null,
+                    'category' => $employee?->category,
+                    'highest_education' => $employee?->highest_education,
+                    'unit_name' => $employee?->department?->name,
                 ] : null,
-                'roles' => $user ? $user->roles()->get(['roles.id', 'roles.name'])->toArray() : [],
-                'unit' => $user && $request->attributes->has('scoped_unit')
-                    ? $request->attributes->get('scoped_unit')
-                    : null,
+                'roles' => $roleNames,
+                'unit_scope' => [
+                    'is_global' => $isGlobal,
+                    'unit_ids' => $unitIds,
+                    'label' => $isGlobal ? 'Semua Unit (BSDM)' : ($employee?->department?->name ?? 'Unit Kerja'),
+                ],
+                'permissions' => [
+                    'view_sensitive_welfare' => (bool) array_intersect($roleNames, ['Admin BSDM', 'Welfare Admin', 'Kepala Biro', 'Wakil Rektor']),
+                    'manage_recruitment' => (bool) array_intersect($roleNames, ['Admin BSDM', 'Staff HR', 'Kepala Bagian']),
+                    'manage_performance' => (bool) array_intersect($roleNames, ['Admin BSDM', 'Kepala Bagian', 'Kepala Biro']),
+                    'manage_users' => (bool) array_intersect($roleNames, ['Admin BSDM', 'Staff HR']),
+                    'aggregate_reports_only' => (bool) array_intersect($roleNames, ['Wakil Rektor']),
+                ],
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
                 'warning' => fn () => $request->session()->get('warning'),
-                'info' => fn () => $request->session()->get('info'),
+                'conflict' => fn () => $request->session()->get('conflict'),
             ],
         ];
     }

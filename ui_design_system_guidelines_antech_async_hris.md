@@ -6,60 +6,102 @@
 |---|---|
 | Nama Sistem | Antech Async - Sistem Informasi Kepegawaian dan Manajemen Sumber Daya Manusia (HRIS) |
 | Organisasi / Domain | Biro Sumber Daya Manusia (BSDM), Universitas Ahmad Dahlan |
-| Versi Dokumen | 1.0 |
+| Versi Dokumen | 2.0 (Apple-Inspired Minimalist, Light/Dark Mode, Landing & Separate Auth Flow) |
 | Status | Draft - Pendamping `PRD v1.1` & `SDD v1.0` |
-| Tanggal | 17 November 2026 |
+| Tanggal | 19 November 2026 |
 | Stack Frontend | **Inertia.js (v1/v2) + Vue 3 atau React + Tailwind CSS** |
-| Ikon & Grafik | Lucide / Heroicons (stroke 1.75px) & ApexCharts (`vue3-apexcharts` / `react-apexcharts`) |
+| Ikon & Grafik | Lucide / Heroicons (stroke `1.5px`–`1.75px`) & ApexCharts (`vue3-apexcharts` / `react-apexcharts`) |
+| Tema Visual | **Dual Theme: Light Mode & Dark Mode** (`light` / `dark` / `system`) |
+| Backend & Database | Laravel 11.x (PHP 8.3+) & MySQL 8.4 LTS (InnoDB) |
 
 ---
 
-## 1. Prinsip Desain & Arsitektur Frontend (Inertia.js)
+## 1. Filosofi Desain, Alur Pengguna & Arsitektur Frontend
 
-Antarmuka Antech Async HRIS dirancang sebagai **Modern Monolith SPA** menggunakan Inertia.js. Seluruh navigasi, penyaringan data, validasi formulir, dan pembaruan status pengajuan berjalan mulus tanpa *full page reload* dan tanpa perlu membangun lapisan REST API terpisah.
+Antarmuka Antech Async HRIS memadukan **estetika minimalis presisi ala Apple** (ruang bernapas lega, tipografi tajam, sudut membulat konsisten, bayangan lembut, dan *frosted glass* halus), **tata letak operasional modern** (sidebar terang/gelap yang bersih, tab navigasi sekunder, dan tampilan *Directory Card Grid* + *Table* + *Org Chart*), serta **alur masuk produk yang lengkap** mulai dari halaman publik hingga dashboard internal.
 
-### 1.1 Prinsip Utama Antarmuka
-1. **Kejelasan Status & *Immutability*:** Status workflow setiap modul terlihat seketika lewat warna semantik dan penanda gembok untuk status final (`RULE-11`, `EX-05`).
-2. **Transparansi Cakupan Akses (*Unit Scope*):** Pengguna selalu melihat indikator cakupan data aktifnya di bilah atas (misalnya unit kerja tertentu atau lintas unit) agar selaras dengan RBAC (`RULE-15`).
-3. **Privasi Data Sensitif *by Default*:** Nomor kepesertaan BPJS (`membership_number`) dan alamat domisili tersamarkan secara bawaan di tampilan daftar.
-4. **Pencegahan Kesalahan Dini:** Validasi interaktif di klien (sisa kuota cuti, durasi lembur, total bobot SKP $= 100\%$) berjalan berdampingan dengan validasi ketat *FormRequest* dan MySQL 8.4 di server.
-5. **Konvensi Waktu & Angka:** Seluruh timestamp UTC dari MySQL 8.4 diformat ke zona waktu `Asia/Jakarta` (WIB) pada sisi klien, sedangkan seluruh angka tabel (NIP, nominal tunjangan, skor SKP, beban SKS) wajib memakai kelas `tabular-nums` dan format lokal `id-ID`.
+### 1.1 Alur Perjalanan Pengguna (*End-to-End User Flow*)
 
-### 1.2 Struktur Direktori Frontend (`resources/js/`)
+```text
++----------------------------------+
+|     1. LANDING PAGE (Publik)     |  Route: /
+|  - Hero & Ringkasan HRIS         |  Layout: LandingLayout (Translucent Glass Navbar)
+|  - Cara Lama vs Antech Async     |  Aksi: [Masuk Portal] | [Daftar / Lowongan] | [Toggle Tema]
+|  - Modul Utama & Lowongan Dibuka |
++----------------+-----------------+
+                 |
+        +--------+--------+
+        |                 |
+        v                 v
++---------------+  +----------------------------------+
+| 2A. LOGIN     |  | 2B. REGISTER (Terpisah)          |  Routes: /login & /register
+| Route: /login |  | Route: /register                 |  Layout: AuthLayout (Split / Frosted Card)
+| Pegawai,      |  | - Registrasi Pelamar Eksternal   |  Patuh RULE-02 & RULE-15:
+| Atasan, BSDM, |  |   (P-01/P-02 Lowongan Dosen/     |  Pendaftaran mandiri hanya membuat akun
+| Pimpinan,     |  |   Tendik) atau Aktivasi Akun     |  pelamar / aktivasi NIP terverifikasi
+| Admin Sistem  |  |   Pegawai Terdaftar              |
++-------+-------+  +----------------+-----------------+
+        |                           |
+        +-------------+-------------+
+                      | Authenticated Session
+                      v
++-----------------------------------------------------+
+|           3. HRIS DASHBOARD & MODUL INTI            |  Route: /dashboard, /employees, dst.
+|  Layout: AppLayout (Persistent Shell + Light/Dark)  |  RBAC + Unit Scope + Live Filter
+|  12 Menu Navigasi & 17 Proses Bisnis BSDM UAD       |
++-----------------------------------------------------+
+```
 
-Struktur ini berlaku konsisten baik tim memilih **Vue 3 (`.vue` + Composition API)** maupun **React (`.tsx` / `.jsx`)**:
+### 1.2 Prinsip Utama Antarmuka
+1. **Clarity & Breathing Room (Apple HIG Inspired):** Kurangi garis kasar dan warna berat. Gunakan perbedaan *surface luminance*, border *hairline* tipis, dan ruang kosong terukur agar data kepegawaian yang padat tetap terasa ringan dibaca.
+2. **Dual-Mode First (Light & Dark Mode):** Setiap komponen, badge status, *glass panel*, hingga grafik ApexCharts dirancang serentak untuk mode terang dan gelap tanpa warna *hardcoded*.
+3. **Kejelasan Status & *Immutability*:** Status final (`disetujui`, `ditolak`, `dibatalkan`, `final`, `selesai`) selalu menampilkan ikon gembok kecil sebagai penanda bahwa data terkunci (`RULE-11`, `EX-05`).
+4. **Transparansi Cakupan Akses (*Unit Scope*):** Indikator cakupan unit kerja aktif tampil jelas di header aplikasi agar pengguna sadar data yang difilter RBAC (`RULE-15`).
+5. **Konvensi Waktu & Angka:** Timestamp UTC dari MySQL 8.4 dirender ke `Asia/Jakarta` (WIB); angka tabel (NIP, SKS, skor SKP, nominal) memakai `tabular-nums` dan format `id-ID`.
+
+### 1.3 Struktur Direktori Frontend (`resources/js/`)
 
 ```text
 resources/js/
-├── app.ts / app.js                    # Bootstrap Inertia.js + Persistent Layout resolver
+├── app.ts / app.js                    # Bootstrap Inertia.js + Theme initializer
 ├── Layouts/
-│   ├── AppLayout.(vue|tsx)            # Persistent App Shell (Sidebar kiri + Header + Toast Host)
-│   └── GuestLayout.(vue|tsx)          # Layout Login & Portal Pelamar Eksternal
+│   ├── LandingLayout.(vue|tsx)        # Translucent Sticky Navbar + Footer Publik
+│   ├── AuthLayout.(vue|tsx)           # Layout Terpisah Login & Register (Clean Minimalist)
+│   └── AppLayout.(vue|tsx)            # Persistent App Shell (Collapsible Sidebar + Topbar + Toast)
 ├── Components/
 │   ├── UI/
-│   │   ├── AppButton.(vue|tsx)        # Primary, Secondary, Danger, Ghost + Spinner state
-│   │   ├── StatusBadge.(vue|tsx)      # Pemetaan warna status lintas modul + ikon gembok final
-│   │   ├── DataTable.(vue|tsx)        # Sticky header, skeleton loader, pagination Inertia
-│   │   ├── SideDrawer.(vue|tsx)       # Slide-over panel kanan (520px) untuk detail & audit log
+│   │   ├── ThemeToggle.(vue|tsx)      # Switcher Light / Dark / System (Sun/Moon/Monitor)
+│   │   ├── AppButton.(vue|tsx)        # Primary Violet, Secondary Glass, Danger, Ghost + Spinner
+│   │   ├── StatusBadge.(vue|tsx)      # Dot-pill badge (• Active) + ikon gembok status final
+│   │   ├── CategoryPill.(vue|tsx)     # Pill kategori (DOSEN, TENDIK, Kontrak, Studi S3)
+│   │   ├── SubTabs.(vue|tsx)          # Underline tabs (Employee List | Directory | ORG Chart)
+│   │   ├── SearchFilterBar.(vue|tsx)  # Input cari + shortcut badge (⌘F / Ctrl+K) + tombol Filter
+│   │   ├── DataTable.(vue|tsx)        # Clean table, skeleton loader, empty state, pagination
+│   │   ├── SideDrawer.(vue|tsx)       # Slide-over panel kanan (520px) + frosted backdrop
 │   │   ├── ReasonModal.(vue|tsx)      # Modal wajib alasan (RULE-12) untuk tolak/batal/revisi
-│   │   ├── ConflictModal.(vue|tsx)    # Modal peringatan HTTP 409 Optimistic Locking (EX-04)
+│   │   ├── ConflictModal.(vue|tsx)    # Modal konflik HTTP 409 Optimistic Locking (EX-04)
 │   │   ├── ProgressStepper.(vue|tsx)  # Visualisasi tahapan seleksi & jenjang jabatan Dosen
-│   │   └── ToastContainer.(vue|tsx)   # Notifikasi toast kanan atas dari Inertia flash props
+│   │   └── ToastContainer.(vue|tsx)   # Floating pill toast kanan atas dari Inertia flash
 │   └── Domain/
-│       ├── EmployeeSearchBar.(vue|tsx)
+│       ├── EmployeeDirectoryCard.(vue|tsx) # Kartu pegawai 3-kolom (avatar, status, ⋮ menu, metadata)
 │       ├── LeaveQuotaCards.(vue|tsx)
 │       ├── BpjsMaskedField.(vue|tsx)
 │       ├── RetirementChecklist.(vue|tsx)
-│       └── DrillDownChart.(vue|tsx)   # Wrapper ApexCharts dengan event klik filter
+│       └── DrillDownChart.(vue|tsx)   # Wrapper ApexCharts adaptif Light/Dark + klik filter
 ├── Composables/ (atau Hooks/)
+│   ├── useTheme.(ts|js)               # State Light/Dark/System + sinkronisasi localStorage & ApexCharts
 │   ├── useLiveFilter.(ts|js)          # Debounce 300ms + router.get partial reload
 │   ├── usePermission.(ts|js)          # Helper cek role, izin sensitif, & unit_scope
 │   └── useToast.(ts|js)               # Sinkronisasi page.props.flash ke antrean toast
 ├── Types/
-│   └── hris.d.ts                      # Interface TypeScript untuk 29 entitas & shared props
+│   └── hris.d.ts                      # Interface TypeScript 29 entitas & shared props
 └── Pages/
+    ├── Landing/Index.(vue|tsx)        # Landing Page publik HRIS BSDM UAD
+    ├── Auth/
+    │   ├── Login.(vue|tsx)            # Halaman Login terpisah
+    │   └── Register.(vue|tsx)         # Halaman Register Pelamar / Aktivasi Pegawai terpisah
     ├── Dashboard/Index.(vue|tsx)
-    ├── Organization/                  # Departments (Tree/Table) & Employees (List/Detail Tabs)
+    ├── Organization/                  # Tabs: Employee List | Directory (Card Grid) | ORG Chart
     ├── Recruitment/                   # Vacancies, Applicants, Selection Stages, Onboarding
     ├── Requests/                      # Leave, Overtime, Allowance
     ├── Schedules/                     # Work Schedules & Weekly Matrix
@@ -72,285 +114,395 @@ resources/js/
     └── Audit/ActivityLogs/            # Daftar & Side-Drawer JSON Diff (Read-Only)
 ```
 
+### 1.4 Kontrak Shared Props Inertia (`HandleInertiaRequests`)
 
-## 2. Design Tokens
-
-### 2.1 Palet Warna
-
-| Kategori | Token CSS / Tailwind | Hex | Penggunaan Utama |
-|---|---|---|---|
-| Brand Primary | `brand-navy` | `#2C3E50` | Sidebar kiri, header aktif, dan *Primary Button* |
-| Brand Hover | `brand-navy-dark` | `#1E2B38` | Status hover/fokus tombol utama & latar item sidebar aktif |
-| Brand Accent | `brand-orange` | `#E67E22` | Aksen UAD, indikator menu aktif, *focus ring*, dan highlight grafik |
-| Accent Text | `brand-orange-text` | `#B45309` | Teks kecil/label bernuansa oranye di atas putih (memenuhi kontras WCAG AA) |
-| Canvas | `bg-canvas` | `#F8FAFC` | Latar belakang utama kanvas halaman |
-| Surface | `bg-surface` | `#FFFFFF` | Latar belakang *Card*, *Table*, *Modal*, dan *Side-Drawer* |
-| Border Default | `border-subtle` | `#E2E8F0` | Garis tepi *Card* (1px), pemisah baris tabel, dan divider |
-| Border Control | `border-control` | `#CBD5E1` | Garis tepi *Secondary Button* dan input formulir |
-| Text Primary | `text-main` | `#1E293B` | Judul halaman, isi sel tabel, dan teks utama |
-| Text Secondary | `text-muted` | `#64748B` | Label formulir, metadata waktu, dan teks bantuan |
-| Semantic Success | `status-success` | `#166534` | Teks badge disetujui/aktif/lulus (latar `#DCFCE7`) |
-| Semantic Warning | `status-warning` | `#854D0E` | Teks badge diajukan/proses/menunggu (latar `#FEF9C3`) |
-| Semantic Danger | `status-danger` | `#E11D48` | *Danger Button*, error validasi inline, badge ditolak (latar `#FFE4E6`, teks `#BE123C`) |
-| Semantic Info | `status-info` | `#1D4ED8` | Teks badge draf/diusulkan/dijadwalkan (latar `#DBEAFE`) |
-
-> **Catatan Kontras:** Warna `#E67E22` digunakan untuk aksen garis, ikon, atau teks besar di atas `#2C3E50`. Untuk teks kecil ($\le 14\text{px}$) di atas latar terang (`#FFFFFF` / `#F8FAFC`), selalu gunakan `#B45309` agar rasio kontras $\ge 4.5:1$.
-
-### 2.2 Tipografi
-
-* **Font Utama (UI & Prose):** `'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`.
-* **Font Monospace (Identitas & Audit):** `'JetBrains Mono', ui-monospace, SFMono-Regular, monospace` — dipakai untuk NIP, NIDN, nomor SK, nomor BPJS, kode tunjangan, dan blok JSON `activity_logs.details`.
-
-| Level | Ukuran / Line-Height | Weight | Penggunaan |
-|---|---:|---:|---|
-| Page Title | `24px / 32px` | `600` | Judul halaman utama di atas konten |
-| Section Header | `18px / 28px` | `600` | Judul subbagian, judul *Side-Drawer* & *Modal* |
-| Card / Widget Title | `15px / 22px` | `600` | Judul KPI Card, judul grafik, dan panel formulir |
-| Body & Table Cell | `14px / 20px` | `400` | Teks konten utama dan isi baris tabel |
-| Form Label | `13px / 18px` | `500` | Label input formulir |
-| Badge & Table Header | `12px / 16px` | `600` | Header kolom tabel (`uppercase tracking-wider`) dan status badge |
-
-### 2.3 Spacing, Radius & Elevasi
-
-* **Skala Spasi (kelipatan `4px`):** `8px` jarak ikon–teks, `16px` jarak antar kolom formulir, `20px` padding dalam *Card*, `24px` jarak antar blok konten utama.
-* **Radius Sudut:** `6px` (*Button*, *Input*), `8px` (*Card*, *Table Container*), `12px` (*Modal*), `9999px` (*Status Badge* pill).
-* **Elevasi:** *Card* dan *Table* menggunakan desain datar (*flat*) dengan `border: 1px solid #E2E8F0` tanpa bayangan tebal. Bayangan (`shadow-lg`) hanya diterapkan pada lapisan melayang (*Dropdown*, *Toast*, *Modal*, *Side-Drawer*).
+```json
+{
+  "auth": {
+    "user": {
+      "id": 12,
+      "username": "ahmad.alfan",
+      "employee_id": 45,
+      "full_name": "Dr. Ahmad Alfan, M.Kom.",
+      "avatar_url": null,
+      "category": "DOSEN",
+      "highest_education": "S3",
+      "unit_name": "Program Studi Sistem Informasi"
+    },
+    "roles": ["atasan_langsung", "pegawai"],
+    "unit_scope": {
+      "is_global": false,
+      "unit_ids": [7],
+      "label": "Prodi Sistem Informasi"
+    },
+    "permissions": {
+      "view_sensitive_welfare": false,
+      "manage_recruitment": false,
+      "manage_performance": false,
+      "manage_users": false,
+      "aggregate_reports_only": false
+    }
+  },
+  "flash": {
+    "success": null,
+    "error": null,
+    "warning": null,
+    "conflict": null
+  }
+}
+```
 
 ---
 
-## 3. Pemetaan Status Badge per Konteks Modul
+## 2. Design Tokens (Apple-Inspired + Dual Theme Light & Dark Mode)
 
-Karena setiap modul memiliki konteks status sendiri (`PRD Bagian 7.1`), komponen `<StatusBadge status="..." />` memetakan seluruh nilai status secara konsisten:
+Seluruh warna didefinisikan menggunakan **CSS Custom Properties** pada `:root` (Light Mode) dan `.dark` (Dark Mode), lalu dipetakan ke konfigurasi Tailwind CSS (`@theme` di Tailwind v4 atau `tailwind.config.js`). Aksen utama mengadopsi warna **Electric Violet** modern yang tajam dari referensi dashboard, dipadukan dengan permukaan monokrom bersih khas Apple.
 
-| Kelompok Warna | Latar / Teks | Daftar Status |
+### 2.1 Palet Warna Dual-Mode (Light & Dark)
+
+| Kategori | CSS Variable | Light Mode (`:root`) | Dark Mode (`.dark`) | Penggunaan Utama |
+|---|---|---|---|---|
+| **Brand Primary** | `--color-accent` | `#6D28D9` | `#8B5CF6` | Primary Button (`+ Add New Employee`), indikator tab aktif, highlight landing |
+| **Brand Hover** | `--color-accent-hover` | `#5B21B6` | `#7C3AED` | Hover & pressed state tombol utama |
+| **Brand Soft Surface** | `--color-accent-soft` | `#F5F3FF` | `rgba(139, 92, 246, 0.16)` | Latar item sidebar aktif, pill kategori `DOSEN`, highlight perbandingan |
+| **Brand Secondary Accent** | `--color-accent-alt` | `#D946EF` | `#E879F9` | Aksen gradien halus pada logo & ilustrasi hero landing page |
+| **App Canvas** | `--bg-canvas` | `#F5F5F7` | `#09090D` | Latar belakang utama halaman & area konten di luar kartu |
+| **Primary Surface** | `--bg-surface` | `#FFFFFF` | `#121218` | Latar Sidebar, Card pegawai, Table, Modal, dan Side-Drawer |
+| **Elevated Surface** | `--bg-elevated` | `#FBFBFD` | `#1A1A24` | Input pencarian, header tabel, kartu ringkasan, popover dropdown |
+| **Glass Surface** | `--bg-glass` | `rgba(255, 255, 255, 0.78)` | `rgba(18, 18, 24, 0.78)` | Navbar landing page, topbar sticky, backdrop modal (`backdrop-blur-xl`) |
+| **Hairline Border** | `--border-subtle` | `#E5E7EB` | `rgba(255, 255, 255, 0.08)` | Garis tepi Sidebar, Card, pemisah baris tabel |
+| **Control Border** | `--border-control` | `#D1D5DB` | `rgba(255, 255, 255, 0.15)` | Border input form, tombol Secondary, dan tombol Filter |
+| **Text Primary** | `--text-primary` | `#111827` | `#F5F5F7` | Judul halaman, nama pegawai, angka KPI, konten utama |
+| **Text Secondary** | `--text-secondary` | `#6B7280` | `#9CA3AF` | Jabatan/unit subtitle, label metadata, menu sidebar nonaktif |
+| **Text Muted** | `--text-muted` | `#9CA3AF` | `#6B7280` | Section label (`MAIN MENU`, `ORGANISATION`), placeholder, shortcut `⌘F` |
+| **Success** | `--status-success-fg` / `bg` | `#059669` / `#ECFDF5` | `#34D399` / `rgba(16, 185, 129, 0.14)` | Status `aktif`, `disetujui`, `diterima`, `lolos`, `final`, `selesai` |
+| **Warning** | `--status-warning-fg` / `bg` | `#B45309` / `#FFFBEB` | `#FBBF24` / `rgba(245, 158, 11, 0.14)` | Status `diajukan`, `proses`, `menunggu`, `diproses`, `berjalan` |
+| **Danger** | `--status-danger-fg` / `bg` | `#E11D48` / `#FFF1F2` | `#FB7185` / `rgba(244, 63, 94, 0.14)` | Danger button, `ditolak`, `gugur`, `tidak_lulus`, error inline |
+| **Info** | `--status-info-fg` / `bg` | `#2563EB` / `#EFF6FF` | `#60A5FA` / `rgba(59, 130, 246, 0.14)` | Status `draf`, `diusulkan`, `direncanakan`, `dijadwalkan`, pill `TENDIK` |
+| **Neutral / Archive** | `--status-neutral-fg` / `bg` | `#4B5563` / `#F3F4F6` | `#9CA3AF` / `rgba(156, 163, 175, 0.14)` | Status `dibatalkan`, `ditutup`, `nonaktif`, `pensiun`, `batal` |
+
+### 2.2 Arsitektur Dark Mode & Light Mode (`useTheme`)
+
+1. **Tiga Mode Pilihan:** `Light`, `Dark`, dan `System` (mengikuti `prefers-color-scheme` OS pengguna).
+2. **Anti-FOUC (Bebas Kedipan Putih saat Refresh):** Skrip sinkron singkat wajib diletakkan di dalam `<head>` pada `resources/views/app.blade.php` sebelum aset Vite dimuat:
+   ```html
+   <script>
+     (function () {
+       const saved = localStorage.getItem('hris-theme') || 'system';
+       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+       if (saved === 'dark' || (saved === 'system' && prefersDark)) {
+         document.documentElement.classList.add('dark');
+       }
+     })();
+   </script>
+   ```
+3. **Sinkronisasi Grafik ApexCharts:** Komponen `DrillDownChart` membaca nilai reaktif `isDark` dari `useTheme()` untuk mengganti `theme.mode` (`'light'` / `'dark'`), warna label sumbu (`--text-secondary`), warna garis grid (`--border-subtle`), serta gaya tooltip secara instan tanpa *reload*.
+4. **Lokasi Tombol Switcher (`ThemeToggle`):** Tersedia di tiga titik konsisten: pojok kanan Navbar Landing Page, pojok kanan atas halaman Login/Register, dan di Topbar / footer profil Sidebar Dashboard.
+
+### 2.3 Tipografi (Apple Precision Hierarchy)
+
+* **Font Utama (Display & UI):** `-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Inter', 'Segoe UI', sans-serif`.
+* **Font Monospace (Identitas & Audit):** `'SF Mono', 'JetBrains Mono', ui-monospace, monospace` — untuk NIP, NIDN, nomor SK, nomor BPJS, kode tunjangan, shortcut `⌘F`, dan diff JSON `activity_logs`.
+* **Tracking Halus:** Judul besar (`Hero` dan `Page Title`) menggunakan *tight letter-spacing* (`-0.025em`) khas Apple agar terasa padat, modern, dan elegan.
+
+| Level | Ukuran / Line-Height | Weight | Letter Spacing | Penggunaan |
+|---|---:|---:|---:|---|
+| Hero Display (Landing) | `48px / 54px` (`32px` mobile) | `700` | `-0.03em` | Headline utama Landing Page |
+| Section Display (Landing) | `32px / 40px` | `600` | `-0.025em` | Judul bagian masalah/solusi & modul |
+| App Page Title | `22px / 30px` | `600` | `-0.02em` | Judul halaman dashboard (mis. `Pegawai`, `Pengajuan Cuti`) |
+| Section / Drawer Title | `17px / 24px` | `600` | `-0.015em` | Judul *Side-Drawer*, *Modal*, dan kartu grafik |
+| Card Title / Name | `15px / 21px` | `600` | `-0.01em` | Nama pegawai di *Directory Card*, judul KPI Card |
+| Body & Table Cell | `14px / 20px` | `400` | `0em` | Isi tabel, deskripsi modul, paragraf |
+| Label & Metadata | `12.5px / 18px` | `500` | `0em` | Label input, baris metadata kartu (`Unit Kerja`, `Email`) |
+| Sidebar Group / Pill | `11px / 16px` | `600` | `+0.06em` | Header grup sidebar (`MAIN MENU`, `ORGANISASI`) & status pill |
+
+### 2.4 Spacing, Radius & Elevasi (Apple-Grade Geometry)
+
+* **Skala Spasi (basis `4px`):** `8px` jarak ikon–teks, `16px` gap antar kartu directory, `20px` padding dalam kartu, `24px`–`32px` padding area konten utama, `80px`–`112px` jarak vertikal antar seksi Landing Page.
+* **Radius Sudut Membulat Halus:**
+  * `10px`: Button, Input pencarian, Menu item sidebar.
+  * `12px`: Popover dropdown (`Details`, `Edit`, `Nonaktifkan`), Toast notification.
+  * `16px`: Employee Directory Card, KPI Card, Table Container, Modal.
+  * `20px`–`24px`: Hero Mockup Frame & Bento Feature Card di Landing Page.
+  * `9999px` (Full Pill): Status Badge (`• Aktif`), Category Pill (`DOSEN`, `TENDIK`), Avatar.
+* **Elevasi & Glassmorphism:**
+  * **Light Mode Card:** Border `1px solid var(--border-subtle)` + bayangan sangat halus `0 1px 2px rgba(16, 24, 40, 0.04)`. Hover kartu naik halus `0 8px 24px -6px rgba(16, 24, 40, 0.08)`.
+  * **Dark Mode Card:** Permukaan `#121218` dengan border *hairline* `rgba(255, 255, 255, 0.08)` dan *top inner highlight* `inset 0 1px 0 rgba(255, 255, 255, 0.04)`.
+  * **Floating Layer (Popover, Modal, Glass Navbar):** `backdrop-filter: blur(20px) saturate(180%)` + bayangan melayang terdistribusi lembut.
+
+---
+
+## 3. Spesifikasi Landing Page Publik (`/`)
+
+Struktur Landing Page mengadaptasi alur visual referensi kedua (*Hero Split + Ringkasan Sistem + Perbandingan Cara Lama vs Sistem Baru + Grid Modul Operasional*), namun diwarnai dan ditata ulang menggunakan **Design Token Apple-Minimalist + Electric Violet** yang mendukung Light & Dark Mode.
+
+### 3.1 Arsitektur Seksi Landing Page
+
+1. **Sticky Translucent Navbar (`height: 68px`):**
+   * **Kiri:** Logo ikon gradien violet–magenta + wordmark **Antech Async** (subtitle tipis `HRIS BSDM UAD`).
+   * **Tengah:** Tautan jangkar mulus: `Fitur Utama`, `Cara Kerja`, `Modul & Laporan`, `Lowongan Terbuka`.
+   * **Kanan:** `ThemeToggle` (Light/Dark), tombol Ghost `Daftar` (`/register`), dan tombol Primary Pill `Masuk Portal` (`/login`).
+
+2. **Hero Section (2-Kolom Split + Subtle Radial Glow):**
+   * **Kolom Kiri:**
+     * *Eyebrow Pill:* `• ARSITEKTUR HRIS TERPADU BSDM UAD` (latar `--color-accent-soft`, teks `--color-accent`).
+     * *Headline (`48px` Bold):* **"Transformasi Manajemen** `<span class="text-accent">SDM & Karir Akademik</span>` **Modern."**
+     * *Subheadline:* "Sistem informasi kepegawaian terpusat untuk mengelola siklus hidup Dosen dan Tendik Universitas Ahmad Dahlan — mulai dari rekrutmen, cuti, BKD/LKD, SKP, hingga masa pensiun dengan jejak audit transparan."
+     * *CTA Pair:* Primary Button `Masuk ke Portal HRIS →` (`/login`) dan Secondary Glass Button `Daftar Pelamar / Lihat Lowongan` (`/register`).
+     * *Compact Summary Card (`Ringkasan Sistem`):* Kartu kaca membulat (`16px`) menampilkan 4 baris metrik ringkas:
+       * `Proses Bisnis Terintegrasi` — **17 Proses (`P-01` s.d. `P-17`)**
+       * `Kategori Pegawai` — **Dosen & Tendik**
+       * `Kontrol Akses` — **RBAC + Cakupan Unit**
+       * `Integritas Audit` — **Append-Only Log & Locking**
+   * **Kolom Kanan (Apple-Style Floating Product Preview):**
+     * Bingkai jendela bergaya macOS (3 titik kontrol halus di kiri atas) yang menampilkan pratinjau interaktif antarmuka **Employee Directory & Dashboard Antech Async** (otomatis berubah tampilan antara Light Preview dan Dark Preview mengikuti `ThemeToggle`), dilengkapi *floating mini-card* di sudut kiri bawah (misal indikator `✓ 99.8% Pengajuan Tercatat & Terverifikasi`).
+
+3. **Seksi Perbandingan Masalah vs Solusi (*Pain Point Contrast*):**
+   * *Judul:* **"Kalau ini masih terasa familiar, tim BSDM butuh sistem yang saling terhubung."**
+   * *Grid 2 Kolom Sejajar (`rounded-2xl`, padding `28px`):*
+     * **Kartu Kiri — `CARA LAMA` (Permukaan Netral `--bg-elevated`):** Merangkum `BP-01` s.d. `BP-06` (berkas pegawai tersebar, persetujuan cuti/lembur manual tanpa jejak, jenjang karir Dosen/Tendik sulit dipantau lintas bidang, rekap laporan pimpinan lambat).
+     * **Kartu Kanan — `DENGAN ANTECH ASYNC` (Aksen Gradien Violet `#6D28D9` $\rightarrow$ `#7C3AED` dengan teks putih bersih):** Merangkum `BO-01` s.d. `BO-04` (data induk & riwayat penempatan satu pintu, workflow anti-konflik dengan *optimistic locking*, validasi BKD/SKP terstruktur, serta 6 laporan agregat pimpinan *real-time*).
+
+4. **Seksi Modul Operasional Utama (6 Bento Feature Cards, Grid 3 $\times$ 2):**
+   * Masing-masing kartu memiliki ikon *squircle* (`44px`, radius `12px`) bernuansa pastel/transparan sesuai kategori:
+     1. **Organisasi & Direktori Pegawai:** Data induk Dosen/Tendik, *Directory Grid*, *Org Chart*, dan riwayat penempatan.
+     2. **Rekrutmen & Onboarding:** Publikasi lowongan, seleksi bertahap + nilai AIK, hingga konversi otomatis pegawai aktif.
+     3. **Cuti, Lembur & Jadwal Kerja:** Validasi saldo & overlap *real-time*, persetujuan berjenjang, dan versi jadwal kerja.
+     4. **Karir, Studi S3 & Pelatihan:** Percepatan jabatan fungsional Dosen, kepangkatan Tendik, sertifikasi, dan diklat.
+     5. **Evaluasi Kinerja (BKD & SKP):** Laporan BKD/LKD berversi dengan revisi tercatat serta penilaian SKP berbobot $100\%$.
+     6. **Kesejahteraan, Pensiun & Laporan:** Kepesertaan BPJS terproteksi, pengajuan tunjangan, *scheduled* pensiun, dan 6 laporan SDM.
+
+5. **Seksi Lowongan Terbuka & CTA Penutup:**
+   * Menampilkan hingga 3 kartu lowongan berstatus `dibuka` (data publik dari tabel `vacancies`: judul, unit, kategori `DOSEN`/`TENDIK`, tanggal tutup) dengan tombol `Lamar Sekarang` yang mengarahkan ke `/register`.
+   * Footer minimalis: Identitas BSDM Universitas Ahmad Dahlan, tautan cepat, dan status hak cipta proyek Antech Async.
+
+---
+
+## 4. Spesifikasi Halaman Autentikasi Terpisah (`/login` & `/register`)
+
+Halaman autentikasi menggunakan `AuthLayout` terpisah dari `LandingLayout` dan `AppLayout` agar pengalaman masuk terasa fokus, cepat, dan aman.
+
+### 4.1 Tata Letak `AuthLayout` (Minimalist Apple Card / Subtle Split)
+* **Top Utility Bar Minimal:** Tombol kembali `← Kembali ke Beranda` (`/`) di kiri atas dan `ThemeToggle` di kanan atas.
+* **Kontainer Tengah (Desktop):** Kartu tunggal presisi selebar `420px` (atau *split screen* elegan 55%/45% pada layar lebar di mana sisi kiri menampilkan panel visual *brand showcase* tenang dan sisi kanan menampilkan formulir bersih) di atas latar `--bg-canvas` dengan pendaran radial violet sangat samar (`opacity: 0.08`).
+
+### 4.2 Halaman Login (`/login`)
+* **Target Pengguna:** Seluruh aktor internal (Pegawai Dosen/Tendik, Atasan Langsung, Staf/Kepala Bidang BSDM, Kepala Biro, Wakil Rektor, Admin Sistem) dan Pelamar terdaftar.
+* **Elemen Formulir:**
+  * Logo & judul **"Masuk ke Antech Async"** + subjudul *"Gunakan username atau email institusi Anda."*
+  * Input `Username / Email` (autofocus) dan `Kata Sandi` (dilengkapi tombol ikon mata *show/hide*).
+  * Baris utilitas: Checkbox `Ingat saya` dan tautan `Lupa kata sandi?` (arahan kontak Admin Sistem BSDM).
+  * Tombol Primary full-width `Masuk` dengan animasi spinner `form.processing`.
+  * Footer tautan: *"Calon pelamar atau pegawai baru?"* $\rightarrow$ `Daftar / Aktivasi Akun` (`/register`).
+* **Penanganan Error:** Error kredensial atau akun nonaktif (`users.is_active = 0`) tampil sebagai *inline alert* merah lembut di atas tombol tanpa membocorkan detail keamanan sensitif. Setelah sukses, Laravel mengarahkan otomatis ke `/dashboard` (atau portal lamaran bagi role pelamar).
+
+### 4.3 Halaman Register Terpisah (`/register`)
+Agar fitur registrasi tetap mematuhi integritas data `RULE-02` dan `RULE-15` (pegawai aktif hanya dibuat lewat onboarding/BSDM, bukan mendaftar sembarangan sebagai Admin/Pegawai):
+* **Segmented Control ala Apple di Bagian Atas Kartu** (2 tab rapi dalam pil tunggal):
+  1. **Tab 1 — Daftar Pelamar Baru (Default):**
+     * Membuat akun pelamar eksternal (`users` + profil `applicants`) untuk melamar lowongan Dosen/Tendik yang dibuka (`P-01`/`P-02`).
+     * Field: Nama Lengkap, Email (validasi unik `EX-10`), Nomor Telepon, Tanggal Lahir, Pendidikan Terakhir (`S1`/`S2`/`S3`/`D3`/`SMA`), Password & Konfirmasi Password.
+  2. **Tab 2 — Aktivasi Akun Pegawai:**
+     * Khusus Dosen/Tendik yang datanya sudah tercatat di tabel `employees` oleh BSDM tetapi belum memiliki akun login (`users.employee_id IS NULL`).
+     * Field: NIP, Email Kerja (harus cocok dengan record `employees`), Username pilihan, dan Password baru. Sistem memverifikasi kecocokan NIP + Email sebelum mengaitkan akun ke role dasar `pegawai`.
+* Footer tautan: *"Sudah memiliki akun?"* $\rightarrow$ `Masuk di sini` (`/login`).
+
+---
+
+## 5. App Shell, Navigasi & Gaya Visual Dashboard (Referensi Gambar 1)
+
+Tata letak area terautentikasi mengadopsi desain bersih dari referensi pertama (`Nexora`) yang disesuaikan dengan 12 menu HRIS BSDM UAD.
+
+### 5.1 Blueprint App Shell (Desktop $\ge 1280\text{px}$)
+
+```text
++-------------------------+-----------------------------------------------------------------+
+| [Logo] Antech Async [|<]|  Pegawai (Page Title)          [ThemeToggle] [+ Tambah Pegawai] |
+|-------------------------|-----------------------------------------------------------------|
+| MAIN MENU               |  Daftar Pegawai  |  Direktori (Active)  |  Struktur Organisasi  |
+|   Dashboard             |  ----------------===========================------------------- |
+|   Inbox Persetujuan (4) |                                                                 |
+|   Laporan & Analitik    |  [ Q  Cari nama, NIP, atau unit...         ⌘F ]  [ ≡ Filter ]   |
+|                         |                                                                 |
+| ORGANISASI & SDM        |  +-------------------+ +-------------------+ +----------------+ |
+| | Pegawai (Active)      |  | • Aktif         ⋮ | | • Aktif         ⋮ | | • Aktif      ⋮ | |
+|   Jadwal Kerja          |  |     (Avatar)      | |     (Avatar)      | |    (Avatar)    | |
+|   Cuti & Lembur         |  | Dr. Ahmad Alfan   | | Kartika Pricilla  | | M. Zaki Raiz   | |
+|   Karir & Pelatihan     |  | Lektor | Prodi SI | | Laboran | FTI     | | Asisten Ahli   | |
+|   Kinerja (BKD & SKP)   |  |     [ DOSEN ]     | |    [ TENDIK ]     | |   [ DOSEN ]    | |
+|   Rekrutmen             |  |-------------------| |-------------------| |----------------| |
+|   BPJS & Tunjangan      |  | Unit    Prodi SI  | | Unit    Lab FTI   | | Unit   Prodi TI| |
+|   Pensiun               |  | NIP     198501... | | NIP     199604... | | NIP    199208..| |
+|                         |  | Email   ahmad@... | | Email   kartik... | | Email  zaki@...| |
+|                         |  +-------------------+ +-------------------+ +----------------+ |
+|-------------------------|                                                                 |
+|   Manajemen User & Role |                                      +------------------------+ |
+|   Activity Log (Audit)  |                                      | Side-Drawer (520px)    | |
+|   Pengaturan            |                                      | Detail / Riwayat / Log | |
+|-------------------------|                                      +------------------------+ |
+| (Av) Dr. Ahmad Alfan    |                                                                 |
+|      Cakupan: Prodi SI  |                                                                 |
++-------------------------+-----------------------------------------------------------------+
+```
+
+### 5.2 Karakteristik Sidebar Minimalis (Clean Light & Obsidian Dark)
+* **Lebar:** `252px` (terbuka) dengan tombol ciutkan (`[|<]`) di sebelah logo untuk mengubahnya menjadi *icon rail* `72px` dengan animasi transisi `200ms cubic-bezier(0.2, 0, 0, 1)`.
+* **Permukaan Sidebar:** Putih bersih (`#FFFFFF`) di Light Mode dan `#121218` di Dark Mode, dipisahkan oleh 1px *hairline border* (`--border-subtle`).
+* **Grup Menu Terstruktur:**
+  * `MAIN MENU`: **Dashboard**, **Inbox Persetujuan** (antrean cepat pengajuan `diajukan` dengan badge angka), **Laporan & Analitik** (`RPT-01` s.d. `RPT-06`).
+  * `ORGANISASI & SDM`: **Pegawai** (mencakup *List*, *Directory*, *Org Chart*), **Jadwal Kerja**, **Cuti & Lembur**, **Karir & Pengembangan** (Jabatan Dosen, Pangkat Tendik, Studi S3, Sertifikasi, Pelatihan), **Kinerja** (BKD/LKD & SKP), **Rekrutmen**, **Kesejahteraan** (BPJS & Tunjangan), **Pensiun**.
+  * `SISTEM (Bawah Sidebar)`: **User & Role**, **Activity Log**, serta **Profil Pengguna Aktif** di paling bawah (Avatar bulat + Nama + Indikator *Unit Scope* aktif + menu Logout).
+* **Gaya Item Aktif (Ciri Khas Gambar 1):** Latar lembut `--color-accent-soft` (radius `10px`), bilah vertikal kecil (`3px x 20px`, radius penuh) berwarna `--color-accent` di sisi kiri item, serta ikon & teks tebal berwarna `--color-accent`.
+
+### 5.3 Pola Header Halaman, Sub-Tabs & Search Bar
+1. **Header Konten:** Judul halaman tegas di kiri (`22px` Semibold), dipadukan `ThemeToggle` + tombol aksi utama berwarna Violet (`+ Tambah Pegawai` / `+ Ajukan Cuti`) di kanan.
+2. **Underline Sub-Tabs (`SubTabs`):** Berada tepat di bawah header dengan garis pemisah tipis memanjang. Tab aktif memiliki teks `--color-accent` dan garis bawah `2px solid var(--color-accent)` (contoh pada modul Pegawai: `Daftar Pegawai` | `Direktori` | `Struktur Organisasi`; pada modul Pengajuan: `Cuti` | `Lembur` | `Tunjangan`; pada modul Kinerja: `BKD / LKD` | `SKP`).
+3. **Search & Filter Bar (`SearchFilterBar`):**
+   * Kotak pencarian lebar penuh dengan ikon kaca pembesar di kiri dan lencana pintasan keyboard `⌘F` (atau `Ctrl+K` di Windows/Linux) di kanan.
+   * Tombol `Filter` di sisi kanan membuka popover/bar filter dinamis (Unit Kerja, Kategori `DOSEN`/`TENDIK`, Status Kepegawaian, Periode) tanpa memenuhi layar.
+
+### 5.4 Breakpoint Responsivitas
+* **Desktop ($\ge 1280\text{px}$):** Sidebar penuh `252px`, *Directory Card Grid* 3 kolom, KPI Grid 3–4 kolom.
+* **Tablet (`768px` – `1279px`):** Sidebar otomatis menciut menjadi *icon rail* `72px`, *Directory Card Grid* 2 kolom, KPI Grid 2 kolom.
+* **Mobile ($< 768\text{px}$):** Sidebar berubah menjadi *off-canvas drawer* via tombol burger di kiri atas, *Directory Grid* 1 kolom, dan tabel mendukung scroll horizontal dengan kolom identitas tetap *sticky*.
+
+---
+
+## 6. Pustaka Komponen UI Inti & Pemetaan Status
+
+### 6.1 Pemetaan Status Badge (`StatusBadge`)
+
+Mengadopsi gaya **dot-pill badge** (`• Aktif`, `• Nonaktif`) yang bersih dari referensi pertama:
+
+| Kelompok Warna | Token | Daftar Status Modul |
 |---|---|---|
-| **Hijau** (Positif / Sah) | `#DCFCE7` / `#166534` | `disetujui`, `diterima`, `lolos`, `final`, `aktif`, `lulus`, `selesai`, `dibuka` |
-| **Kuning** (Dalam Proses) | `#FEF9C3` / `#854D0E` | `diajukan`, `proses`, `menunggu`, `diproses`, `berjalan` |
-| **Biru** (Inisiasi / Terjadwal) | `#DBEAFE` / `#1D4ED8` | `draf`, `diusulkan`, `direncanakan`, `dijadwalkan` |
-| **Merah** (Ditolak / Gugur) | `#FFE4E6` / `#BE123C` | `ditolak`, `gugur`, `tidak_lulus`, `berhenti` |
-| **Abu-abu** (Batal / Arsip) | `#F1F5F9` / `#475569` | `dibatalkan`, `ditutup`, `nonaktif`, `pensiun`, `batal`, `belum` |
+| **Hijau** (Positif / Sah) | `--status-success` | `disetujui`, `diterima`, `lolos`, `final`, `aktif`, `lulus`, `selesai`, `dibuka` |
+| **Kuning** (Menunggu Aksi) | `--status-warning` | `diajukan`, `proses`, `menunggu`, `diproses`, `berjalan` |
+| **Biru** (Inisiasi / Terjadwal) | `--status-info` | `draf`, `diusulkan`, `direncanakan`, `dijadwalkan` |
+| **Merah** (Ditolak / Gugur) | `--status-danger` | `ditolak`, `gugur`, `tidak_lulus`, `berhenti` |
+| **Abu-abu** (Batal / Arsip) | `--status-neutral` | `dibatalkan`, `ditutup`, `nonaktif`, `pensiun`, `batal`, `belum` |
 
-> **Penanda Status Terminal (`RULE-11` & `EX-05`):** Status final (`disetujui`, `ditolak`, `dibatalkan`, `final`, `selesai`) wajib menampilkan ikon gembok kecil (`12px`) di sisi kiri teks badge pada halaman detail sebagai penanda visual bahwa rekaman terkunci dan tidak dapat diedit ulang.
+> **Penanda Status Terminal (`RULE-11` & `EX-05`):** Status final (`disetujui`, `ditolak`, `dibatalkan`, `final`, `selesai`) mengganti titik dot dengan ikon gembok kecil (`12px`) pada halaman detail untuk menandakan bahwa data bersifat *immutable*.
 
----
-
-## 4. Pustaka Komponen UI Inti
-
-### 4.1 Buttons (`AppButton`)
-* **Primary:** Latar `#2C3E50`, hover `#1E2B38`, teks `#FFFFFF`. Hanya boleh ada satu *Primary Button* di tiap area aksi.
-* **Secondary:** Latar `#FFFFFF` / transparan, border `#CBD5E1`, teks `#1E293B`, hover `#F8FAFC`.
-* **Danger:** Latar `#E11D48`, hover `#BE123C`, teks `#FFFFFF` — khusus penolakan, pembatalan, dan penonaktifan.
-* **Integrasi Inertia `useForm`:** Properti `:loading="form.processing"` (Vue) atau `loading={form.processing}` (React) otomatis menonaktifkan tombol dan menampilkan spinner `16px` untuk mencegah *double-submit*.
-
-### 4.2 Form Controls & Upload Berkas Privat
-* Label selalu diletakkan di atas input dengan tanda `*` merah (`#E11D48`) untuk bidang wajib.
-* **Inline Error Feedback:** Terikat langsung ke `form.errors.<field>` dari Inertia. Saat pengguna mulai memperbaiki input, jalankan `form.clearErrors('<field>')` agar pesan merah langsung hilang.
-* **Unduh Berkas Privat (`cv_path`, `certificate_path`):** Tautan unduh **wajib menggunakan tag HTML standar `<a href="..." target="_blank">`** dan **BUKAN** komponen `<Link>` milik Inertia, agar browser menangani respons *file stream* dari `storage/app/private` tanpa error parsing JSON Inertia.
-
-### 4.3 Data Table (`DataTable`)
-* Header tabel bersifat *sticky* berlatar `#F8FAFC` dengan teks `#64748B`.
-* Baris tabel bergaris tipis `#E2E8F0` dengan selang-seling halus (`odd:bg-white even:bg-slate-50/50`), tinggi minimum `48px`, dan highlight hover `#F1F5F9`.
-* Menyediakan 3 *state* eksplisit:
-  1. **Loading Skeleton:** Muncul saat *partial reload* Inertia sedang berjalan pada tabel.
-  2. **Empty State:** Ikon netral, pesan kontekstual ("Belum ada pengajuan cuti pada periode ini"), dan tombol CTA bila role memiliki izin tambah.
-  3. **Pagination:** Menggunakan komponen `<Link preserve-scroll preserve-state>` dari Laravel paginator (`links`).
-
-### 4.4 Modal Validasi Alasan (`ReasonModal` - `RULE-12`)
-* Dipicu setiap kali pengguna mengklik **Tolak**, **Batalkan**, atau **Buat Revisi BKD**.
-* Memuat `textarea` wajib diisi (minimal 10 karakter), penghitung karakter, dan tombol konfirmasi yang tetap `disabled` sampai syarat terpenuhi.
-* Mengirimkan payload beserta `version` saat ini melalui `form.patch()` / `form.post()`.
-
-### 4.5 Side-Drawer (`SideDrawer`)
-* Panel geser dari sisi kanan selebar `520px` (desktop) hingga `100%` (mobile) dengan *backdrop* `bg-slate-900/35`.
-* Digunakan untuk pratinjau cepat profil pegawai, riwayat penempatan (`employee_assignments`), detail pengajuan, dan rincian JSON `activity_logs` tanpa meninggalkan halaman daftar maupun mereset filter.
-* Menutup otomatis saat tombol `Escape` ditekan atau klik di luar panel.
-
-### 4.6 Progress Stepper (`ProgressStepper`)
-* Digunakan pada alur **Tahapan Seleksi Rekrutmen (`selection_stages`)** dan **Jenjang Jabatan Fungsional Dosen (`Asisten Ahli` $\rightarrow$ `Lektor` $\rightarrow$ `Lektor Kepala` $\rightarrow$ `Guru Besar`)**.
-* Indikator visual:
-  * **Selesai (`lolos` / tercapai):** Lingkaran hijau `#DCFCE7` + ikon centang `#166534`.
-  * **Sedang Berjalan (`menunggu` / `diajukan`):** Lingkaran berbingkai oranye `#E67E22` dengan animasi denyut halus (`animate-pulse`).
-  * **Gugur / Ditolak:** Lingkaran merah `#FFE4E6` + ikon silang `#E11D48`.
-  * **Belum Dimulai:** Lingkaran abu-abu `#E2E8F0`.
-
-### 4.7 Toast Notification (`ToastContainer`)
-* Dipasang satu kali di dalam *Persistent Layout* (`AppLayout`) di pojok kanan atas (`top-4 right-4 z-50`).
-* Mendengarkan perubahan `page.props.flash` setiap kali respons Inertia tiba:
-  * `flash.success`: Auto-dismiss setelah `4000ms`.
-  * `flash.error` / `flash.warning`: Tetap tampil hingga ditutup manual atau maksimal `7000ms`.
+### 6.2 Komponen Utama
+* **Employee Directory Card (`EmployeeDirectoryCard` — Referensi Gambar 1):**
+  * Header kartu: `StatusBadge` (`• Aktif`) di kiri, tombol menu tiga titik (`⋮`) di kanan yang memunculkan floating popover (`Lihat Detail`, `Ubah Penempatan`, `Nonaktifkan` — **bukan** *Delete* permanen demi mematuhi `RULE-13`).
+  * Tengah: Avatar bulat `64px` (foto profil atau inisial monokrom elegan), Nama Lengkap (`15px` Semibold), subjudul `Jabatan / Pendidikan | Unit Kerja`, dan `CategoryPill` (`DOSEN` ungu lembut, `TENDIK` biru lembut).
+  * Bawah: Garis pemisah *hairline* diikuti 3 baris metadata sejajar kiri–kanan (`Unit Kerja`, `NIP / NIDN`, `Email Kerja`).
+* **Buttons (`AppButton`):**
+  * *Primary:* Latar `--color-accent`, teks putih, radius `10px`, spinner otomatis saat `form.processing`.
+  * *Secondary:* Latar `--bg-surface`, border `--border-control`, teks `--text-primary`.
+  * *Danger:* Latar `--status-danger-fg`, teks putih — khusus Tolak, Batalkan, dan Nonaktifkan.
+* **Data Table (`DataTable`):**
+  * Header *sticky* berlatar `--bg-elevated`, baris bersih dengan hover halus, *skeleton loader* saat Inertia *partial reload*, *empty state* ilustratif, dan paginasi `<Link preserve-scroll preserve-state>`.
+* **Modal Validasi Alasan (`ReasonModal` — `RULE-12`):**
+  * Wajib muncul saat aksi **Tolak**, **Batalkan**, atau **Buat Revisi BKD**. Memuat `textarea` minimal 10 karakter + penghitung karakter + hidden `version`.
+* **Side-Drawer (`SideDrawer`):**
+  * Panel melayang kanan `520px` dengan `backdrop-blur-sm` untuk pratinjau profil pegawai, riwayat `employee_assignments`, persetujuan cepat, dan rincian JSON `activity_logs`.
+* **Progress Stepper (`ProgressStepper`):**
+  * Untuk `selection_stages` (Rekrutmen) dan 4 jenjang jabatan fungsional Dosen (`Asisten Ahli` $\rightarrow$ `Lektor` $\rightarrow$ `Lektor Kepala` $\rightarrow$ `Guru Besar`). Tahap selesai hijau, aktif berbingkai violet dengan `animate-pulse`, gugur merah, mendatang abu-abu.
+* **Unduh Berkas Privat (`cv_path`, `certificate_path`):**
+  * Wajib menggunakan tag HTML standar `<a href="..." target="_blank">` (bukan `<Link>` Inertia) agar file stream dari `storage/app/private` diunduh dengan benar oleh browser.
 
 ---
 
-## 5. Pola Interaksi Real-Time Berbasis Inertia.js
+## 7. Pola Interaksi Real-Time Berbasis Inertia.js
 
-### 5.1 Live Filter & Pencarian Tanpa Reload Penuh
-Pencarian nama pegawai (`FULLTEXT` index) dan filter dropdown (Unit, Kategori, Status, Periode) menerapkan *debounce* `300ms` lalu memanggil **Partial Reload** Inertia agar hanya prop tabel dan filter yang dikirim ulang oleh Laravel:
+### 7.1 Live Filter & Keyboard Shortcut (`⌘F` / `Ctrl+K`)
+* Menekan `⌘F` atau `Ctrl+K` langsung memfokuskan kotak `SearchFilterBar`.
+* Perubahan input pencarian (`debounce 300ms`) dan dropdown filter mengeksekusi **Partial Reload** Inertia:
 
 ```ts
-// Pola referensi Inertia.js (berlaku untuk Vue 3 watch / React useEffect)
 router.get(
   route('employees.index'),
-  { search, unit_id, category, status },
+  { search, unit_id, category, status, view }, // view: 'list' | 'directory' | 'org-chart'
   {
     preserveState: true,
     preserveScroll: true,
-    replace: true,               // Tidak memenuhi riwayat tombol Back browser
-    only: ['employees', 'filters'], // Partial reload: header, sidebar, & opsi unit tidak diambil ulang
+    replace: true,
+    only: ['employees', 'filters'],
   }
 );
 ```
 
-### 5.2 Optimistic Locking & Penanganan Konflik `HTTP 409` (`RULE-17`, `EX-04`)
-* Setiap formulir persetujuan (`leave_requests`, `overtime_requests`, `allowance_requests`, `academic_rank_histories`, `staff_rank_histories`, `performance_targets`, `retirements`) wajib menyertakan `version` di dalam objek `useForm({ version: item.version, decision_note: '' })`.
-* Bila dua approver menekan tombol setuju secara bersamaan, backend mendeteksi `affected_rows === 0` dan mengembalikan flash `conflict` (atau status konflik).
-* Frontend otomatis membuka **`ConflictModal`** berwarna kuning: *"Pengajuan ini baru saja diproses oleh pengguna lain."* disertai tombol **Muat Ulang Data Terbaru** yang menjalankan `router.reload({ only: ['request', 'items'] })`.
+### 7.2 Optimistic Locking & Penanganan Konflik `HTTP 409` (`RULE-17`, `EX-04`)
+* Seluruh formulir persetujuan mengirimkan `version` melalui `useForm`.
+* Bila backend mengembalikan konflik versi, **`ConflictModal`** muncul otomatis dengan tombol **Muat Ulang Data Terbaru** (`router.reload({ only: ['request', 'items'] })`).
 
-### 5.3 Drill-Down Graph (ApexCharts + Inertia Partial Reload)
-Pada Dashboard dan halaman Laporan (`RPT-01` s.d. `RPT-06`), event `dataPointSelection` pada ApexCharts disambungkan ke `router.get()` dengan `preserveScroll: true`:
-* Mengklik batang unit atau potongan kategori pada grafik komposisi SDM (`RPT-06`) langsung memfilter tabel rincian di bawah grafik sesuai `unit_id` dan `category` yang diklik.
-* Muncul *active filter chip* di atas tabel (misalnya `Filter Grafik: Fakultas Teknologi Industri ×`) agar pengguna dapat mereset filter dengan sekali klik.
+### 7.3 Drill-Down Graph (ApexCharts Dual-Mode)
+* Mengklik segmen batang/donut pada grafik Dashboard atau halaman Laporan (`RPT-01` s.d. `RPT-06`) memicu `router.get()` parsial untuk menyaring tabel rincian di bawah grafik dan menampilkan *filter chip* aktif yang bisa dihapus dengan sekali klik.
 
-### 5.4 Persistent Layout & Deferred Loading (`NFR-04` $\le 2$ Detik)
-* Seluruh halaman terautentikasi menetapkan `AppLayout` sebagai *Persistent Layout* Inertia agar posisi scroll Sidebar, status menu dropdown yang terbuka, dan antrean Toast tidak ter-reset saat berpindah halaman.
-* Widget grafik agregat yang berat pada Dashboard menggunakan **Deferred Props** (Inertia v2) atau *lazy partial reload* setelah kerangka halaman tampil, sehingga *First Contentful Paint* tetap jauh di bawah batas $\le 2$ detik.
+### 7.4 Persistent Layout & Deferred Props (`NFR-04` $\le 2$ Detik)
+* Seluruh halaman dashboard memakai `AppLayout` sebagai *Persistent Layout* sehingga state Sidebar (terbuka/ciut), tema aktif, dan antrean Toast tetap utuh antar perpindahan halaman.
+* Grafik agregat berat dimuat menggunakan *Deferred Props* (Inertia v2) agar halaman utama tampil di bawah 2 detik.
 
 ---
 
-## 6. Layout, Navigasi & Matriks Visibilitas Role
+## 8. Matriks Visibilitas Menu & Blueprint Modul Utama
 
-### 6.1 App Shell Blueprint (Desktop $\ge 1280\text{px}$)
+### 8.1 Matriks Visibilitas Menu Berdasarkan Role
 
-```text
-+-----------------------+---------------------------------------------------------------+
-|  ANTECH ASYNC HRIS    |  [Cari Pegawai / NIP... (Ctrl+K)]     [Cakupan: Unit/Global]  |
-|  BSDM UAD             |                                        [Notif] [Avatar/Role]  |
-+-----------------------+---------------------------------------------------------------+
-|  [Sidebar #2C3E50]    |  Breadcrumb: Pengajuan > Cuti                [+ Ajukan Cuti]  |
-|  > Dashboard          |---------------------------------------------------------------|
-|    Organisasi & Peg.  |  +----------------+  +----------------+  +----------------+   |
-|    Rekrutmen          |  | KPI Card 1     |  | KPI Card 2     |  | KPI Card 3     |   |
-|    Pengajuan (v)      |  +----------------+  +----------------+  +----------------+   |
-|      - Cuti           |                                                               |
-|      - Lembur         |  +---------------------------------------------------------+  |
-|      - Tunjangan      |  | Live Filter: [Cari...] [Unit v] [Kategori v] [Status v] |  |
-|    Jadwal Kerja       |  +---------------------------------------------------------+  |
-|    Karir & Pengemb.   |  | Data Table / Drill-Down Chart (ApexCharts)              |  |
-|    Kinerja (v)        |  |                                                         |  |
-|      - BKD/LKD        |  |  [Baris data...]          [StatusBadge]   [Detail >]    |  |
-|      - SKP            |  +---------------------------------------------------------+  |
-|    Kesejahteraan BPJS |                                     +---------------------+   |
-|    Pensiun            |                                     | Side-Drawer (520px) |   |
-|    Laporan            |                                     | Detail & Audit Log  |   |
-|  -------------------- |                                     +---------------------+   |
-|    User & Role        |                                                               |
-|    Activity Log       |                                                               |
-+-----------------------+---------------------------------------------------------------+
-```
-
-### 6.2 Breakpoint Responsivitas
-* **Desktop ($\ge 1280\text{px}$):** Sidebar kiri terbuka tetap (`260px`), menu aktif berlatar `#1E2B38` dengan border kiri `3px solid #E67E22`, grid KPI 3–4 kolom.
-* **Tablet (`768px` – `1279px`):** Sidebar dapat diciutkan menjadi *icon rail* (`72px`) dengan tooltip hover, grid KPI 2 kolom.
-* **Mobile ($< 768\text{px}$):** Sidebar terlipat menjadi menu burger di kiri atas (*off-canvas drawer*), grid KPI 1 kolom, dan tabel mendukung scroll horizontal dengan kolom identitas (Nama/NIP) tetap *sticky* di kiri.
-
-### 6.3 Matriks Visibilitas 12 Menu Navigasi per Role
-
-Penyembunyian menu di frontend hanya bersifat kenyamanan UX; penegakan akses utama tetap berada pada Laravel Policy & query scope (`PRD Bagian 3.3`).
+Penyembunyian menu di frontend hanya bersifat kenyamanan UX; otorisasi aktual ditegakkan penuh di Laravel Policy & query scope (`PRD Bagian 3.3`).
 
 | Menu Navigasi | Pegawai | Atasan Langsung | Staf Bidang BSDM | Kepala Biro / Warek | Admin Sistem |
 |---|---|---|---|---|---|
 | 1. Dashboard | Ringkasan Pribadi | Antrean Unit | Antrean Bidang | Agregat Eksekutif | Kesehatan Sistem |
-| 2. Organisasi & Pegawai | Profil Sendiri | Bawahan Unit | Sesuai Bidang | Lintas Unit | Kelola Unit |
-| 3. Rekrutmen | — | — | Bidang Seleksi | Monitoring | — |
-| 4. Pengajuan (Cuti/Lembur/Tunjangan) | Ajukan & Pantau | Approve Unit | Kelola & Rekap | Monitoring | — |
-| 5. Jadwal Kerja | Lihat Jadwal | Lihat Unit | Kelola & Publish | Monitoring | — |
-| 6. Karir & Pengembangan | Riwayat & Ajukan | Lihat Unit | Seleksi / Diklat | Monitoring | — |
-| 7. Kinerja (BKD & SKP) | Isi & Revisi | Validasi Unit | Evaluasi Kinerja | Monitoring | — |
-| 8. Kesejahteraan (BPJS) | Data Sendiri | — | Izin Khusus BSDM | Agregat (*Masked*) | — |
-| 9. Pensiun | Status Sendiri | Info Unit | Kelola Pensiun | Monitoring | — |
-| 10. Laporan (`RPT-01` s.d. `RPT-06`) | — | Rekap Unit | Laporan Bidang | `RPT-01` s.d. `RPT-06` | — |
-| 11. Manajemen User & Role | — | — | — | — | Penuh |
-| 12. Activity Log | Log Sendiri | Log Unit | Log Bidang | Audit Lintas Unit | Audit Sistem |
+| 2. Inbox Persetujuan | Pantau Pengajuan | Approve Unit | Proses Bidang | Monitoring | — |
+| 3. Pegawai (List / Directory / Org Chart) | Profil Sendiri | Bawahan Unit | Sesuai Bidang | Lintas Unit | Kelola Unit |
+| 4. Rekrutmen | — | — | Bidang Seleksi | Monitoring | — |
+| 5. Cuti & Lembur | Ajukan & Pantau | Approve Unit | Kelola & Rekap | Monitoring | — |
+| 6. Jadwal Kerja | Lihat Jadwal | Lihat Unit | Kelola & Publish | Monitoring | — |
+| 7. Karir & Pengembangan | Riwayat & Ajukan | Lihat Unit | Seleksi / Diklat | Monitoring | — |
+| 8. Kinerja (BKD & SKP) | Isi & Revisi | Validasi Unit | Evaluasi Kinerja | Monitoring | — |
+| 9. Kesejahteraan (BPJS & Tunjangan) | Data & Ajukan | Approve Unit | Izin Khusus BSDM | Agregat (*Masked*) | — |
+| 10. Pensiun | Status Sendiri | Info Unit | Kelola Pensiun | Monitoring | — |
+| 11. Laporan (`RPT-01` s.d. `RPT-06`) | — | Rekap Unit | Laporan Bidang | `RPT-01` s.d. `RPT-06` | — |
+| 12. User & Role + Activity Log | Log Sendiri | Log Unit | Log Bidang | Audit Lintas Unit | Penuh |
+
+### 8.2 Ringkasan Blueprint Layar per Modul (17 Proses Bisnis)
+
+1. **Dashboard (`P-17`):** 3 KPI Card minimalis di atas, 2 grafik *Drill-Down* ApexCharts adaptif tema di tengah (`RPT-06` & `RPT-04`), dan tabel ringkas transaksi aktif di bawah dengan aksi cepat `SideDrawer`.
+2. **Organisasi & Pegawai (`PRD-FR-01`, `PRD-FR-02`):** 3 *Sub-Tabs* ala referensi pertama:
+   * `Daftar Pegawai` (*DataTable* padat).
+   * `Direktori` (Grid 3-kolom `EmployeeDirectoryCard` lengkap dengan avatar, badge `• Aktif`, pil `DOSEN`/`TENDIK`, dan popover `⋮`).
+   * `Struktur Organisasi` (*Interactive Org Chart* hierarki `departments.parent_id`).
+   * Klik kartu/baris membuka halaman/drawer detail dengan tab *Biodata*, *Timeline Penempatan (`employee_assignments`)*, *Karir & Kinerja*, serta *BPJS*.
+3. **Rekrutmen & Onboarding (`P-01` s.d. `P-03`):** Lowongan (`draf`/`dibuka`/`ditutup`), `ProgressStepper` seleksi + nilai AIK (`RULE-01`), dan tombol **Konversi ke Pegawai Aktif** khusus kandidat `diterima` (`RULE-02`).
+4. **Cuti, Lembur & Tunjangan (`P-04`, `P-05`, `P-15`):** `LeaveQuotaCards` di atas form cuti, kalkulasi otomatis `total_days` / `total_hours` + peringatan *inline* `EX-01`/`EX-02`/`EX-07`, validasi syarat S3 pada Tunjangan Doktor (`RULE-09`), serta penyembunyian mutlak tombol approve jika `auth.user.employee_id === item.employee_id` (`RULE-14`).
+5. **Jadwal Kerja (`P-06`):** Matrix 7 hari (`day_of_week` unik) dan mekanisme **Buat Versi Baru** agar jadwal historis tidak tertimpa.
+6. **Karir & Pengembangan (`P-07` s.d. `P-11`):** `ProgressStepper` 4 jenjang Dosen dengan *warning banner* & toggle **Jalur Percepatan** bila melompati jenjang (`RULE-05`, `EX-06`), timeline kepangkatan Tendik (`RULE-06`), studi lanjut S3, sertifikasi, dan pelatihan termasuk label `pra_pensiun`.
+7. **Kinerja: BKD/LKD & SKP (`P-12`, `P-13`):** Auto-sum `total_credit` BKD, kunci *read-only* pada status `final` dengan pemilih versi (`v1`, `v2`) + `ReasonModal` revisi (`RULE-07`), serta form butir SKP dinamis dengan indikator progress bar **Total Bobot = $100\%$** (`RULE-08`).
+8. **BPJS & Pensiun (`P-14`, `P-16`):** `BpjsMaskedField` (`********1234`) dengan proteksi 1 BPJS aktif per jenis (`RULE-16`), serta modal penyelesaian pensiun dengan `RetirementChecklist` otomatis atas 7 tabel pengajuan aktif (`EX-09`).
+9. **Laporan & Activity Log (`P-17`):** 6 halaman laporan seragam dengan *Drill-Down Chart* dan pembatasan tampilan agregat bagi Wakil Rektor; halaman `Activity Log` murni *read-only* dengan garis tepi merah pada `ACCESS_DENIED` dan *Side-Drawer* JSON diff.
 
 ---
 
-## 7. Blueprint Layar per Modul (17 Proses Bisnis)
+## 9. Pemetaan Umpan Balik UI untuk Skenario Pengecualian (`EX-01` s.d. `EX-12`)
 
-### 7.1 Dashboard & Analitik (`P-17`)
-* **Atas:** Grid 3 KPI Card adaptif sesuai role (misal: Total Pegawai Aktif Dosen/Tendik, Menunggu Persetujuan, Mendekati Pensiun; untuk Pegawai: Sisa Cuti Tahunan, Status BKD Semester Aktif, Status SKP Berjalan).
-* **Tengah:** Dua grafik ApexCharts interaktif (*Drill-Down*): Komposisi Pegawai per Unit/Kategori (`RPT-06`) dan Rekap Cuti/Lembur Bulanan (`RPT-04`).
-* **Bawah:** Tabel ringkas 10 transaksi terbaru berstatus `diajukan` dengan tombol **Tinjau** yang membuka `SideDrawer`.
-
-### 7.2 Organisasi & Data Pegawai (`PRD-FR-01`, `PRD-FR-02`)
-* **Struktur Unit (`departments`):** Switcher tampilan antara **Tree View** hierarki (`biro` $\rightarrow$ `bidang` $\rightarrow$ `urusan` $\rightarrow$ `unit`) dan **Table View**.
-* **Daftar Pegawai:** Live search (Nama/NIP) + filter Unit, Kategori (`DOSEN`/`TENDIK`), dan Status (`aktif`/`nonaktif`/`pensiun`).
-* **Detail Pegawai (Tabbed Page):**
-  1. *Biodata & Penempatan Aktif* (NIP, NIDN, pendidikan terakhir, atasan langsung).
-  2. *Riwayat Penempatan* (`employee_assignments` dalam format timeline `effective_from` – `effective_until`).
-  3. *Karir, Pelatihan & Kinerja* (ringkasan jabatan, studi S3, sertifikasi, BKD, SKP).
-  4. *Kesejahteraan BPJS* (dengan tombol *Reveal* nomor kepesertaan khusus pengguna berizin).
-
-### 7.3 Rekrutmen & Onboarding (`P-01` s.d. `P-03`)
-* **Lowongan (`vacancies`):** Tabel/card lowongan beserta kuota, jumlah pelamar, periode buka–tutup, dan tombol publikasi (`draf` $\rightarrow$ `dibuka`).
-* **Seleksi Pelamar (`applications` & `selection_stages`):** Menampilkan `ProgressStepper` tahap seleksi + input nilai tahap & `aik_score`. Tombol lanjut tahap terkunci otomatis bila tahap sebelumnya belum berstatus `lolos` (`RULE-01`).
-* **Onboarding:** Tombol **Konversi ke Pegawai Aktif** hanya aktif bila `application.status === 'diterima'` dan belum memiliki relasi `employees.application_id` (`RULE-02`).
-
-### 7.4 Pengajuan Cuti, Lembur & Tunjangan (`P-04`, `P-05`, `P-15`)
-* **Cuti:** Header formulir menampilkan `LeaveQuotaCards` (Kuota, Terpakai, Sisa). Pemilihan `start_date` dan `end_date` langsung menghitung `total_days` di klien dan menampilkan peringatan inline bila melebihi sisa kuota (`EX-01`).
-* **Lembur:** Input `work_date`, `start_time`, `end_time` otomatis menghitung `total_hours` dan memblokir pengiriman klien jika `end_time <= start_time` (`EX-07`).
-* **Tunjangan:** Opsi jenis tunjangan yang memiliki `requires_doctorate = true` dinonaktifkan dengan tooltip informatif bila `auth.user.highest_education !== 'S3'` (`RULE-09`).
-* **Guard Self-Approval (`RULE-14`):** Komponen tombol **Setujui** / **Tolak** tidak pernah dirender apabila `auth.user.employee_id === item.employee_id`.
-
-### 7.5 Jadwal Kerja (`P-06`)
-* **Weekly Schedule Matrix:** Grid 7 baris (Senin–Minggu) untuk mengisi `start_time` dan `end_time` sekaligus mencegah pemilihan `day_of_week` ganda.
-* **Versi Historis:** Jadwal yang sudah `is_published = true` tidak diubah menimpa histori; aksi perubahan disediakan lewat tombol **Buat Versi Baru** yang menutup `valid_until` jadwal lama.
-
-### 7.6 Karir & Pengembangan (`P-07` s.d. `P-11`)
-* **Jabatan Fungsional Dosen:** Menampilkan `ProgressStepper` 4 jenjang (`Asisten Ahli`, `Lektor`, `Lektor Kepala`, `Guru Besar`). Jika pilihan jenjang tujuan melompati urutan, form memunculkan *warning banner* dan mewajibkan pengaktifan opsi **Jalur Percepatan (`is_accelerated`)** (`RULE-05`, `EX-06`).
-* **Kepangkatan Tendik:** Timeline pangkat/golongan dan jabatan fungsional dengan panel ringkasan masa kerja dan nilai SKP periode terakhir (`RULE-06`).
-* **Studi Lanjut S3, Sertifikasi & Pelatihan:** Tabel dengan badge status beasiswa, tautan unduh sertifikat privat (`<a>`), serta label khusus untuk pelatihan `pra_pensiun` yang tertaut ke `retirement_id`.
-
-### 7.7 Evaluasi Kinerja: BKD/LKD & SKP (`P-12`, `P-13`)
-* **BKD/LKD (`workload_reports`):** Empat input SKS (*computed property* menjumlahkan `total_credit` secara real-time di klien, serasi dengan *generated column* MySQL). Untuk laporan berstatus `final`, form terkunci (*read-only*) dan menyediakan pemilih versi (`v1`, `v2 [Berlaku]`) serta tombol **Ajukan Revisi** yang membuka `ReasonModal` (`revision_reason` wajib, `RULE-07`).
-* **SKP (`performance_targets` & `performance_items`):** Tabel baris dinamis (tambah/hapus butir target) dilengkapi *progress bar* **Total Bobot**: berwarna merah bila $\sum \text{weight} \ne 100\%$ dan hijau bila tepat $100\%$. Kartu `final_score` dan `rating` hanya menampilkan hasil setelah status `disetujui` (`RULE-08`).
-
-### 7.8 Kesejahteraan (BPJS) & Pensiun (`P-14`, `P-16`)
-* **BPJS (`bpjs_memberships`):** Komponen `BpjsMaskedField` menyamarkan `membership_number` menjadi `********1234`. Penambahan kepesertaan `aktif` untuk jenis BPJS yang sudah aktif diblokir di UI dengan panduan menonaktifkan/mengarsipkan data lama terlebih dahulu (`RULE-16`).
-* **Pensiun (`retirements`):** Daftar pegawai usulan *scheduled job* dengan hitung mundur `planned_date` dan status pelatihan pra-pensiun. Modal penyelesaian menampilkan `RetirementChecklist` yang memeriksa 7 tabel pengajuan aktif; tombol **Selesaikan Pensiun** terkunci bila masih ada pengajuan berstatus `diajukan` atau `draf` (`EX-09`).
-
-### 7.9 Laporan Lintas Bidang & Activity Log (`P-17`)
-* **Laporan (`RPT-01` s.d. `RPT-06`):** Bilah filter seragam (Periode, Unit, Kategori, Status), grafik *Drill-Down* ApexCharts di atas, tabel agregat di bawah, serta tombol ekspor CSV/PDF via tautan unduh non-Inertia. Bila `auth.permissions.aggregate_reports_only === true` (Wakil Rektor), rincian data individu disembunyikan.
-* **Activity Log (`activity_logs`):** Tabel *read-only* murni tanpa tombol edit/hapus (`RULE-13`). Baris `ACCESS_DENIED` diberi aksen garis kiri merah `#E11D48`. Mengklik baris membuka `SideDrawer` berisi aktor, IP address, status lama $\rightarrow$ baru, alasan, dan tampilan *diff* JSON `details`.
-
----
-
-## 8. Pemetaan Umpan Balik UI untuk Skenario Pengecualian (`EX-01` s.d. `EX-12`)
-
-| ID Exception | Kondisi | Umpan Balik UI pada Inertia.js | Aksi Pemulihan Pengguna |
+| ID Exception | Kondisi | Umpan Balik UI (Light & Dark Mode) | Aksi Pemulihan Pengguna |
 |---|---|---|---|
-| `EX-01` | Saldo cuti tidak mencukupi | Alert merah inline di bawah pemilih tanggal berisi sisa saldo | Mengurangi jumlah hari atau mengganti jenis cuti |
-| `EX-02` / `EX-07` | Tanggal cuti / jam lembur bentrok | Border input merah + informasi tanggal/jam bentrok | Memilih ulang tanggal atau rentang jam |
-| `EX-03` | Percobaan *self-approval* | Tombol approve tidak dirender; akses paksa menampilkan halaman Inertia `403` | Kembali ke Dashboard (sistem mencatat `ACCESS_DENIED`) |
-| `EX-04` | Konflik konkurensi (`version` beda) | `ConflictModal` kuning (`HTTP 409` / flash conflict) | Klik **Muat Ulang Data Terbaru** (`router.reload()`) |
-| `EX-05` | Status final tidak boleh diubah | Ikon gembok pada `StatusBadge`; tombol edit disembunyikan | Klik **Ajukan Ulang** atau **Buat Revisi** (BKD) |
-| `EX-06` | Lompatan jenjang jabatan Dosen | Banner kuning pada form jabatan fungsional | Aktifkan *toggle* **Jalur Percepatan** (`is_accelerated`) |
-| `EX-09` | Pensiun tertahan pengajuan aktif | `RetirementChecklist` merah berisi tautan ke pengajuan terkait | Menyelesaikan/menutup pengajuan aktif terlebih dahulu |
-| `EX-10` / `EX-11` | Email pelamar / No. BPJS duplikat | `form.errors` inline tepat di bawah kolom terkait | Mengklik tautan menuju data yang sudah terdaftar |
+| `EX-01` | Saldo cuti tidak mencukupi | Alert inline merah lembut di bawah tanggal berisi angka sisa saldo | Mengurangi hari atau mengganti jenis cuti |
+| `EX-02` / `EX-07` | Tanggal cuti / jam lembur bentrok | Border merah + tautan rentang tanggal/jam yang bentrok | Memilih ulang tanggal atau jam valid |
+| `EX-03` | Percobaan *self-approval* | Tombol approve tidak dirender; akses langsung menampilkan halaman `403` | Kembali ke Dashboard (`ACCESS_DENIED` tercatat) |
+| `EX-04` | Konflik konkurensi (`version` beda) | `ConflictModal` melayang (`HTTP 409` / flash conflict) | Klik **Muat Ulang Data Terbaru** (`router.reload()`) |
+| `EX-05` | Status final terkunci | Ikon gembok pada `StatusBadge`; tombol edit disembunyikan | Klik **Ajukan Ulang** atau **Ajukan Revisi** (BKD) |
+| `EX-06` | Lompatan jenjang jabatan Dosen | Banner peringatan kuning pada form jabatan fungsional | Aktifkan *toggle* **Jalur Percepatan** (`is_accelerated`) |
+| `EX-09` | Pensiun tertahan pengajuan aktif | `RetirementChecklist` merah berisi tautan ke pengajuan terkait | Menyelesaikan/menutup pengajuan aktif dahulu |
+| `EX-10` / `EX-11` | Email pelamar / No. BPJS duplikat | `form.errors` inline tepat di bawah kolom terkait | Membuka rekaman yang sudah terdaftar |
 
 ---
 
-## 9. Aksesibilitas (WCAG 2.1 AA) & Target Performa Frontend
+## 10. Aksesibilitas (WCAG 2.1 AA) & Target Performa Frontend
 
-* **Navigasi Keyboard & Fokus:** Seluruh modal, drawer, dan dropdown mendukung `Tab`, `Shift+Tab`, `Enter`, dan `Escape`. Fokus elemen interaktif wajib memakai `focus-visible:ring-2 focus-visible:ring-[#E67E22] focus-visible:ring-offset-2`.
-* **ARIA Attributes:** Seluruh tombol berbasis ikon menyertakan `aria-label`; kontainer toast dan pesan error inline memakai `aria-live="polite"`; modal/drawer menerapkan *focus trap* dan `role="dialog"`.
-* **Kinerja Antarmuka (`NFR-04` $\le 2$ Detik):**
-  * *Code splitting* otomatis per halaman melalui Vite + Inertia (`import.meta.glob('./Pages/**')`) sehingga bundle awal tetap kecil.
-  * *Debounce* `300ms` pada pencarian live dan paginasi server-side `15` / `25` baris per halaman.
-  * *Partial reload* (`only: [...]`) pada filter tabel dan *drill-down* grafik agar payload JSON tetap ringan.
+* **Kontras Dual-Mode:** Rasio kontras teks utama minimal $7:1$ dan teks sekunder minimal $4.5:1$ baik di Light Mode (`#111827` di atas `#FFFFFF`) maupun Dark Mode (`#F5F5F7` di atas `#121218`).
+* **Navigasi Keyboard & Fokus:** Mendukung `⌘F`/`Ctrl+K` (fokus pencarian), `Tab`, `Enter`, dan `Escape` (tutup modal/drawer). Cincin fokus memakai `focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2`.
+* **Kinerja Antarmuka (`NFR-04` $\le 2$ Detik):** *Code splitting* per halaman via Vite, debounce pencarian `300ms`, paginasi server-side `15`/`25` baris, *partial reload* (`only: [...]`), serta *anti-FOUC* inline script untuk tema.
 
 ---
 
-## 10. Riwayat Perubahan Dokumen
+## 11. Riwayat Perubahan Dokumen
 
 | Versi | Tanggal | Perubahan |
 |---|---|---|
-| 1.0 | 17 November 2026 | Dokumen spesifikasi UI terpisah dibuat untuk stack **Inertia.js + Vue 3 / React + Tailwind CSS + ApexCharts**, menggantikan Bagian 11 pada `SDD.md`. |
+| 1.0 | 17 November 2026 | Dokumen spesifikasi UI awal untuk stack Inertia.js + Vue 3 / React + Tailwind CSS (palet Deep Navy & Orange). |
+| 2.0 | 19 November 2026 | Redesain menyeluruh ke **Apple-Inspired Minimalist Design System** mengacu pada tata letak Dashboard modern (light/dark sidebar, Electric Violet accent `#6D28D9`/`#8B5CF6`, *Employee Directory Card Grid* + *List* + *Org Chart*, `⌘F` search bar), penambahan **Landing Page publik (`/`)**, pemisahan halaman **Login (`/login`) & Register (`/register`)**, serta arsitektur penuh **Light Mode & Dark Mode** (`useTheme` + anti-FOUC + sinkronisasi ApexCharts). |

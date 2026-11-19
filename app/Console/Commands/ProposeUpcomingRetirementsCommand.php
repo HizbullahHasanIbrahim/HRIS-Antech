@@ -57,7 +57,7 @@ class ProposeUpcomingRetirementsCommand extends Command
         foreach ($employees as $employee) {
             // Check if already has active proposal
             $existing = Retirement::where('employee_id', $employee->id)
-                ->where('status', 'diusulkan')
+                ->where('status', 'diajukan')
                 ->first();
 
             if ($existing) {
@@ -77,7 +77,7 @@ class ProposeUpcomingRetirementsCommand extends Command
 
                 // Double-check after lock
                 if (Retirement::where('employee_id', $employee->id)
-                    ->where('status', 'diusulkan')
+                    ->where('status', 'diajukan')
                     ->exists()) {
                     return;
                 }
@@ -87,7 +87,7 @@ class ProposeUpcomingRetirementsCommand extends Command
                     'retirement_age' => $retirementAge,
                     'planned_date' => $effectiveDate,
                     'proposed_at' => $proposedDate,
-                    'status' => 'diusulkan',
+                    'status' => 'diajukan',
                     'notes' => "Usulan otomatis oleh sistem (usia {$retirementAge} thn tercapai {$effectiveDate->format('d F Y')})",
                     'version' => 1,
                 ]);
@@ -98,7 +98,7 @@ class ProposeUpcomingRetirementsCommand extends Command
                     'Retirement',
                     $retirement->id,
                     null,
-                    'diusulkan',
+                    'diajukan',
                     'Usulan otomatis oleh scheduled job',
                     [
                         'retirement_age' => $retirementAge,

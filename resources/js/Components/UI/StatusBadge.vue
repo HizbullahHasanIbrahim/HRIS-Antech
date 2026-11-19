@@ -23,7 +23,7 @@ const isFinal = computed(() => props.finalStatuses.includes(props.status?.toLowe
 const statusGroups: Record<string, string[]> = {
   success: ['disetujui', 'diterima', 'lolos', 'final', 'aktif', 'lulus', 'selesai', 'dibuka'],
   warning: ['diajukan', 'proses', 'menunggu', 'diproses', 'berjalan'],
-  info:    ['draf', 'diusulkan', 'direncanakan', 'dijadwalkan'],
+  info:    ['draf', 'diajukan', 'direncanakan', 'dijadwalkan'],
   danger:  ['ditolak', 'gugur', 'tidak_lulus', 'berhenti'],
   neutral: ['dibatalkan', 'ditutup', 'nonaktif', 'pensiun', 'batal', 'belum'],
 };

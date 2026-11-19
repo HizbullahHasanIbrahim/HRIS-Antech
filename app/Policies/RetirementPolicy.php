@@ -42,7 +42,7 @@ class RetirementPolicy
 
     public function cancel(User $user, Retirement $retirement): bool
     {
-        if (! in_array($retirement->status, ['diusulkan', 'diproses'], true)) {
+        if (! in_array($retirement->status, ['diajukan', 'diproses'], true)) {
             return false;
         }
 
@@ -55,7 +55,7 @@ class RetirementPolicy
 
     public function process(User $user, Retirement $retirement): bool
     {
-        if (! in_array($retirement->status, ['diusulkan', 'diproses'], true)) {
+        if (! in_array($retirement->status, ['diajukan', 'diproses'], true)) {
             return false;
         }
 

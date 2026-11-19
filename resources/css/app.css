@@ -8,23 +8,29 @@
         'Segoe UI Symbol', 'Noto Color Emoji';
     --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 
-    /* Brand */
+    /* Brand / Accent (Electric Violet) */
+    --color-accent: #6D28D9;
+    --color-accent-hover: #5B21B6;
+    --color-accent-soft: #F5F3FF;
+    --color-accent-alt: #D946EF;
+
+    /* Semantic Aliases */
     --color-brand-primary: #2C3E50;
     --color-brand-primary-dark: #1E2B38;
     --color-brand-accent: #E67E22;
     --color-brand-accent-text: #B45309;
 
-    /* Canvas & Surface */
-    --color-canvas: #F8FAFC;
-    --color-surface: #FFFFFF;
+    /* Canvas & Surface (Mapped via CSS Variables for Dark Mode) */
+    --color-canvas: var(--canvas, #F8FAFC);
+    --color-surface: var(--surface, #FFFFFF);
 
     /* Borders */
-    --color-subtle: #E2E8F0;
-    --color-control: #CBD5E1;
+    --color-subtle: var(--subtle, #E2E8F0);
+    --color-control: var(--control, #CBD5E1);
 
     /* Text */
-    --color-main: #1E293B;
-    --color-muted: #64748B;
+    --color-main: var(--main, #1E293B);
+    --color-muted: var(--muted, #64748B);
 
     /* Status */
     --color-status-success: #166534;
@@ -38,6 +44,48 @@
     --color-status-info-bg: #DBEAFE;
     --color-neutral: #475569;
     --color-neutral-bg: #F1F5F9;
+
+    /* Category Pill Colors */
+    --color-category-dosen: #7C3AED;
+    --color-category-dosen-bg: #F5F3FF;
+    --color-category-tendik: #2563EB;
+    --color-category-tendik-bg: #DBEAFE;
+    --color-category-kontrak: #0891B2;
+    --color-category-kontrak-bg: #CFFAFE;
+    --color-category-studis3: #D946EF;
+    --color-category-studis3-bg: #FCE7F3;
+}
+
+:root {
+    --canvas: #F8FAFC;
+    --surface: #FFFFFF;
+    --subtle: #E2E8F0;
+    --control: #CBD5E1;
+    --main: #1E293B;
+    --muted: #64748B;
+}
+
+.dark {
+    --canvas: #09090D;
+    --surface: #121218;
+    --subtle: #272732;
+    --control: #3F3F4E;
+    --main: #F1F5F9;
+    --muted: #94A3B8;
+    --color-accent: #8B5CF6;
+    --color-accent-hover: #7C3AED;
+    --color-accent-soft: rgba(139, 92, 246, 0.16);
+    --color-brand-primary: #8B5CF6;
+    --color-brand-primary-dark: #7C3AED;
+
+    --color-category-dosen: #A78BFA;
+    --color-category-dosen-bg: rgba(167, 139, 250, 0.16);
+    --color-category-tendik: #60A5FA;
+    --color-category-tendik-bg: rgba(96, 165, 250, 0.16);
+    --color-category-kontrak: #22D3EE;
+    --color-category-kontrak-bg: rgba(34, 211, 238, 0.16);
+    --color-category-studis3: #F0ABFC;
+    --color-category-studis3-bg: rgba(240, 171, 252, 0.16);
 }
 
 /* Tabular nums for NIP, amounts, scores */

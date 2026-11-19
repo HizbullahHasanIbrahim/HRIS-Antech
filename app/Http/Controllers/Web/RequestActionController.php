@@ -56,6 +56,8 @@ class RequestActionController extends Controller
     // === LEAVE REQUEST ACTIONS ===
     public function approveLeave(LeaveRequest $leaveRequest): RedirectResponse
     {
+        $this->authorize('approve', $leaveRequest);
+
         $user = request()->user();
         $approver = $user?->employee;
 
@@ -74,6 +76,8 @@ class RequestActionController extends Controller
 
     public function rejectLeave(LeaveRequest $leaveRequest): RedirectResponse
     {
+        $this->authorize('reject', $leaveRequest);
+
         $user = request()->user();
         $approver = $user?->employee;
 
@@ -96,6 +100,8 @@ class RequestActionController extends Controller
 
     public function cancelLeave(LeaveRequest $leaveRequest): RedirectResponse
     {
+        $this->authorize('cancel', $leaveRequest);
+
         $this->leaveRequestService->cancelRequest($leaveRequest);
 
         return back()->with('success', 'Permintaan cuti telah dibatalkan.');
@@ -134,6 +140,8 @@ class RequestActionController extends Controller
     // === OVERTIME REQUEST ACTIONS ===
     public function approveOvertime(OvertimeRequest $overtimeRequest): RedirectResponse
     {
+        $this->authorize('approve', $overtimeRequest);
+
         $user = request()->user();
         $approver = $user?->employee;
 
@@ -152,6 +160,8 @@ class RequestActionController extends Controller
 
     public function rejectOvertime(OvertimeRequest $overtimeRequest): RedirectResponse
     {
+        $this->authorize('reject', $overtimeRequest);
+
         $user = request()->user();
         $approver = $user?->employee;
 
@@ -174,6 +184,8 @@ class RequestActionController extends Controller
 
     public function cancelOvertime(OvertimeRequest $overtimeRequest): RedirectResponse
     {
+        $this->authorize('cancel', $overtimeRequest);
+
         $this->overtimeRequestService->cancelRequest($overtimeRequest);
 
         return back()->with('success', 'Permintaan lembur telah dibatalkan.');
@@ -213,6 +225,8 @@ class RequestActionController extends Controller
     // === ALLOWANCE REQUEST ACTIONS ===
     public function approveAllowance(AllowanceRequest $allowanceRequest): RedirectResponse
     {
+        $this->authorize('approve', $allowanceRequest);
+
         $user = request()->user();
         $approver = $user?->employee;
 
@@ -231,6 +245,8 @@ class RequestActionController extends Controller
 
     public function rejectAllowance(AllowanceRequest $allowanceRequest): RedirectResponse
     {
+        $this->authorize('reject', $allowanceRequest);
+
         $user = request()->user();
         $approver = $user?->employee;
 
@@ -253,6 +269,8 @@ class RequestActionController extends Controller
 
     public function cancelAllowance(AllowanceRequest $allowanceRequest): RedirectResponse
     {
+        $this->authorize('cancel', $allowanceRequest);
+
         $this->allowanceRequestService->cancelRequest($allowanceRequest);
 
         return back()->with('success', 'Permintaan tunjangan telah dibatalkan.');

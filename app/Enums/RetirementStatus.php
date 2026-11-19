@@ -6,7 +6,7 @@ namespace App\Enums;
 
 enum RetirementStatus: string
 {
-    case PROPOSED = 'diusulkan';
+    case PROPOSED = 'diajukan';
     case PROCESSING = 'diproses';
     case COMPLETED = 'selesai';
     case CANCELLED = 'dibatalkan';

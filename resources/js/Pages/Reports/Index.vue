@@ -31,14 +31,14 @@
       <div class="bg-surface p-6 rounded-xl border border-subtle">
         <h3 class="text-xl font-semibold text-main mb-4">Distribusi Jabatan Akademik Dosen</h3>
         <div v-if="charts.dosenRankDistribution.length > 0" class="h-80">
-          <VueApexCharts ref="dosenChart" type="bar" height="100%" :options="dosenChartOptions" :series="dosenChartSeries" />
+          <AsyncApexCharts ref="dosenChart" type="bar" height="100%" :options="dosenChartOptions" :series="dosenChartSeries" />
         </div>
         <p v-else class="text-muted">Data dosen rank kosong.</p>
       </div>
       <div class="bg-surface p-6 rounded-xl border border-subtle">
         <h3 class="text-xl font-semibold text-main mb-4">Distribusi Pangkat Tendik</h3>
         <div v-if="charts.tendikRankDistribution.length > 0" class="h-80">
-          <VueApexCharts ref="tendikChart" type="bar" height="100%" :options="tendikChartOptions" :series="tendikChartSeries" />
+          <AsyncApexCharts ref="tendikChart" type="bar" height="100%" :options="tendikChartOptions" :series="tendikChartSeries" />
         </div>
         <p v-else class="text-muted">Data tendik rank kosong.</p>
       </div>
@@ -146,9 +146,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import VueApexCharts from 'vue3-apexcharts';
+import { ref, computed, defineAsyncComponent } from 'vue';
 import AppButton from '@/Components/UI/AppButton.vue';
+
+const AsyncApexCharts = defineAsyncComponent(() =>
+  import('vue3-apexcharts').then(m => m.default).catch(() => ({
+    template: '<div class="p-4 text-center text-muted">Gagal memuat grafik</div>'
+  }))
+);
 
 // --- PROPS ---
 const props = defineProps<{
@@ -257,6 +262,6 @@ const downloadCsv = (type: string) => {
 };
 
 // Expose charts to template
-const dosenChart = ref<VueApexCharts | null>(null);
-const tendikChart = ref<VueApexCharts | null>(null);
+const dosenChart = ref(null);
+const tendikChart = ref(null);
 </script>

@@ -1,23 +1,33 @@
 <?php
 
+use App\Http\Controllers\Web\AuditWebController;
 use App\Http\Controllers\Web\AuthWebController;
 use App\Http\Controllers\Web\CareerActionController;
 use App\Http\Controllers\Web\CareerWebController;
 use App\Http\Controllers\Web\OrganizationWebController;
 use App\Http\Controllers\Web\PerformanceActionController;
 use App\Http\Controllers\Web\PerformanceWebController;
+use App\Http\Controllers\Web\RecruitmentWebController;
 use App\Http\Controllers\Web\ReportWebController;
 use App\Http\Controllers\Web\RequestActionController;
 use App\Http\Controllers\Web\RequestWebController;
+use App\Http\Controllers\Web\RetirementWebController;
+use App\Http\Controllers\Web\ScheduleWebController;
+use App\Http\Controllers\Web\WelfareWebController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// Landing page (public, separate from login flow)
 Route::get('/', function () {
-    return redirect()->route('login');
-});
+    return Inertia::render('Landing/Index');
+})->name('landing');
 
+// Separate Auth Flow
 Route::get('/login', [AuthWebController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthWebController::class, 'login'])->name('login.submit');
+
+Route::get('/register', [AuthWebController::class, 'showRegister'])->name('register');
+Route::post('/register', [AuthWebController::class, 'register'])->name('register.submit');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', function () {
@@ -67,7 +77,20 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/staff-ranks/{rank}/reject', [CareerActionController::class, 'rejectStaffRank'])->name('career.staff.reject');
     });
 
+    Route::get('/recruitment', [RecruitmentWebController::class, 'index'])->name('recruitment.index');
+    Route::get('/recruitment/users', [RecruitmentWebController::class, 'users'])->name('recruitment.users');
+    Route::get('/recruitment/onboarding', [RecruitmentWebController::class, 'onboarding'])->name('recruitment.onboarding');
+    Route::get('/schedules', [ScheduleWebController::class, 'index'])->name('schedules.index');
+    Route::get('/welfare/bpjs', [WelfareWebController::class, 'bpjs'])->name('welfare.bpjs');
+    Route::post('/welfare/bpjs', [WelfareWebController::class, 'storeBpjs'])->name('welfare.bpjs.store');
+    Route::post('/welfare/bpjs/{membership}/cancel', [WelfareWebController::class, 'cancelBpjs'])->name('welfare.bpjs.cancel');
+    Route::get('/career/study-leave', [CareerWebController::class, 'studyLeave'])->name('career.study-leave');
+    Route::get('/career/certifications', [CareerWebController::class, 'certifications'])->name('career.certifications');
+    Route::get('/career/training', [CareerWebController::class, 'training'])->name('career.training');
+    Route::get('/retirement', [RetirementWebController::class, 'index'])->name('retirement.index');
+    Route::post('/retirement', [RetirementWebController::class, 'store'])->name('retirement.store');
     Route::get('/reports', [ReportWebController::class, 'index'])->name('reports.index');
+    Route::get('/audit/activity-logs', [AuditWebController::class, 'index'])->name('audit.activity-logs');
 
     Route::post('/logout', [AuthWebController::class, 'logout'])->name('logout');
 });

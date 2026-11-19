@@ -36,7 +36,7 @@ class RetirementProcessService
             DB::table('employees')->where('id', $employee->id)->lockForUpdate()->first();
 
             if (Retirement::where('employee_id', $employee->id)
-                ->where('status', 'diusulkan')
+                ->where('status', 'diajukan')
                 ->exists()) {
                 throw new BusinessRuleViolationException('Karyawan sudah memiliki usulan pensiun aktif.');
             }
@@ -46,7 +46,7 @@ class RetirementProcessService
                 'retirement_age' => $retirementAge,
                 'planned_date' => $plannedDate,
                 'proposed_at' => now(),
-                'status' => 'diusulkan',
+                'status' => 'diajukan',
                 'processed_by' => $processedBy,
                 'notes' => $notes,
                 'version' => 1,
@@ -58,7 +58,7 @@ class RetirementProcessService
                 'Retirement',
                 $retirement->id,
                 null,
-                'diusulkan',
+                'diajukan',
                 $notes,
                 ['retirement_age' => $retirementAge, 'planned_date' => $plannedDate],
             );
@@ -72,7 +72,7 @@ class RetirementProcessService
      */
     public function processRetirement(Retirement $retirement, int $processedBy, ?string $notes = null): Retirement
     {
-        if ($retirement->status !== 'diusulkan') {
+        if ($retirement->status !== 'diajukan') {
             throw new BusinessRuleViolationException('Hanya usulan pensiun yang diajukan yang dapat diproses.');
         }
 
@@ -103,7 +103,7 @@ class RetirementProcessService
                 'PROCESS_RETIREMENT',
                 'Retirement',
                 $retirement->id,
-                'diusulkan',
+                'diajukan',
                 'diproses',
                 $notes,
                 ['processed_by' => $processedBy],
@@ -164,7 +164,7 @@ class RetirementProcessService
      */
     public function cancelRetirement(Retirement $retirement, ?int $actorId = null, ?string $reason = null): Retirement
     {
-        if (! in_array($retirement->status, ['diusulkan', 'diproses'], true)) {
+        if (! in_array($retirement->status, ['diajukan', 'diproses'], true)) {
             throw new BusinessRuleViolationException('Status pensiun tidak dapat dibatalkan.');
         }
 

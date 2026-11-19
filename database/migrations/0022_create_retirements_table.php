@@ -14,7 +14,7 @@ return new class extends Migration
             $table->smallInteger('retirement_age');
             $table->date('planned_date');
             $table->dateTime('proposed_at');
-            $table->string('status', 12)->default('diusulkan');
+            $table->string('status', 20)->default('diajukan');
             $table->foreignId('processed_by')->nullable()->constrained('users')->restrictOnDelete();
             $table->string('sk_number', 100)->nullable();
             $table->date('sk_date')->nullable();

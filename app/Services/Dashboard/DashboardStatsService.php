@@ -72,7 +72,7 @@ class DashboardStatsService
 
     private function retirementStats(): array
     {
-        $upcoming = Retirement::where('status', 'diusulkan')
+        $upcoming = Retirement::where('status', 'diajukan')
             ->where('planned_date', '<=', now()->addMonths(12))
             ->with('employee:id,full_name,nip')
             ->orderBy('planned_date')
@@ -85,7 +85,7 @@ class DashboardStatsService
             ->toArray();
 
         return [
-            'pending_proposals' => Retirement::where('status', 'diusulkan')->count(),
+            'pending_proposals' => Retirement::where('status', 'diajukan')->count(),
             'upcoming_12_months' => count($upcoming),
             'upcoming_list' => $upcoming,
         ];

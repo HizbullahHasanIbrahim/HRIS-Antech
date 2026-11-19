@@ -7,6 +7,7 @@ namespace Database\Seeders;
 use App\Models\AllowanceType;
 use App\Models\Department;
 use App\Models\Employee;
+use App\Models\LeaveBalance;
 use App\Models\LeaveType;
 use App\Models\Role;
 use App\Models\User;
@@ -81,6 +82,7 @@ class MasterDataSeeder extends Seeder
         }
 
         // 5. Demo Users with Employees
+        $leaveTypeTahunan = LeaveType::where('type', 'tahunan')->first();
         $demoUsers = [
             [
                 'username' => 'admin.bsdm',
@@ -211,6 +213,12 @@ class MasterDataSeeder extends Seeder
             ], [
                 'unit_id' => $userData['unit_id'],
             ]);
+
+            // Seed leave_balances for demo employees (RULE-03)
+            LeaveBalance::firstOrCreate(
+                ['employee_id' => $employee->id, 'leave_type_id' => $leaveTypeTahunan->id, 'year' => now()->year],
+                ['quota_days' => 12, 'used_days' => 0, 'version' => 1]
+            );
         }
     }
 }

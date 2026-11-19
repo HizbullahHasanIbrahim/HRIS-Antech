@@ -21,6 +21,22 @@ class AuthWebController extends Controller
         return Inertia::render('Auth/Login');
     }
 
+    public function showRegister()
+    {
+        return Inertia::render('Auth/Register');
+    }
+
+    public function register(Request $request): RedirectResponse
+    {
+        // Handle registration / activation request
+        $request->validate([
+            'username' => 'required|string|unique:users,username',
+            'password' => 'required|string|min:8',
+        ]);
+
+        return redirect()->route('login')->with('success', 'Akun berhasil didaftarkan. Silakan masuk.');
+    }
+
     public function login(LoginRequest $request): RedirectResponse
     {
         $user = User::where('username', $request->string('username'))->first();

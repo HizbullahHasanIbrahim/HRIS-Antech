@@ -424,7 +424,7 @@ const approve = (row: any) => {
       ? route('requests.overtime.approve', row.id)
       : route('requests.allowance.approve', row.id);
 
-  Inertia.post(endpoint, {
+  router.post(endpoint, {
     version: row.version,
   }, {
     preserveScroll: true,
@@ -436,7 +436,6 @@ const approve = (row: any) => {
     },
     onFinish: () => {
       submitting.value = false;
-      getCounts();
     },
   });
 };
@@ -453,7 +452,7 @@ const handleConfirmReason = (reason: string) => {
 
   const endpoint = route(`${baseRoute}.${modalAction.value}`, selectedItem.value.id);
 
-  Inertia.post(endpoint, {
+  router.post(endpoint, {
     reason,
     decision_note: reason,
     version: selectedItem.value.version,
@@ -469,7 +468,6 @@ const handleConfirmReason = (reason: string) => {
     },
     onFinish: () => {
       submitting.value = false;
-      getCounts();
     },
   });
 };
@@ -487,12 +485,10 @@ const submitCreate = () => {
     payload = allowanceForm.value;
   }
 
-  Inertia.post(endpoint, payload, {
+  router.post(endpoint, payload, {
     preserveScroll: true,
     onSuccess: () => {
       createModalOpen.value = false;
-      submitCsv.value = false;
-      getCounts();
     },
     onFinish: () => {
       submitting.value = false;
