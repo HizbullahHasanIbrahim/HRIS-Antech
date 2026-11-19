@@ -1,41 +1,38 @@
 <template>
   <div class="space-y-6">
-    <div class="flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-main">BPJS Kesehatan & Ketenagakerjaan</h1>
-      <AppButton variant="primary" @click="showRegisterModal = true">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-main">BPJS Kesehatan & Ketenagakerjaan</h1>
+        <p class="text-sm text-muted mt-1">Kelola keanggotaan BPJS Kesehatan dan Ketenagakerjaan</p>
+      </div>
+      <AppButton variant="primary" @click="openRegisterModal">
         <template #default>Daftar BPJS</template>
       </AppButton>
     </div>
 
-    <Card>
-      <template #header>
-        <h2 class="text-lg font-semibold text-main">Daftar Keanggotaan BPJS</h2>
-        <p class="text-sm text-muted">Manajemen keanggotaan BPJS Kesehatan dan Ketenagakerjaan</p>
-      </template>
+    <Card :header="{ title: 'Daftar Keanggotaan BPJS', description: 'Manajemen keanggotaan BPJS Kesehatan dan Ketenagakerjaan' }">
       <template #default>
-        <div class="space-y-4">
+        <div class="space-y-3" v-if="memberships.data.length">
           <div
             v-for="bpjs in memberships.data"
             :key="bpjs.id"
-            class="flex items-center justify-between p-4 bg-canvas rounded-lg"
+            class="flex items-center justify-between p-4 bg-canvas rounded-xl hover:bg-surface transition-colors"
           >
-            <div class="flex items-center gap-4">
-              <div class="w-10 h-10 bg-accent/10 text-accent rounded-lg flex items-center justify-center">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
+            <div class="flex items-center gap-4 min-w-0">
+              <div class="w-11 h-11 bg-brand-primary/10 text-brand-primary rounded-xl flex items-center justify-center flex-shrink-0">
+                <Shield class="w-5 h-5" aria-hidden="true" />
               </div>
-              <div>
-                <h3 class="font-medium text-main">{{ bpjs.employee?.full_name || 'Unknown' }}</h3>
-                <p class="text-sm text-muted">{{ bpjs.bpjs_type === 'kesehatan' ? 'BPJS Kesehatan' : 'BPJS Ketenagakerjaan' }}</p>
+              <div class="min-w-0">
+                <h3 class="font-medium text-main truncate">{{ bpjs.employee?.full_name || 'Unknown' }}</h3>
+                <p class="text-sm text-muted truncate">{{ bpjs.bpjs_type === 'kesehatan' ? 'BPJS Kesehatan' : 'BPJS Ketenagakerjaan' }}</p>
               </div>
             </div>
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3 flex-wrap">
               <BpjsMaskedField :number="bpjs.masked_number || bpjs.membership_number" :can-reveal="false" />
               <StatusBadge :status="bpjs.status" />
               <AppButton
                 v-if="bpjs.status === 'aktif'"
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 @click="cancelBpjs(bpjs.id)"
               >
@@ -45,55 +42,81 @@
           </div>
         </div>
 
-        <!-- Pagination -->
-        <div v-if="memberships.last_page > 1" class="flex justify-center mt-4 gap-2">
-          <Link
-            v-for="link in memberships.links"
-            :key="link.label"
-            :href="link.url || '#'"
-            class="px-3 py-1 rounded-md text-sm"
-            :class="link.active ? 'bg-accent text-white' : 'bg-canvas text-main hover:bg-surface'"
-            v-html="link.label"
-          />
+        <!-- Empty State -->
+        <div v-else class="text-center py-12">
+          <div class="mx-auto w-16 h-16 bg-canvas rounded-full flex items-center justify-center mb-4">
+            <Shield class="w-8 h-8 text-muted" aria-hidden="true" />
+          </div>
+          <h3 class="text-lg font-medium text-main mb-1">Belum ada keanggotaan BPJS</h3>
+          <p class="text-sm text-muted mb-6">Daftarkan keanggotaan BPJS pertama</p>
+          <AppButton variant="primary" @click="openRegisterModal" class="w-full sm:w-auto">
+            Daftar BPJS Pertama
+          </AppButton>
         </div>
+
+        <!-- Pagination -->
+        <nav v-if="memberships.last_page > 1" class="mt-6" aria-label="Navigasi halaman BPJS">
+          <div class="flex justify-center gap-1">
+            <Link
+              v-for="link in memberships.links"
+              :key="link.label"
+              :href="link.url || '#'"
+              :class="[
+                'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
+                link.active
+                  ? 'bg-brand-primary text-white'
+                  : 'text-main hover:bg-surface focus:outline-none focus:ring-2 focus:ring-brand-primary'
+              ]"
+              :aria-current="link.active ? 'page' : undefined"
+              :aria-label="link.label === 'Previous' ? 'Halaman sebelumnya' : link.label === 'Next' ? 'Halaman selanjutnya' : `Halaman ${link.label}`"
+              v-html="link.label"
+            />
+          </div>
+        </nav>
       </template>
     </Card>
 
     <!-- Register Modal -->
-    <div v-if="showRegisterModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div class="bg-surface rounded-lg p-6 w-full max-w-md">
-        <h2 class="text-xl font-bold mb-4">Daftar BPJS</h2>
-        <form @submit.prevent="submitRegister">
-          <div class="space-y-4">
+    <Teleport to="body">
+      <div v-if="showRegisterModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" @click.self="closeRegisterModal" role="dialog" aria-modal="true" aria-labelledby="register-bpjs-modal-title">
+        <div class="bg-surface rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-subtle sticky top-0 bg-surface z-10">
+            <h2 id="register-bpjs-modal-title" class="text-xl font-bold text-main">Daftar BPJS</h2>
+            <button type="button" @click="closeRegisterModal" class="text-muted hover:text-main transition-colors p-1 rounded-lg hover:bg-canvas focus:outline-none focus:ring-2 focus:ring-brand-primary" aria-label="Tutup modal">
+              <X class="w-5 h-5" aria-hidden="true" />
+            </button>
+          </div>
+          <form @submit.prevent="submitRegister" class="p-6 space-y-5">
             <div>
-              <label class="block text-sm font-medium mb-1">Tipe BPJS</label>
-              <select v-model="registerForm.bpjs_type" class="w-full border border-border rounded-md p-2 bg-canvas text-main">
+              <label for="bpjs-type" class="block text-sm font-medium text-main mb-1.5">Tipe BPJS <span class="text-status-danger" aria-hidden="true">*</span></label>
+              <select id="bpjs-type" v-model="registerForm.bpjs_type" class="w-full border border-border rounded-lg px-4 py-2.5 bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true">
                 <option value="kesehatan">BPJS Kesehatan</option>
                 <option value="ketenagakerjaan">BPJS Ketenagakerjaan</option>
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Nomor Keanggotaan</label>
-              <input v-model="registerForm.membership_number" type="text" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required />
+              <label for="bpjs-number" class="block text-sm font-medium text-main mb-1.5">Nomor Keanggotaan <span class="text-status-danger" aria-hidden="true">*</span></label>
+              <input id="bpjs-number" v-model="registerForm.membership_number" type="text" class="w-full border border-border rounded-lg px-4 py-2.5 bg-canvas text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" autocomplete="off" />
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Tanggal Pendaftaran</label>
-              <input v-model="registerForm.registered_date" type="date" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required />
+              <label for="bpjs-date" class="block text-sm font-medium text-main mb-1.5">Tanggal Pendaftaran <span class="text-status-danger" aria-hidden="true">*</span></label>
+              <input id="bpjs-date" v-model="registerForm.registered_date" type="date" class="w-full border border-border rounded-lg px-4 py-2.5 bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" />
             </div>
-            <div class="flex justify-end gap-2">
-              <AppButton type="button" variant="outline" @click="showRegisterModal = false">Batal</AppButton>
-              <AppButton type="submit" variant="primary" :disabled="submitting">Simpan</AppButton>
+            <div class="flex justify-end gap-3 pt-4 border-t border-subtle">
+              <AppButton type="button" variant="secondary" @click="closeRegisterModal" :disabled="submitting">Batal</AppButton>
+              <AppButton type="submit" variant="primary" :loading="submitting">Simpan</AppButton>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
-    </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
 import { router, Link } from '@inertiajs/vue3';
+import { Shield, X } from 'lucide-vue-next';
 import AppButton from '@/Components/UI/AppButton.vue';
 import Card from '@/Components/UI/Card.vue';
 import StatusBadge from '@/Components/UI/StatusBadge.vue';
@@ -131,11 +154,21 @@ const registerForm = ref({
   registered_date: new Date().toISOString().split('T')[0],
 });
 
+const openRegisterModal = () => {
+  showRegisterModal.value = true;
+  document.body.style.overflow = 'hidden';
+};
+
+const closeRegisterModal = () => {
+  showRegisterModal.value = false;
+  document.body.style.overflow = '';
+};
+
 const submitRegister = () => {
   submitting.value = true;
   router.post(route('welfare.bpjs.store'), registerForm.value, {
     onSuccess: () => {
-      showRegisterModal.value = false;
+      closeRegisterModal();
       registerForm.value = {
         bpjs_type: 'kesehatan',
         membership_number: '',
