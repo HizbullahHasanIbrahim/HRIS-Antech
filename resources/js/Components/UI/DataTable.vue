@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-surface rounded-xl border border-subtle overflow-hidden">
+  <div class="bg-surface dark:bg-surface-dark rounded-xl border border-subtle overflow-hidden">
     <div class="p-4 border-b border-subtle flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <slot name="toolbar">
         <div v-if="searchable" class="relative">
@@ -17,7 +17,7 @@
 
     <div class="overflow-x-auto">
       <table class="w-full text-left text-sm">
-        <thead class="bg-canvas border-b border-subtle text-xs text-muted uppercase tracking-wider sticky top-0">
+        <thead class="bg-canvas dark:bg-canvas-dark border-b border-subtle text-xs text-muted uppercase tracking-wider sticky top-0">
           <tr>
             <th v-for="col in columns" :key="col.key" :class="col.class || 'px-4 py-3'">
               {{ col.label }}
@@ -51,7 +51,7 @@
             v-else
             v-for="(row, idx) in rows"
             :key="row.id ?? idx"
-            class="hover:bg-canvas transition-colors"
+            class="hover:bg-canvas dark:hover:bg-canvas-dark transition-colors"
           >
             <td v-for="col in columns" :key="col.key" :class="col.class || 'px-4 py-3 text-main'">
               <slot :name="col.key" :row="row" :value="row[col.key]">
