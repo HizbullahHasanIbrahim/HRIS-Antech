@@ -5,13 +5,22 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\Department;
 use App\Models\WorkSchedule;
+use App\Models\WorkScheduleDay;
+use App\Services\Audit\ActivityLogService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ScheduleWebController extends Controller
 {
+    public function __construct(
+        protected ActivityLogService $activityLog
+    ) {}
+
     public function index(Request $request): Response
     {
         $user = $request->user();
@@ -51,7 +60,57 @@ class ScheduleWebController extends Controller
                     ]),
                 ])->values(),
             ]),
+            'departments' => Department::where('is_active', true)->select(['id', 'name'])->orderBy('name')->get(),
             'isAdminOrHead' => $isAdminOrHead,
         ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'unit_id' => 'nullable|exists:departments,id',
+            'category' => 'required|string|in:dosen,tendik',
+            'valid_from' => 'required|date',
+            'valid_until' => 'nullable|date|after_or_equal:valid_from',
+            'is_published' => 'boolean',
+            'days' => 'required|array|min:1',
+            'days.*.day_of_week' => 'required|integer|between:1,7',
+            'days.*.start_time' => 'required|string',
+            'days.*.end_time' => 'required|string',
+        ]);
+
+        $user = $request->user();
+
+        DB::transaction(function () use ($validated, $user) {
+            $schedule = WorkSchedule::create([
+                'unit_id' => $validated['unit_id'] ?? null,
+                'category' => $validated['category'],
+                'valid_from' => $validated['valid_from'],
+                'valid_until' => $validated['valid_until'] ?? null,
+                'is_published' => $validated['is_published'] ?? false,
+                'published_at' => ($validated['is_published'] ?? false) ? now() : null,
+                'created_by' => $user->id,
+            ]);
+
+            foreach ($validated['days'] as $day) {
+                WorkScheduleDay::create([
+                    'schedule_id' => $schedule->id,
+                    'day_of_week' => $day['day_of_week'],
+                    'start_time' => $day['start_time'],
+                    'end_time' => $day['end_time'],
+                ]);
+            }
+
+            $this->activityLog->log(
+                $user->id,
+                'CREATE_WORK_SCHEDULE',
+                'WorkSchedule',
+                $schedule->id,
+                null,
+                ($validated['is_published'] ?? false) ? 'dipublikasi' : 'draf',
+            );
+        });
+
+        return back()->with('success', 'Jadwal kerja berhasil dibuat.');
     }
 }

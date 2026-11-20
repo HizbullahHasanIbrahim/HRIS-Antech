@@ -68,7 +68,7 @@
       </template>
     </Card>
 
-    <!-- Create Modal placeholder -->
+    <!-- Create Modal -->
     <Teleport to="body">
       <div v-if="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" @click.self="closeCreateModal" role="dialog" aria-modal="true" aria-labelledby="create-training-modal-title">
         <div class="bg-surface rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -78,9 +78,49 @@
               <X class="w-5 h-5" aria-hidden="true" />
             </button>
           </div>
-          <div class="p-6 text-center text-muted">
-            Form tambah pelatihan akan diimplementasikan nanti.
-          </div>
+          <form @submit.prevent="submitCreate">
+            <div class="p-6 space-y-4">
+              <div>
+                <label class="block text-sm font-medium mb-1">Pegawai <span class="text-status-danger" aria-hidden="true">*</span></label>
+                <select v-model="createForm.employee_id" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required>
+                  <option value="" disabled>Pilih Pegawai</option>
+                  <option v-for="emp in employees" :key="emp.id" :value="emp.id">{{ emp.full_name }} ({{ emp.nip }})</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">Judul Pelatihan <span class="text-status-danger" aria-hidden="true">*</span></label>
+                <input v-model="createForm.title" type="text" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required />
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">Jenis Pelatihan <span class="text-status-danger" aria-hidden="true">*</span></label>
+                <select v-model="createForm.training_type" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required>
+                  <option value="internal">Internal</option>
+                  <option value="eksternal">Eksternal</option>
+                  <option value="online">Online</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">Peng organizer <span class="text-status-danger" aria-hidden="true">*</span></label>
+                <input v-model="createForm.organizer" type="text" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required />
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">Tanggal Mulai <span class="text-status-danger" aria-hidden="true">*</span></label>
+                <input v-model="createForm.start_date" type="date" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required />
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">Tanggal Akhir <span class="text-status-danger" aria-hidden="true">*</span></label>
+                <input v-model="createForm.end_date" type="date" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required />
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">Durasi (Jam) <span class="text-status-danger" aria-hidden="true">*</span></label>
+                <input v-model="createForm.duration_hours" type="number" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required min="1" />
+              </div>
+              <div class="flex justify-end gap-3 pt-4">
+                <AppButton variant="secondary" @click="closeCreateModal">Batal</AppButton>
+                <AppButton variant="primary" :loading="submitting" @click.prevent="submitCreate">Simpan</AppButton>
+              </div>
+            </div>
+          </form>
         </div>
       </div>
     </Teleport>
@@ -89,7 +129,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { BookOpen, X } from 'lucide-vue-next';
 import AppButton from '@/Components/UI/AppButton.vue';
 import Card from '@/Components/UI/Card.vue';
@@ -112,11 +152,24 @@ interface Props {
     links: Array<{ url: string | null; label: string; active: boolean }>;
   };
   isAdminOrHead: boolean;
+  employees: Array<{ id: number; full_name: string; nip: string }>;
 }
 
 const props = defineProps<Props>();
 const trainings = ref(props.trainings);
 const showCreateModal = ref(false);
+const submitting = ref(false);
+const employees = ref(props.employees);
+
+const createForm = ref({
+  employee_id: '',
+  title: '',
+  training_type: 'internal',
+  organizer: '',
+  start_date: new Date().toISOString().split('T')[0],
+  end_date: new Date().toISOString().split('T')[0],
+  duration_hours: 1,
+});
 
 const openCreateModal = () => {
   showCreateModal.value = true;
@@ -126,5 +179,20 @@ const openCreateModal = () => {
 const closeCreateModal = () => {
   showCreateModal.value = false;
   document.body.style.overflow = '';
+};
+
+const submitCreate = () => {
+  submitting.value = true;
+  router.post('/career/training', createForm.value, {
+    preserveScroll: true,
+    onSuccess: () => {
+      closeCreateModal();
+      router.reload();
+    },
+    onError: () => {},
+    onFinish: () => {
+      submitting.value = false;
+    },
+  });
 };
 </script>

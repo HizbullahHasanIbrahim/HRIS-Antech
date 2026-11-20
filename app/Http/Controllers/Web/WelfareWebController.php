@@ -43,7 +43,7 @@ class WelfareWebController extends Controller
             || $request->user()->hasRole('Welfare Admin')
             || $request->user()->hasRole('Kepala Biro')
             || $request->user()->hasRole('Wakil Rektor');
-            
+
             if (strlen($number) >= 4) {
                 $membership->masked_number = '********'.substr($number, -4);
             } else {

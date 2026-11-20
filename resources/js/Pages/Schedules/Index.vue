@@ -86,7 +86,7 @@
       </template>
     </Card>
 
-    <!-- Create Modal placeholder -->
+    <!-- Create Modal -->
     <Teleport to="body">
       <div v-if="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" @click.self="closeCreateModal" role="dialog" aria-modal="true" aria-labelledby="create-schedule-modal-title">
         <div class="bg-surface rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -96,9 +96,48 @@
               <X class="w-5 h-5" aria-hidden="true" />
             </button>
           </div>
-          <div class="p-6 text-center text-muted">
-            Form buat jadwal kerja akan diimplementasikan nanti.
-          </div>
+          <form @submit.prevent="submitCreate">
+            <div class="p-6 space-y-4">
+              <div>
+                <label class="block text-sm font-medium mb-1">Unit <span class="text-status-danger" aria-hidden="true">*</span></label>
+                <select v-model="createForm.unit_id" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required>
+                  <option value="" disabled>Pilih Unit</option>
+                  <option v-for="dept in departments" :key="dept.id" :value="dept.id">{{ dept.name }}</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">Kategori <span class="text-status-danger" aria-hidden="true">*</span></label>
+                <select v-model="createForm.category" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required>
+                  <option value="dosen">Dosen</option>
+                  <option value="tendik">Tenaga Kependidikan</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">Tanggal Mulai <span class="text-status-danger" aria-hidden="true">*</span></label>
+                <input v-model="createForm.valid_from" type="date" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required />
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">Tanggal Berakhir</label>
+                <input v-model="createForm.valid_until" type="date" class="w-full border border-border rounded-md p-2 bg-canvas text-main" />
+              </div>
+              <div class="flex flex-wrap gap-2 mb-4">
+                <div v-for="d in workWeekDays" :key="d.day" class="flex items-center gap-2 bg-canvas border border-border rounded-lg p-3">
+                  <span class="w-12 font-medium text-main">{{ d.day }}</span>
+                  <input v-model="d.start_time" type="time" class="border border-border rounded px-2 py-1 bg-canvas text-main" required />
+                  <span class="text-muted">s/d</span>
+                  <input v-model="d.end_time" type="time" class="border border-border rounded px-2 py-1 bg-canvas text-main" required />
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="checkbox" id="is_published" v-model="createForm.is_published" class="h-4 w-4 rounded border-border" />
+                <label for="is_published" class="text-sm text-main">Publikasi jadwal</label>
+              </div>
+              <div class="flex justify-end gap-3 pt-4">
+                <AppButton variant="secondary" @click="closeCreateModal">Batal</AppButton>
+                <AppButton variant="primary" :loading="submitting" @click.prevent="submitCreate">Simpan</AppButton>
+              </div>
+            </div>
+          </form>
         </div>
       </div>
     </Teleport>
@@ -107,8 +146,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Link } from '@inertiajs/vue3';
-import { Calendar, X } from 'lucide-vue-next';
+import { Link, router } from '@inertiajs/vue3';
+import { X } from 'lucide-vue-next';
 import AppButton from '@/Components/UI/AppButton.vue';
 import Card from '@/Components/UI/Card.vue';
 import StatusBadge from '@/Components/UI/StatusBadge.vue';
@@ -133,11 +172,37 @@ interface Props {
     total: number;
     links: Array<{ url: string | null; label: string; active: boolean }>;
   };
+  isAdminOrHead: boolean;
+  departments: Array<{ id: number; name: string }>;
 }
 
 const props = defineProps<Props>();
 const schedules = ref(props.schedules);
 const showCreateModal = ref(false);
+const submitting = ref(false);
+const departments = ref(props.departments);
+const workWeekDays = ref([
+  { day: 'Senin', day_of_week: 1, start_time: '08:00', end_time: '17:00' },
+  { day: 'Selasa', day_of_week: 2, start_time: '08:00', end_time: '17:00' },
+  { day: 'Rabu', day_of_week: 3, start_time: '08:00', end_time: '17:00' },
+  { day: 'Kamis', day_of_week: 4, start_time: '08:00', end_time: '17:00' },
+  { day: 'Jumat', day_of_week: 5, start_time: '08:00', end_time: '17:00' },
+  { day: 'Sabtu', day_of_week: 6, start_time: '08:00', end_time: '17:00' },
+  { day: 'Minggu', day_of_week: 7, start_time: '00:00', end_time: '00:00' },
+]);
+
+const createForm = ref({
+  unit_id: '',
+  category: 'dosen',
+  valid_from: new Date().toISOString().split('T')[0],
+  valid_until: '',
+  is_published: true,
+  days: workWeekDays.value.map(d => ({
+    day_of_week: d.day_of_week,
+    start_time: d.start_time,
+    end_time: d.end_time,
+  }))
+});
 
 const openCreateModal = () => {
   showCreateModal.value = true;
@@ -147,5 +212,20 @@ const openCreateModal = () => {
 const closeCreateModal = () => {
   showCreateModal.value = false;
   document.body.style.overflow = '';
+};
+
+const submitCreate = () => {
+  submitting.value = true;
+  router.post('/schedules', createForm.value, {
+    preserveScroll: true,
+    onSuccess: () => {
+      closeCreateModal();
+      router.reload();
+    },
+    onError: () => {},
+    onFinish: () => {
+      submitting.value = false;
+    },
+  });
 };
 </script>

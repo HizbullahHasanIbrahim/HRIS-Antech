@@ -53,8 +53,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
-        $exceptions->render(fn (ConcurrencyConflictException $e) => response()->json(['success' => false, 'error' => ['code' => 'CONCURRENCY_CONFLICT', 'message' => $e->getMessage()]], 409)
-        );
+        $exceptions->render(function (ConcurrencyConflictException $e, Request $request) {
+            if ($request->header('X-Inertia')) {
+                return back()->withErrors(['code' => 'CONCURRENCY_CONFLICT', 'message' => $e->getMessage()]);
+            }
+
+            return response()->json(['success' => false, 'error' => ['code' => 'CONCURRENCY_CONFLICT', 'message' => $e->getMessage()]], 409);
+        });
         $exceptions->render(fn (UnauthorizedActionException $e) => response()->json(['success' => false, 'error' => ['code' => 'UNAUTHORIZED_ACTION', 'message' => $e->getMessage()]], 403)
         );
         $exceptions->render(fn (BusinessRuleViolationException $e) => response()->json(['success' => false, 'error' => ['code' => 'BUSINESS_RULE_VIOLATION', 'message' => $e->getMessage(), 'details' => $e->details ?? null]], 422)

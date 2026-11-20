@@ -14,6 +14,8 @@ use App\Http\Controllers\Web\RequestWebController;
 use App\Http\Controllers\Web\RetirementWebController;
 use App\Http\Controllers\Web\ScheduleWebController;
 use App\Http\Controllers\Web\WelfareWebController;
+use App\Models\ActivityLog;
+use App\Services\Dashboard\DashboardStatsService;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -31,10 +33,10 @@ Route::post('/register', [AuthWebController::class, 'register'])->name('register
 Route::post('/register/applicant', [AuthWebController::class, 'registerApplicant'])->name('register.applicant');
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', function (\App\Services\Dashboard\DashboardStatsService $service) {
+    Route::get('/dashboard', function (DashboardStatsService $service) {
         return Inertia::render('Dashboard/Index', [
             'stats' => $service->summary(),
-            'recentActivities' => \App\Models\ActivityLog::with('actor.employee')->latest()->take(5)->get()->map(fn ($log) => [
+            'recentActivities' => ActivityLog::with('actor.employee')->latest()->take(5)->get()->map(fn ($log) => [
                 'action' => $log->action,
                 'actor_name' => $log->actor?->employee?->full_name ?? $log->actor?->username ?? 'System',
                 'time' => $log->created_at?->format('Y-m-d H:i:s'),
@@ -91,12 +93,16 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/recruitment/users', [RecruitmentWebController::class, 'storeUser'])->name('recruitment.users.store');
     Route::get('/recruitment/onboarding', [RecruitmentWebController::class, 'onboarding'])->name('recruitment.onboarding');
     Route::get('/schedules', [ScheduleWebController::class, 'index'])->name('schedules.index');
+    Route::post('/schedules', [ScheduleWebController::class, 'store'])->name('schedules.store');
     Route::get('/welfare/bpjs', [WelfareWebController::class, 'bpjs'])->name('welfare.bpjs');
     Route::post('/welfare/bpjs', [WelfareWebController::class, 'storeBpjs'])->name('welfare.bpjs.store');
     Route::post('/welfare/bpjs/{membership}/cancel', [WelfareWebController::class, 'cancelBpjs'])->name('welfare.bpjs.cancel');
     Route::get('/career/study-leave', [CareerWebController::class, 'studyLeave'])->name('career.study-leave');
+    Route::post('/career/study-leave', [CareerWebController::class, 'storeStudyLeave'])->name('career.study-leave.store');
     Route::get('/career/certifications', [CareerWebController::class, 'certifications'])->name('career.certifications');
+    Route::post('/career/certifications', [CareerWebController::class, 'storeCertification'])->name('career.certifications.store');
     Route::get('/career/training', [CareerWebController::class, 'training'])->name('career.training');
+    Route::post('/career/training', [CareerWebController::class, 'storeTraining'])->name('career.training.store');
     Route::get('/retirement', [RetirementWebController::class, 'index'])->name('retirement.index');
     Route::post('/retirement', [RetirementWebController::class, 'store'])->name('retirement.store');
     Route::get('/reports', [ReportWebController::class, 'index'])->name('reports.index');

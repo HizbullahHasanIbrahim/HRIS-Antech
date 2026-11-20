@@ -7,15 +7,23 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\AcademicRankHistory;
 use App\Models\Certification;
+use App\Models\Employee;
 use App\Models\StaffRankHistory;
 use App\Models\StudyLeave;
 use App\Models\Training;
+use App\Services\Audit\ActivityLogService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class CareerWebController extends Controller
 {
+    public function __construct(
+        protected ActivityLogService $activityLog
+    ) {}
+
     public function index(Request $request): Response
     {
         $user = $request->user();
@@ -36,11 +44,18 @@ class CareerWebController extends Controller
             ->when(! $isAdminOrHead, fn ($q) => $q->where('employee_id', $scopeEmployeeId))
             ->orderByDesc('effective_date');
 
+        $employees = Employee::where('employment_status', 'aktif')
+            ->select(['id', 'full_name', 'nip'])
+            ->when(! $isAdminOrHead && $employee, fn ($q) => $q->where('unit_id', $employee->unit_id))
+            ->orderBy('full_name')
+            ->get();
+
         return Inertia::render('Career/Index', [
             'academicRanks' => $academicQuery->paginate(15)->withQueryString(),
             'staffRanks' => $staffQuery->paginate(15)->withQueryString(),
             'isAdminOrHead' => $isAdminOrHead,
             'scopeEmployeeId' => $scopeEmployeeId,
+            'employees' => $employees,
         ]);
     }
 
@@ -56,6 +71,12 @@ class CareerWebController extends Controller
 
         $studies = $query->paginate(15)->withQueryString();
 
+        $employees = Employee::where('employment_status', 'aktif')
+            ->select(['id', 'full_name', 'nip'])
+            ->when(! $isAdminOrHead && $employee, fn ($q) => $q->where('unit_id', $employee->unit_id))
+            ->orderBy('full_name')
+            ->get();
+
         return Inertia::render('Career/StudyLeave', [
             'studies' => array_merge($studies->toArray(), [
                 'data' => $studies->getCollection()->map(fn ($s) => [
@@ -67,6 +88,7 @@ class CareerWebController extends Controller
                     'scholarship' => $s->scholarship_name,
                 ])->values(),
             ]),
+            'employees' => $employees,
             'isAdminOrHead' => $isAdminOrHead,
         ]);
     }
@@ -83,6 +105,12 @@ class CareerWebController extends Controller
 
         $certs = $query->paginate(15)->withQueryString();
 
+        $employees = Employee::where('employment_status', 'aktif')
+            ->select(['id', 'full_name', 'nip'])
+            ->when(! $isAdminOrHead && $employee, fn ($q) => $q->where('unit_id', $employee->unit_id))
+            ->orderBy('full_name')
+            ->get();
+
         return Inertia::render('Career/Certifications', [
             'certifications' => array_merge($certs->toArray(), [
                 'data' => $certs->getCollection()->map(fn ($c) => [
@@ -94,6 +122,7 @@ class CareerWebController extends Controller
                     'status' => $c->status,
                 ])->values(),
             ]),
+            'employees' => $employees,
             'isAdminOrHead' => $isAdminOrHead,
         ]);
     }
@@ -110,6 +139,12 @@ class CareerWebController extends Controller
 
         $trainings = $query->paginate(15)->withQueryString();
 
+        $employees = Employee::where('employment_status', 'aktif')
+            ->select(['id', 'full_name', 'nip'])
+            ->when(! $isAdminOrHead && $employee, fn ($q) => $q->where('unit_id', $employee->unit_id))
+            ->orderBy('full_name')
+            ->get();
+
         return Inertia::render('Career/Training', [
             'trainings' => array_merge($trainings->toArray(), [
                 'data' => $trainings->getCollection()->map(fn ($t) => [
@@ -122,7 +157,120 @@ class CareerWebController extends Controller
                     'status' => $t->status,
                 ])->values(),
             ]),
+            'employees' => $employees,
             'isAdminOrHead' => $isAdminOrHead,
         ]);
+    }
+
+    public function storeCertification(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'employee_id' => 'required|exists:employees,id',
+            'cert_type' => 'required|string|max:50',
+            'cert_number' => 'required|string|max:50|unique:certifications,cert_number',
+            'submitted_date' => 'required|date',
+            'cert_level' => 'required|string|max:12',
+        ]);
+
+        DB::transaction(function () use ($validated) {
+            DB::table('employees')->where('id', $validated['employee_id'])->lockForUpdate()->first();
+
+            $certification = Certification::create([
+                'employee_id' => $validated['employee_id'],
+                'cert_type' => $validated['cert_type'],
+                'cert_number' => $validated['cert_number'],
+                'submitted_date' => $validated['submitted_date'],
+                'status' => 'diajukan',
+            ]);
+
+            $this->activityLog->log(
+                null,
+                'CREATE_CERTIFICATION',
+                'Certification',
+                $certification->id,
+                null,
+                'diajukan',
+            );
+        });
+
+        return back()->with('success', 'Sertifikasi berhasil dibuat.');
+    }
+
+    public function storeStudyLeave(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'employee_id' => 'required|exists:employees,id',
+            'degree_level' => 'required|string|max:5',
+            'university' => 'required|string|max:150',
+            'study_program' => 'required|string|max:150',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'scholarship_name' => 'required|string|max:150',
+        ]);
+
+        DB::transaction(function () use ($validated) {
+            DB::table('employees')->where('id', $validated['employee_id'])->lockForUpdate()->first();
+
+            $studyLeave = StudyLeave::create([
+                'employee_id' => $validated['employee_id'],
+                'degree_level' => $validated['degree_level'],
+                'university' => $validated['university'],
+                'study_program' => $validated['study_program'],
+                'start_date' => $validated['start_date'],
+                'expected_end_date' => $validated['end_date'],
+                'scholarship_name' => $validated['scholarship_name'],
+                'status' => 'direncanakan',
+            ]);
+
+            $this->activityLog->log(
+                null,
+                'CREATE_STUDY_LEAVE',
+                'StudyLeave',
+                $studyLeave->id,
+                null,
+                'direncanakan',
+            );
+        });
+
+        return back()->with('success', 'Pengajuan studi lanjut berhasil dibuat.');
+    }
+
+    public function storeTraining(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'employee_id' => 'required|exists:employees,id',
+            'title' => 'required|string|max:200',
+            'training_type' => 'required|string|max:15',
+            'organizer' => 'required|string|max:150',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'duration_hours' => 'required|integer|min:1',
+        ]);
+
+        DB::transaction(function () use ($validated) {
+            DB::table('employees')->where('id', $validated['employee_id'])->lockForUpdate()->first();
+
+            $training = Training::create([
+                'employee_id' => $validated['employee_id'],
+                'title' => $validated['title'],
+                'training_type' => $validated['training_type'],
+                'organizer' => $validated['organizer'],
+                'start_date' => $validated['start_date'],
+                'end_date' => $validated['end_date'],
+                'duration_hours' => $validated['duration_hours'],
+                'status' => 'dijadwalkan',
+            ]);
+
+            $this->activityLog->log(
+                null,
+                'CREATE_TRAINING',
+                'Training',
+                $training->id,
+                null,
+                'dijadwalkan',
+            );
+        });
+
+        return back()->with('success', 'Pelatihan berhasil dibuat.');
     }
 }
