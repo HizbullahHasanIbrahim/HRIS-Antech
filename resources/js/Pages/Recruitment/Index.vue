@@ -171,22 +171,19 @@ interface Props {
   applicants: Array<{ id: number; full_name: string; email: string; nip: string }>;
   isAdminOrHead: boolean;
   scopeEmployeeId: number | null;
+  departments: Array<{ id: number; name: string }>;
 }
 
 const props = defineProps<Props>();
 const vacancies = ref(props.vacancies);
 const showCreateModal = ref(false);
 const submitting = ref(false);
-const departments = ref([
-  { id: 1, name: 'Biro Sumber Daya Manusia' },
-  { id: 2, name: 'Fakultas Teknologi Industri' },
-  { id: 3, name: 'Fakultas Keguruan' },
-]);
+const departments = ref(props.departments);
 
 const createForm = ref({
   title: '',
   description: '',
-  category: 'penegatan',
+  category: 'dosen',
   unit_id: '',
   quota: 1,
   open_date: new Date().toISOString().split('T')[0],

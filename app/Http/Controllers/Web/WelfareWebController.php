@@ -39,7 +39,10 @@ class WelfareWebController extends Controller
         // Mask membership numbers for privacy (RULE-06)
         $memberships->getCollection()->each(function ($membership) use ($request) {
             $number = $membership->membership_number;
-            $canViewSensitive = $request->user()->hasRole('Admin BSDM') || $request->user()->hasRole('Wakil Rektor');
+            $canViewSensitive = $request->user()->hasRole('Admin BSDM')
+            || $request->user()->hasRole('Welfare Admin')
+            || $request->user()->hasRole('Kepala Biro')
+            || $request->user()->hasRole('Wakil Rektor');
             
             if (strlen($number) >= 4) {
                 $membership->masked_number = '********'.substr($number, -4);

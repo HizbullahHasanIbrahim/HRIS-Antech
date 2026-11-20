@@ -128,7 +128,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import { Building2, Users, User, X } from 'lucide-vue-next';
 import AppButton from '@/Components/UI/AppButton.vue';
@@ -150,17 +150,15 @@ interface Props {
     total: number;
     links: Array<{ url: string | null; label: string; active: boolean }>;
   };
+  isAdminOrHead: boolean;
+  departments: Array<{ id: number; name: string }>;
 }
 
 const props = defineProps<Props>();
 const users = ref(props.users);
 const showCreateModal = ref(false);
 const submitting = ref(false);
-const departments = ref([
-  { id: 1, name: 'Biro Sumber Daya Manusia' },
-  { id: 2, name: 'Fakultas Teknologi Industri' },
-  { id: 3, name: 'Fakultas Keguruan' },
-]);
+const departments = ref(props.departments);
 
 const createForm = ref({
   name: '',

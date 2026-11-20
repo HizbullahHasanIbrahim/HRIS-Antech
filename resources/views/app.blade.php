@@ -15,9 +15,9 @@
         <!-- Script Anti-FOUC: Apply theme based on localStorage or system preference -->
         <script>
             (function() {
-                const theme = localStorage.getItem('hris-theme') || 'system';
+                const theme = localStorage.getItem('hris-theme');
                 const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                const appliedTheme = theme === 'system' ? systemTheme : theme;
+                const appliedTheme = theme === 'system' ? systemTheme : (theme || 'light');
 
                 // Terapkan class pada <html> untuk menghindari flash
                 if (appliedTheme === 'dark') {

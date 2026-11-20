@@ -64,6 +64,7 @@
               <label class="block text-sm font-medium mb-1">Pegawai</label>
               <select v-model="createForm.employee_id" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required>
                 <option value="" disabled>Pilih Pegawai</option>
+                <option v-for="emp in employees" :key="emp.id" :value="emp.id">{{ emp.full_name }} ({{ emp.nip }})</option>
               </select>
             </div>
             <div>
@@ -116,12 +117,14 @@ interface Props {
     links: Array<{ url: string | null; label: string; active: boolean }>;
   };
   isAdminOrHead: boolean;
+  employees: Array<{ id: number; full_name: string; nip: string }>;
 }
 
 const props = defineProps<Props>();
 const retirements = ref(props.retirements);
 const showCreateModal = ref(false);
 const submitting = ref(false);
+const employees = ref(props.employees);
 
 const createForm = ref({
   employee_id: '',

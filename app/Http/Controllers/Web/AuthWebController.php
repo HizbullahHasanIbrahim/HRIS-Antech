@@ -7,10 +7,14 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\Applicant;
+use App\Models\Employee;
+use App\Models\Role;
 use App\Models\User;
+use App\Models\UserRole;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -29,13 +33,38 @@ class AuthWebController extends Controller
 
     public function register(Request $request): RedirectResponse
     {
-        // Handle registration / activation request
-        $request->validate([
-            'username' => 'required|string|unique:users,username',
+        $validated = $request->validate([
+            'nip' => 'required|string|exists:employees,nip',
+            'username' => 'required|string|min:3|max:50|unique:users,username',
             'password' => 'required|string|min:8',
         ]);
 
-        return redirect()->route('login')->with('success', 'Akun berhasil didaftarkan. Silakan masuk.');
+        DB::transaction(function () use ($validated) {
+            $employee = Employee::where('nip', $validated['nip'])->firstOrFail();
+
+            if ($employee->user) {
+                throw ValidationException::withMessages([
+                    'nip' => 'NIP sudah memiliki akun. Silakan login.',
+                ]);
+            }
+
+            $user = User::create([
+                'employee_id' => $employee->id,
+                'username' => $validated['username'],
+                'password_hash' => Hash::make($validated['password']),
+                'is_active' => true,
+            ]);
+
+            $roleName = $employee->category === 'dosen' ? 'Dosen' : 'Tendik';
+            $role = Role::firstOrCreate(['name' => $roleName]);
+            UserRole::firstOrCreate([
+                'user_id' => $user->id,
+                'role_id' => $role->id,
+                'unit_id' => $employee->unit_id,
+            ]);
+        });
+
+        return redirect()->route('login')->with('success', 'Akun berhasil diaktifkan. Silakan masuk.');
     }
 
     public function registerApplicant(Request $request): RedirectResponse

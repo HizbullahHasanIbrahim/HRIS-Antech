@@ -6,10 +6,17 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\Applicant;
+use App\Models\Department;
+use App\Models\Employee;
+use App\Models\Role;
 use App\Models\User;
+use App\Models\UserRole;
 use App\Models\Vacancy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -50,6 +57,7 @@ class RecruitmentWebController extends Controller
                 ])->values(),
             ]),
             'applicants' => $applicants,
+            'departments' => Department::where('is_active', true)->select(['id', 'name'])->orderBy('name')->get(),
             'isAdminOrHead' => $isAdminOrHead,
             'scopeEmployeeId' => $employee?->id ?? null,
         ]);
@@ -75,13 +83,14 @@ class RecruitmentWebController extends Controller
             'users' => array_merge($users->toArray(), [
                 'data' => $users->getCollection()->map(fn ($u) => [
                     'id' => $u->id,
-                    'name' => $u->employee?->full_name ?? '-',
-                    'email' => $u->email,
-                    'role' => $u->roles->pluck('name')->join(', ') ?? '-',
+                    'name' => $u->employee?->full_name ?? $u->username,
+                    'email' => $u->employee?->email ?? '-',
+                    'role' => $u->roles->pluck('name')->join(', ') ?: 'Staff',
                     'department' => $u->employee?->department?->name ?? '-',
-                    'status' => $u->employee?->employment_status ?? 'tidak_aktif',
+                    'status' => $u->employee?->employment_status ?? ($u->is_active ? 'aktif' : 'tidak_aktif'),
                 ])->values(),
             ]),
+            'departments' => Department::where('is_active', true)->select(['id', 'name'])->orderBy('name')->get(),
             'isAdminOrHead' => $isAdminOrHead,
         ]);
     }
@@ -152,5 +161,53 @@ class RecruitmentWebController extends Controller
         ]);
 
         return back()->with('success', 'Lowongan kerja berhasil dibuat.');
+    }
+
+    /**
+     * Store a new user (web action).
+     */
+    public function storeUser(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:150',
+            'email' => 'required|string|email|max:150',
+            'role' => 'required|string|in:dosen,tendik,admin-bsdm',
+            'unit_id' => 'required|exists:departments,id',
+            'password' => 'required|string|min:8',
+        ]);
+
+        $roleName = match ($validated['role']) {
+            'dosen' => 'Dosen',
+            'tendik' => 'Tendik',
+            'admin-bsdm' => 'Admin BSDM',
+        };
+
+        $role = Role::firstOrCreate(['name' => $roleName]);
+
+        DB::transaction(function () use ($validated, $role) {
+            $employee = Employee::create([
+                'full_name' => $validated['name'],
+                'email' => $validated['email'],
+                'category' => $validated['role'] === 'admin-bsdm' ? 'tendik' : $validated['role'],
+                'unit_id' => $validated['unit_id'],
+                'employment_status' => 'aktif',
+                'join_date' => now(),
+            ]);
+
+            $user = User::create([
+                'employee_id' => $employee->id,
+                'username' => Str::slug($validated['name'], '_'),
+                'password_hash' => Hash::make($validated['password']),
+                'is_active' => true,
+            ]);
+
+            UserRole::create([
+                'user_id' => $user->id,
+                'role_id' => $role->id,
+                'unit_id' => $validated['unit_id'],
+            ]);
+        });
+
+        return back()->with('success', 'Pengguna baru berhasil dibuat.');
     }
 }

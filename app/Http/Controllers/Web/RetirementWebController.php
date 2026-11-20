@@ -26,6 +26,13 @@ class RetirementWebController extends Controller
 
         $retirements = $query->paginate(15)->withQueryString();
 
+        $eligibleEmployees = Employee::where('employment_status', 'aktif')
+            ->whereYear('birth_date', '<=', now()->subYears(55)->year)
+            ->select(['id', 'full_name', 'nip'])
+            ->when(! $isAdminOrHead && $employee, fn ($q) => $q->where('unit_id', $employee->unit_id))
+            ->orderBy('full_name')
+            ->get();
+
         return Inertia::render('Retirement/Index', [
             'retirements' => array_merge($retirements->toArray(), [
                 'data' => $retirements->getCollection()->map(fn ($r) => [
@@ -41,6 +48,7 @@ class RetirementWebController extends Controller
                     'notes' => $r->notes,
                 ])->values(),
             ]),
+            'employees' => $eligibleEmployees,
             'isAdminOrHead' => $isAdminOrHead,
         ]);
     }

@@ -86,7 +86,9 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::get('/recruitment', [RecruitmentWebController::class, 'index'])->name('recruitment.index');
+    Route::post('/recruitment', [RecruitmentWebController::class, 'storeVacancy'])->name('recruitment.store');
     Route::get('/recruitment/users', [RecruitmentWebController::class, 'users'])->name('recruitment.users');
+    Route::post('/recruitment/users', [RecruitmentWebController::class, 'storeUser'])->name('recruitment.users.store');
     Route::get('/recruitment/onboarding', [RecruitmentWebController::class, 'onboarding'])->name('recruitment.onboarding');
     Route::get('/schedules', [ScheduleWebController::class, 'index'])->name('schedules.index');
     Route::get('/welfare/bpjs', [WelfareWebController::class, 'bpjs'])->name('welfare.bpjs');
