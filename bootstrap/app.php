@@ -60,10 +60,20 @@ return Application::configure(basePath: dirname(__DIR__))
 
             return response()->json(['success' => false, 'error' => ['code' => 'CONCURRENCY_CONFLICT', 'message' => $e->getMessage()]], 409);
         });
-        $exceptions->render(fn (UnauthorizedActionException $e) => response()->json(['success' => false, 'error' => ['code' => 'UNAUTHORIZED_ACTION', 'message' => $e->getMessage()]], 403)
-        );
-        $exceptions->render(fn (BusinessRuleViolationException $e) => response()->json(['success' => false, 'error' => ['code' => 'BUSINESS_RULE_VIOLATION', 'message' => $e->getMessage(), 'details' => $e->details ?? null]], 422)
-        );
+        $exceptions->render(function (UnauthorizedActionException $e, Request $request) {
+            if ($request->header('X-Inertia')) {
+                return back()->withErrors(['code' => 'UNAUTHORIZED_ACTION', 'message' => $e->getMessage()]);
+            }
+
+            return response()->json(['success' => false, 'error' => ['code' => 'UNAUTHORIZED_ACTION', 'message' => $e->getMessage()]], 403);
+        });
+        $exceptions->render(function (BusinessRuleViolationException $e, Request $request) {
+            if ($request->header('X-Inertia')) {
+                return back()->withErrors(['code' => 'BUSINESS_RULE_VIOLATION', 'message' => $e->getMessage()]);
+            }
+
+            return response()->json(['success' => false, 'error' => ['code' => 'BUSINESS_RULE_VIOLATION', 'message' => $e->getMessage(), 'details' => $e->details ?? null]], 422);
+        });
         $exceptions->render(function (Request $request, Throwable $e) {
             if ($request->header('X-Inertia')) {
                 return back()->withErrors(['message' => $e->getMessage()]);

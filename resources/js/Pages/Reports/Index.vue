@@ -11,7 +11,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
       <div class="bg-surface rounded-xl p-5 border border-subtle shadow-sm hover:shadow-md transition-shadow">
         <p class="text-sm text-muted mb-1">Total Pegawai</p>
-        <p class="text-3xl font-extrabold text-brand-primary">{{ kpi.totalEmployees }}</p>
+        <p class="text-3xl font-extrabold text-main">{{ kpi.totalEmployees }}</p>
       </div>
       <div class="bg-surface rounded-xl p-5 border border-subtle shadow-sm hover:shadow-md transition-shadow">
         <p class="text-sm text-muted mb-1">Total Dosen Aktif</p>
@@ -23,11 +23,11 @@
       </div>
       <div class="bg-surface rounded-xl p-5 border border-subtle shadow-sm hover:shadow-md transition-shadow">
         <p class="text-sm text-muted mb-1">Pensiun Tahun Ini</p>
-        <p class="text-3xl font-extrabold text-status-danger">{{ kpi.pensiunThisYear }}</p>
+        <p class="text-3xl font-extrabold text-main">{{ kpi.pensiunThisYear }}</p>
       </div>
       <div class="bg-surface rounded-xl p-5 border border-subtle shadow-sm hover:shadow-md transition-shadow">
         <p class="text-sm text-muted mb-1">Cuti/Lembur Bulan Ini</p>
-        <p class="text-3xl font-extrabold text-status-warning">{{ kpi.leaveRequestsThisMonth }}</p>
+        <p class="text-3xl font-extrabold text-main">{{ kpi.leaveRequestsThisMonth }}</p>
       </div>
     </div>
 
@@ -73,7 +73,7 @@
       
       <!-- Compliance Summary -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <div class="p-4 bg-info/10 border border-info rounded-lg">
+        <div class="p-4 bg-status-info-bg border border-status-info rounded-lg">
           <p class="text-sm text-muted">BKD Dosen ({{ compliance.bkd.period }})</p>
           <div class="flex justify-between text-sm mt-1">
             <span>Diajukan: {{ compliance.bkd.submitted }}</span>
@@ -82,7 +82,7 @@
           <p class="text-xl font-bold mt-2 text-brand-primary">Kepatuhan: {{ compliance.bkd.complianceRate }}%</p>
           <p class="text-sm text-muted">Finalisasi: {{ compliance.bkd.finalRate }}%</p>
         </div>
-        <div class="p-4 bg-warning/10 border border-warning rounded-lg">
+        <div class="p-4 bg-status-warning-bg border border-status-warning rounded-lg">
           <p class="text-sm text-muted">SKP Pegawai</p>
           <div class="flex justify-between text-sm mt-1">
             <span>Disetujui: {{ compliance.skp.approved }}</span>
@@ -265,7 +265,7 @@ const baseChartOptions = {
 };
 
 // Dosen Rank Chart
-const dosenChartSeries = computed(() => props.charts.dosenRankDistribution.map(d => d.count));
+const dosenChartSeries = computed(() => [{ name: 'Jumlah Dosen', data: props.charts.dosenRankDistribution.map(d => d.count) }]);
 const dosenChartOptions = computed(() => ({
   ...baseChartOptions,
   xaxis: { categories: props.charts.dosenRankDistribution.map(d => d.rank) },
@@ -273,7 +273,7 @@ const dosenChartOptions = computed(() => ({
 }));
 
 // Tendik Rank Chart
-const tendikChartSeries = computed(() => props.charts.tendikRankDistribution.map(d => d.count));
+const tendikChartSeries = computed(() => [{ name: 'Jumlah Tendik', data: props.charts.tendikRankDistribution.map(d => d.count) }]);
 const tendikChartOptions = computed(() => ({
   ...baseChartOptions,
   xaxis: { categories: props.charts.tendikRankDistribution.map(d => d.rank) },

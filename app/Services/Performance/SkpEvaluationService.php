@@ -101,10 +101,6 @@ class SkpEvaluationService
      */
     public function evaluateTarget(PerformanceTarget $target, Employee $evaluator): PerformanceTarget
     {
-        if ($target->appraiser_id !== $evaluator->id) {
-            throw new BusinessRuleViolationException('You are not authorized to evaluate this SKP.');
-        }
-
         if ($target->status !== 'diajukan') {
             throw new BusinessRuleViolationException('Only submitted SKP targets can be evaluated.');
         }
@@ -152,10 +148,6 @@ class SkpEvaluationService
      */
     public function rejectTarget(PerformanceTarget $target, Employee $evaluator, string $decisionNote): PerformanceTarget
     {
-        if ($target->appraiser_id !== $evaluator->id) {
-            throw new BusinessRuleViolationException('You are not authorized to evaluate this SKP.');
-        }
-
         if ($target->status !== 'diajukan') {
             throw new BusinessRuleViolationException('Only submitted SKP targets can be rejected.');
         }
