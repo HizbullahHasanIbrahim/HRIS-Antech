@@ -47,8 +47,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { Link } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
+import { router, Link } from '@inertiajs/vue3';
 import SearchFilterBar from '@/Components/UI/SearchFilterBar.vue';
 import Card from '@/Components/UI/Card.vue';
 import StatusBadge from '@/Components/UI/StatusBadge.vue';
@@ -80,4 +80,17 @@ interface Props {
 const props = defineProps<Props>();
 const logs = ref(props.logs);
 const searchQuery = ref('');
+
+// Debounced search watcher — trigger backend filter
+let searchTimeout: ReturnType<typeof setTimeout>;
+watch(searchQuery, (val: string) => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    router.get('/audit/activity-logs', { search: val }, {
+      preserveState: true,
+      preserveScroll: true,
+      replace: true,
+    });
+  }, 400);
+});
 </script>

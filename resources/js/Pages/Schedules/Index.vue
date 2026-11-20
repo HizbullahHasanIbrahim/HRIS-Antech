@@ -100,36 +100,36 @@
             <div class="p-6 space-y-4">
               <div>
                 <label class="block text-sm font-medium mb-1">Unit <span class="text-status-danger" aria-hidden="true">*</span></label>
-                <select v-model="createForm.unit_id" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required>
+                <select v-model="createForm.unit_id" class="w-full border border-control rounded-md p-2 bg-canvas text-main" required>
                   <option value="" disabled>Pilih Unit</option>
                   <option v-for="dept in departments" :key="dept.id" :value="dept.id">{{ dept.name }}</option>
                 </select>
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1">Kategori <span class="text-status-danger" aria-hidden="true">*</span></label>
-                <select v-model="createForm.category" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required>
+                <select v-model="createForm.category" class="w-full border border-control rounded-md p-2 bg-canvas text-main" required>
                   <option value="dosen">Dosen</option>
                   <option value="tendik">Tenaga Kependidikan</option>
                 </select>
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1">Tanggal Mulai <span class="text-status-danger" aria-hidden="true">*</span></label>
-                <input v-model="createForm.valid_from" type="date" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required />
+                <input v-model="createForm.valid_from" type="date" class="w-full border border-control rounded-md p-2 bg-canvas text-main" required />
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1">Tanggal Berakhir</label>
-                <input v-model="createForm.valid_until" type="date" class="w-full border border-border rounded-md p-2 bg-canvas text-main" />
+                <input v-model="createForm.valid_until" type="date" class="w-full border border-control rounded-md p-2 bg-canvas text-main" />
               </div>
               <div class="flex flex-wrap gap-2 mb-4">
-                <div v-for="d in workWeekDays" :key="d.day" class="flex items-center gap-2 bg-canvas border border-border rounded-lg p-3">
+                <div v-for="d in workWeekDays" :key="d.day" class="flex items-center gap-2 bg-canvas border border-control rounded-lg p-3">
                   <span class="w-12 font-medium text-main">{{ d.day }}</span>
-                  <input v-model="d.start_time" type="time" class="border border-border rounded px-2 py-1 bg-canvas text-main" required />
+                  <input v-model="d.start_time" type="time" class="border border-control rounded px-2 py-1 bg-canvas text-main" required />
                   <span class="text-muted">s/d</span>
-                  <input v-model="d.end_time" type="time" class="border border-border rounded px-2 py-1 bg-canvas text-main" required />
+                  <input v-model="d.end_time" type="time" class="border border-control rounded px-2 py-1 bg-canvas text-main" required />
                 </div>
               </div>
               <div class="flex items-center gap-2">
-                <input type="checkbox" id="is_published" v-model="createForm.is_published" class="h-4 w-4 rounded border-border" />
+                <input type="checkbox" id="is_published" v-model="createForm.is_published" class="h-4 w-4 rounded border-control" />
                 <label for="is_published" class="text-sm text-main">Publikasi jadwal</label>
               </div>
               <div class="flex justify-end gap-3 pt-4">

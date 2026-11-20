@@ -88,15 +88,15 @@
           <form @submit.prevent="submitCreate" class="p-6 space-y-5">
             <div>
               <label for="user-name" class="block text-sm font-medium text-main mb-1.5">Nama <span class="text-status-danger" aria-hidden="true">*</span></label>
-              <input id="user-name" v-model="createForm.name" type="text" class="w-full border border-border rounded-lg px-4 py-2.5 bg-canvas text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" autocomplete="name" />
+              <input id="user-name" v-model="createForm.name" type="text" class="w-full border border-control rounded-lg px-4 py-2.5 bg-canvas text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" autocomplete="name" />
             </div>
             <div>
               <label for="user-email" class="block text-sm font-medium text-main mb-1.5">Email <span class="text-status-danger" aria-hidden="true">*</span></label>
-              <input id="user-email" v-model="createForm.email" type="email" class="w-full border border-border rounded-lg px-4 py-2.5 bg-canvas text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" autocomplete="email" />
+              <input id="user-email" v-model="createForm.email" type="email" class="w-full border border-control rounded-lg px-4 py-2.5 bg-canvas text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" autocomplete="email" />
             </div>
             <div>
               <label for="user-role" class="block text-sm font-medium text-main mb-1.5">Role <span class="text-status-danger" aria-hidden="true">*</span></label>
-              <select id="user-role" v-model="createForm.role" class="w-full border border-border rounded-lg px-4 py-2.5 bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true">
+              <select id="user-role" v-model="createForm.role" class="w-full border border-control rounded-lg px-4 py-2.5 bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true">
                 <option value="" disabled>Pilih Role</option>
                 <option value="dosen">Dosen</option>
                 <option value="tendik">Tendik</option>
@@ -106,14 +106,14 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
                 <label for="user-unit" class="block text-sm font-medium text-main mb-1.5">Unit Kerja <span class="text-status-danger" aria-hidden="true">*</span></label>
-                <select id="user-unit" v-model="createForm.unit_id" class="w-full border border-border rounded-lg px-4 py-2.5 bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true">
+                <select id="user-unit" v-model="createForm.unit_id" class="w-full border border-control rounded-lg px-4 py-2.5 bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true">
                   <option value="" disabled>Pilih Unit</option>
                   <option v-for="dept in departments" :key="dept.id" :value="dept.id">{{ dept.name }}</option>
                 </select>
               </div>
               <div>
                 <label for="user-password" class="block text-sm font-medium text-main mb-1.5">Password <span class="text-status-danger" aria-hidden="true">*</span></label>
-                <input id="user-password" v-model="createForm.password" type="password" class="w-full border border-border rounded-lg px-4 py-2.5 bg-canvas text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" autocomplete="new-password" />
+                <input id="user-password" v-model="createForm.password" type="password" class="w-full border border-control rounded-lg px-4 py-2.5 bg-canvas text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" autocomplete="new-password" />
               </div>
             </div>
             <div class="flex justify-end gap-3 pt-4 border-t border-subtle">

@@ -84,19 +84,19 @@
           <form @submit.prevent="submitCreate" class="p-6 space-y-5">
             <div>
               <label for="onboard-full-name" class="block text-sm font-medium text-main mb-1.5">Nama Lengkap <span class="text-status-danger" aria-hidden="true">*</span></label>
-              <input id="onboard-full-name" v-model="createForm.full_name" type="text" class="w-full border border-border rounded-lg px-4 py-2.5 bg-canvas text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" autocomplete="name" />
+              <input id="onboard-full-name" v-model="createForm.full_name" type="text" class="w-full border border-control rounded-lg px-4 py-2.5 bg-canvas text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" autocomplete="name" />
             </div>
             <div>
               <label for="onboard-email" class="block text-sm font-medium text-main mb-1.5">Email <span class="text-status-danger" aria-hidden="true">*</span></label>
-              <input id="onboard-email" v-model="createForm.email" type="email" class="w-full border border-border rounded-lg px-4 py-2.5 bg-canvas text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" autocomplete="email" />
+              <input id="onboard-email" v-model="createForm.email" type="email" class="w-full border border-control rounded-lg px-4 py-2.5 bg-canvas text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" autocomplete="email" />
             </div>
             <div>
               <label for="onboard-nip" class="block text-sm font-medium text-main mb-1.5">NIP <span class="text-status-danger" aria-hidden="true">*</span></label>
-              <input id="onboard-nip" v-model="createForm.nip" type="text" class="w-full border border-border rounded-lg px-4 py-2.5 bg-canvas text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" autocomplete="off" />
+              <input id="onboard-nip" v-model="createForm.nip" type="text" class="w-full border border-control rounded-lg px-4 py-2.5 bg-canvas text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" autocomplete="off" />
             </div>
             <div>
               <label for="onboard-start-date" class="block text-sm font-medium text-main mb-1.5">Tanggal Mulai Kerja <span class="text-status-danger" aria-hidden="true">*</span></label>
-              <input id="onboard-start-date" v-model="createForm.start_date" type="date" class="w-full border border-border rounded-lg px-4 py-2.5 bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" />
+              <input id="onboard-start-date" v-model="createForm.start_date" type="date" class="w-full border border-control rounded-lg px-4 py-2.5 bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" />
             </div>
             <div class="flex justify-end gap-3 pt-4 border-t border-subtle">
               <AppButton type="button" variant="secondary" @click="closeCreateModal" :disabled="submitting">Batal</AppButton>

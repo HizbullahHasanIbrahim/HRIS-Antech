@@ -62,25 +62,25 @@
           <div class="space-y-4">
             <div>
               <label class="block text-sm font-medium mb-1">Pegawai</label>
-              <select v-model="createForm.employee_id" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required>
+              <select v-model="createForm.employee_id" class="w-full border border-control rounded-md p-2 bg-canvas text-main" required>
                 <option value="" disabled>Pilih Pegawai</option>
                 <option v-for="emp in employees" :key="emp.id" :value="emp.id">{{ emp.full_name }} ({{ emp.nip }})</option>
               </select>
             </div>
             <div>
               <label class="block text-sm font-medium mb-1">Usia Pensiun</label>
-              <input v-model="createForm.retirement_age" type="number" class="w-full border border-border rounded-md p-2 bg-canvas text-main" min="50" max="75" placeholder="57" required />
+              <input v-model="createForm.retirement_age" type="number" class="w-full border border-control rounded-md p-2 bg-canvas text-main" min="50" max="75" placeholder="57" required />
             </div>
             <div>
               <label class="block text-sm font-medium mb-1">Tanggal Perencanaan</label>
-              <input v-model="createForm.planned_date" type="date" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required />
+              <input v-model="createForm.planned_date" type="date" class="w-full border border-control rounded-md p-2 bg-canvas text-main" required />
             </div>
             <div>
               <label class="block text-sm font-medium mb-1">Catatan</label>
-              <textarea v-model="createForm.notes" class="w-full border border-border rounded-md p-2 bg-canvas text-main" rows="3" placeholder="Catatan tambahan..."></textarea>
+              <textarea v-model="createForm.notes" class="w-full border border-control rounded-md p-2 bg-canvas text-main" rows="3" placeholder="Catatan tambahan..."></textarea>
             </div>
             <div class="flex justify-end gap-2">
-              <AppButton type="button" variant="outline" @click="showCreateModal = false">Batal</AppButton>
+              <AppButton type="button" variant="secondary" @click="showCreateModal = false">Batal</AppButton>
               <AppButton type="submit" variant="primary" :disabled="submitting">Ajukan</AppButton>
             </div>
           </div>

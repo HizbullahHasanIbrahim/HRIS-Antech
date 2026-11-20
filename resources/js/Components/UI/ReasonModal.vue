@@ -8,38 +8,57 @@
       leave-from-class="opacity-100 scale-100"
       leave-to-class="opacity-0 scale-95"
     >
-      <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
-        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" />
-        <div class="relative w-full max-w-sm bg-surface rounded-xl shadow-lg border border-subtle p-6">
+      <div
+        v-if="open"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div
+          class="relative w-full max-w-md bg-surface rounded-xl shadow-lg border border-subtle p-6"
+          @click.stop
+        >
+          <!-- Header -->
           <div class="flex items-center gap-3 mb-4">
             <div class="w-10 h-10 bg-status-warning-bg rounded-full flex items-center justify-center shrink-0">
               <AlertTriangleIcon class="w-5 h-5 text-status-warning" />
             </div>
             <div>
-              <h2 class="text-base font-semibold text-main">Konflik Data Terdeteksi</h2>
-              <p class="text-sm text-muted">Versi #{{ expectedVersion }}</p>
+              <h2 class="text-base font-semibold text-main">{{ title }}</h2>
+              <p v-if="description" class="text-sm text-muted">{{ description }}</p>
             </div>
           </div>
 
-          <p class="text-sm text-main mb-5">
-            Pengajuan ini baru saja diproses oleh pengguna lain. Data yang Anda lihat sudah tidak aktual.
+          <!-- Reason textarea -->
+          <label for="reason-input" class="sr-only">Alasan</label>
+          <textarea
+            id="reason-input"
+            v-model="reason"
+            :placeholder="placeholder"
+            rows="4"
+            class="w-full bg-canvas border border-control rounded-lg p-3 text-main resize-none focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary"
+          ></textarea>
+          <p v-if="reason.length > 0 && reason.length < 5" class="text-xs text-status-danger mt-1">
+            Alasan minimal 5 karakter.
           </p>
 
-          <div class="flex gap-3">
+          <!-- Footer -->
+          <div class="flex gap-3 mt-5">
             <button
               type="button"
-              @click="$emit('update:open', false)"
-              class="flex-1 px-4 py-2 text-sm font-medium text-main border border-control rounded-lg hover:bg-canvas"
+              @click="close"
+              class="flex-1 px-4 py-2 text-sm font-medium text-main border border-control rounded-lg hover:bg-canvas transition-colors"
             >
-              Tutup
+              Batal
             </button>
             <button
               type="button"
-              @click="reload"
-              class="flex-1 px-4 py-2 text-sm font-medium text-white bg-brand-primary rounded-lg hover:bg-brand-primary-dark flex items-center justify-center gap-2"
+              :disabled="!canConfirm"
+              @click="confirm"
+              class="flex-1 px-4 py-2 text-sm font-medium text-white bg-status-danger rounded-lg hover:bg-status-danger/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              <RefreshCwIcon class="w-4 h-4" />
-              Muat Ulang Data
+                <span v-if="loading" class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              {{ confirmLabel }}
             </button>
           </div>
         </div>
@@ -49,23 +68,46 @@
 </template>
 
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
-import { AlertTriangle as AlertTriangleIcon, RefreshCw as RefreshCwIcon } from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
+import { AlertTriangle as AlertTriangleIcon } from 'lucide-vue-next';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   open: boolean;
-  expectedVersion?: number;
-  only?: string[];
-}>();
+  title?: string;
+  description?: string;
+  placeholder?: string;
+  confirmLabel?: string;
+  loading?: boolean;
+}>(), {
+  title: 'Konfirmasi',
+  description: '',
+  placeholder: 'Tuliskan alasan penolakan/pembatalan minimal 5 karakter...',
+  confirmLabel: 'Konfirmasi',
+  loading: false,
+});
 
 const emit = defineEmits<{
   'update:open': [v: boolean];
-  reloaded: [];
+  confirm: [reason: string];
 }>();
 
-const reload = () => {
-  router.reload({ only: props.only });
-  emit('reloaded');
+const reason = ref<string>('');
+
+const canConfirm = computed(() => reason.value.trim().length >= 5 && !props.loading);
+
+watch(() => props.open, (open) => {
+  if (!open) {
+    reason.value = '';
+  }
+});
+
+const close = () => {
+  reason.value = '';
   emit('update:open', false);
+};
+
+const confirm = () => {
+  if (!canConfirm.value) return;
+  emit('confirm', reason.value.trim());
 };
 </script>

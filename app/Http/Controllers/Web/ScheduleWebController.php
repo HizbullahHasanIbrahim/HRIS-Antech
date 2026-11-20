@@ -67,6 +67,12 @@ class ScheduleWebController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $user = $request->user();
+
+        if (! $user || ! $user->hasRole('Admin BSDM') && ! $user->hasRole('Kepala Biro')) {
+            abort(403, 'Hanya Admin BSDM dan Kepala Biro yang berhak mengatur jadwal kerja.');
+        }
+
         $validated = $request->validate([
             'unit_id' => 'nullable|exists:departments,id',
             'category' => 'required|string|in:dosen,tendik',
@@ -78,8 +84,6 @@ class ScheduleWebController extends Controller
             'days.*.start_time' => 'required|string',
             'days.*.end_time' => 'required|string',
         ]);
-
-        $user = $request->user();
 
         DB::transaction(function () use ($validated, $user) {
             $schedule = WorkSchedule::create([

@@ -82,22 +82,22 @@
             <div class="p-6 space-y-4">
               <div>
                 <label class="block text-sm font-medium mb-1">Pegawai <span class="text-status-danger" aria-hidden="true">*</span></label>
-                <select v-model="createForm.employee_id" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required>
+                <select v-model="createForm.employee_id" class="w-full border border-control rounded-md p-2 bg-canvas text-main" required>
                   <option value="" disabled>Pilih Pegawai</option>
                   <option v-for="emp in employees" :key="emp.id" :value="emp.id">{{ emp.full_name }} ({{ emp.nip }})</option>
                 </select>
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1">Jenis Sertifikasi <span class="text-status-danger" aria-hidden="true">*</span></label>
-                <input v-model="createForm.cert_type" type="text" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required />
+                <input v-model="createForm.cert_type" type="text" class="w-full border border-control rounded-md p-2 bg-canvas text-main" required />
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1">Nomor Sertifikasi <span class="text-status-danger" aria-hidden="true">*</span></label>
-                <input v-model="createForm.cert_number" type="text" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required />
+                <input v-model="createForm.cert_number" type="text" class="w-full border border-control rounded-md p-2 bg-canvas text-main" required />
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1">Level <span class="text-status-danger" aria-hidden="true">*</span></label>
-                <select v-model="createForm.cert_level" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required>
+                <select v-model="createForm.cert_level" class="w-full border border-control rounded-md p-2 bg-canvas text-main" required>
                   <option value="" disabled>Pilih Level</option>
                   <option value="Sertifikasi">Sertifikasi</option>
                   <option value="Sertifikat">Sertifikat</option>
@@ -106,7 +106,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1">Tanggal Diajukan <span class="text-status-danger" aria-hidden="true">*</span></label>
-                <input v-model="createForm.submitted_date" type="date" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required />
+                <input v-model="createForm.submitted_date" type="date" class="w-full border border-control rounded-md p-2 bg-canvas text-main" required />
               </div>
               <div class="flex justify-end gap-3 pt-4">
                 <AppButton variant="secondary" @click="closeCreateModal">Batal</AppButton>

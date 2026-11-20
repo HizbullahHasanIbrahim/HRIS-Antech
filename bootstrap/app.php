@@ -74,11 +74,4 @@ return Application::configure(basePath: dirname(__DIR__))
 
             return response()->json(['success' => false, 'error' => ['code' => 'BUSINESS_RULE_VIOLATION', 'message' => $e->getMessage(), 'details' => $e->details ?? null]], 422);
         });
-        $exceptions->render(function (Request $request, Throwable $e) {
-            if ($request->header('X-Inertia')) {
-                return back()->withErrors(['message' => $e->getMessage()]);
-            }
-
-            return response()->json(['success' => false, 'error' => ['code' => 'UNHANDLED_ERROR', 'message' => $e->getMessage()]], 500);
-        });
     })->create();

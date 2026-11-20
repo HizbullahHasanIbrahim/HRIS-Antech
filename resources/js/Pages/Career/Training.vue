@@ -82,18 +82,18 @@
             <div class="p-6 space-y-4">
               <div>
                 <label class="block text-sm font-medium mb-1">Pegawai <span class="text-status-danger" aria-hidden="true">*</span></label>
-                <select v-model="createForm.employee_id" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required>
+                <select v-model="createForm.employee_id" class="w-full border border-control rounded-md p-2 bg-canvas text-main" required>
                   <option value="" disabled>Pilih Pegawai</option>
                   <option v-for="emp in employees" :key="emp.id" :value="emp.id">{{ emp.full_name }} ({{ emp.nip }})</option>
                 </select>
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1">Judul Pelatihan <span class="text-status-danger" aria-hidden="true">*</span></label>
-                <input v-model="createForm.title" type="text" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required />
+                <input v-model="createForm.title" type="text" class="w-full border border-control rounded-md p-2 bg-canvas text-main" required />
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1">Jenis Pelatihan <span class="text-status-danger" aria-hidden="true">*</span></label>
-                <select v-model="createForm.training_type" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required>
+                <select v-model="createForm.training_type" class="w-full border border-control rounded-md p-2 bg-canvas text-main" required>
                   <option value="internal">Internal</option>
                   <option value="eksternal">Eksternal</option>
                   <option value="online">Online</option>
@@ -101,19 +101,19 @@
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1">Peng organizer <span class="text-status-danger" aria-hidden="true">*</span></label>
-                <input v-model="createForm.organizer" type="text" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required />
+                <input v-model="createForm.organizer" type="text" class="w-full border border-control rounded-md p-2 bg-canvas text-main" required />
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1">Tanggal Mulai <span class="text-status-danger" aria-hidden="true">*</span></label>
-                <input v-model="createForm.start_date" type="date" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required />
+                <input v-model="createForm.start_date" type="date" class="w-full border border-control rounded-md p-2 bg-canvas text-main" required />
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1">Tanggal Akhir <span class="text-status-danger" aria-hidden="true">*</span></label>
-                <input v-model="createForm.end_date" type="date" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required />
+                <input v-model="createForm.end_date" type="date" class="w-full border border-control rounded-md p-2 bg-canvas text-main" required />
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1">Durasi (Jam) <span class="text-status-danger" aria-hidden="true">*</span></label>
-                <input v-model="createForm.duration_hours" type="number" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required min="1" />
+                <input v-model="createForm.duration_hours" type="number" class="w-full border border-control rounded-md p-2 bg-canvas text-main" required min="1" />
               </div>
               <div class="flex justify-end gap-3 pt-4">
                 <AppButton variant="secondary" @click="closeCreateModal">Batal</AppButton>

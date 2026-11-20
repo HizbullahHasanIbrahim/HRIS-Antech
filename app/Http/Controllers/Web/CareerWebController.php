@@ -164,6 +164,8 @@ class CareerWebController extends Controller
 
     public function storeCertification(Request $request): RedirectResponse
     {
+        $user = $request->user();
+
         $validated = $request->validate([
             'employee_id' => 'required|exists:employees,id',
             'cert_type' => 'required|string|max:50',
@@ -172,7 +174,14 @@ class CareerWebController extends Controller
             'cert_level' => 'required|string|max:12',
         ]);
 
-        DB::transaction(function () use ($validated) {
+        // Unit scoping: non-admin may only register for their own unit
+        $employee = Employee::find($validated['employee_id']);
+        $isAdminOrHead = $user?->hasRole('Admin BSDM') || $user?->hasRole('Kepala Biro');
+        if (! $isAdminOrHead && $user?->employee && $employee && $employee->unit_id !== $user->employee->unit_id) {
+            abort(403, 'Anda tidak berhak mendaftarkan sertifikasi untuk pegawai di unit lain.');
+        }
+
+        DB::transaction(function () use ($validated, $user) {
             DB::table('employees')->where('id', $validated['employee_id'])->lockForUpdate()->first();
 
             $certification = Certification::create([
@@ -184,7 +193,7 @@ class CareerWebController extends Controller
             ]);
 
             $this->activityLog->log(
-                null,
+                $user,
                 'CREATE_CERTIFICATION',
                 'Certification',
                 $certification->id,
@@ -198,6 +207,8 @@ class CareerWebController extends Controller
 
     public function storeStudyLeave(Request $request): RedirectResponse
     {
+        $user = $request->user();
+
         $validated = $request->validate([
             'employee_id' => 'required|exists:employees,id',
             'degree_level' => 'required|string|max:5',
@@ -208,7 +219,13 @@ class CareerWebController extends Controller
             'scholarship_name' => 'required|string|max:150',
         ]);
 
-        DB::transaction(function () use ($validated) {
+        $employee = Employee::find($validated['employee_id']);
+        $isAdminOrHead = $user?->hasRole('Admin BSDM') || $user?->hasRole('Kepala Biro');
+        if (! $isAdminOrHead && $user?->employee && $employee && $employee->unit_id !== $user->employee->unit_id) {
+            abort(403, 'Anda tidak berhak mendaftarkan studi lanjut untuk pegawai di unit lain.');
+        }
+
+        DB::transaction(function () use ($validated, $user) {
             DB::table('employees')->where('id', $validated['employee_id'])->lockForUpdate()->first();
 
             $studyLeave = StudyLeave::create([
@@ -223,7 +240,7 @@ class CareerWebController extends Controller
             ]);
 
             $this->activityLog->log(
-                null,
+                $user,
                 'CREATE_STUDY_LEAVE',
                 'StudyLeave',
                 $studyLeave->id,
@@ -237,6 +254,8 @@ class CareerWebController extends Controller
 
     public function storeTraining(Request $request): RedirectResponse
     {
+        $user = $request->user();
+
         $validated = $request->validate([
             'employee_id' => 'required|exists:employees,id',
             'title' => 'required|string|max:200',
@@ -247,7 +266,13 @@ class CareerWebController extends Controller
             'duration_hours' => 'required|integer|min:1',
         ]);
 
-        DB::transaction(function () use ($validated) {
+        $employee = Employee::find($validated['employee_id']);
+        $isAdminOrHead = $user?->hasRole('Admin BSDM') || $user?->hasRole('Kepala Biro');
+        if (! $isAdminOrHead && $user?->employee && $employee && $employee->unit_id !== $user->employee->unit_id) {
+            abort(403, 'Anda tidak berhak mendaftarkan pelatihan untuk pegawai di unit lain.');
+        }
+
+        DB::transaction(function () use ($validated, $user) {
             DB::table('employees')->where('id', $validated['employee_id'])->lockForUpdate()->first();
 
             $training = Training::create([
@@ -262,7 +287,7 @@ class CareerWebController extends Controller
             ]);
 
             $this->activityLog->log(
-                null,
+                $user,
                 'CREATE_TRAINING',
                 'Training',
                 $training->id,

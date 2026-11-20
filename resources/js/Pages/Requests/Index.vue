@@ -100,7 +100,7 @@
           <form @submit.prevent="submitCreate" class="p-6 space-y-4">
             <div>
               <label for="form-type" class="block text-sm font-medium text-main mb-1.5">Kategori Pengajuan</label>
-              <select id="form-type" v-model="formType" class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true">
+              <select id="form-type" v-model="formType" class="w-full border border-control rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true">
                 <option value="leave">Cuti Pegawai</option>
                 <option value="overtime">Lembur Kerja</option>
                 <option value="allowance">Tunjangan Fungsional</option>
@@ -111,7 +111,7 @@
             <div v-if="formType === 'leave'" class="space-y-3">
               <div>
                 <label for="leave-type" class="block text-sm font-medium text-main mb-1.5">Jenis Cuti</label>
-                <select id="leave-type" v-model="leaveForm.leave_type_id" required class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true">
+                <select id="leave-type" v-model="leaveForm.leave_type_id" required class="w-full border border-control rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true">
                   <option value="" disabled selected>Pilih jenis cuti</option>
                   <option v-for="t in leaveTypes" :key="t.id" :value="t.id">
                     {{ t.name }} (Kuota: {{ t.annual_quota }} hari)
@@ -121,20 +121,20 @@
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label for="leave-start" class="block text-sm font-medium text-main mb-1.5">Mulai</label>
-                  <input id="leave-start" type="date" v-model="leaveForm.start_date" required class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true" />
+                  <input id="leave-start" type="date" v-model="leaveForm.start_date" required class="w-full border border-control rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true" />
                 </div>
                 <div>
                   <label for="leave-end" class="block text-sm font-medium text-main mb-1.5">Selesai</label>
-                  <input id="leave-end" type="date" v-model="leaveForm.end_date" required class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true" />
+                  <input id="leave-end" type="date" v-model="leaveForm.end_date" required class="w-full border border-control rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true" />
                 </div>
               </div>
               <div>
                 <label for="leave-reason" class="block text-sm font-medium text-main mb-1.5">Alasan</label>
-                <textarea id="leave-reason" v-model="leaveForm.reason" required rows="2" class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main resize-none focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" placeholder="Tuliskan keterangan..." aria-required="true" />
+                <textarea id="leave-reason" v-model="leaveForm.reason" required rows="2" class="w-full border border-control rounded-lg px-4 py-2.5 text-sm bg-canvas text-main resize-none focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" placeholder="Tuliskan keterangan..." aria-required="true" />
               </div>
               <div>
                 <label for="leave-approver" class="block text-sm font-medium text-main mb-1.5">Atasan Penyetuju</label>
-                <select id="leave-approver" v-model="leaveForm.approver_id" required class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true">
+                <select id="leave-approver" v-model="leaveForm.approver_id" required class="w-full border border-control rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true">
                   <option value="">-- Pilih Atasan --</option>
                   <option v-for="a in approvers" :key="a.id" :value="a.id">
                     {{ a.name }} (NIP: {{ a.nip }})
@@ -147,25 +147,25 @@
             <div v-else-if="formType === 'overtime'" class="space-y-3">
               <div>
                 <label for="overtime-date" class="block text-sm font-medium text-main mb-1.5">Tanggal Lembur</label>
-                <input id="overtime-date" type="date" v-model="overtimeForm.work_date" required class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true" />
+                <input id="overtime-date" type="date" v-model="overtimeForm.work_date" required class="w-full border border-control rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true" />
               </div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label for="overtime-start" class="block text-sm font-medium text-main mb-1.5">Mulai (Jam)</label>
-                  <input id="overtime-start" type="time" v-model="overtimeForm.start_time" required class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true" />
+                  <input id="overtime-start" type="time" v-model="overtimeForm.start_time" required class="w-full border border-control rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true" />
                 </div>
                 <div>
                   <label for="overtime-end" class="block text-sm font-medium text-main mb-1.5">Selesai (Jam)</label>
-                  <input id="overtime-end" type="time" v-model="overtimeForm.end_time" required class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true" />
+                  <input id="overtime-end" type="time" v-model="overtimeForm.end_time" required class="w-full border border-control rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true" />
                 </div>
               </div>
               <div>
                 <label for="overtime-reason" class="block text-sm font-medium text-main mb-1.5">Uraian Tugas Lembur</label>
-                <textarea id="overtime-reason" v-model="overtimeForm.reason" required rows="2" class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main resize-none focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" placeholder="Tuliskan uraian pekerjaan lembur..." aria-required="true" />
+                <textarea id="overtime-reason" v-model="overtimeForm.reason" required rows="2" class="w-full border border-control rounded-lg px-4 py-2.5 text-sm bg-canvas text-main resize-none focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" placeholder="Tuliskan uraian pekerjaan lembur..." aria-required="true" />
               </div>
               <div>
                 <label for="overtime-approver" class="block text-sm font-medium text-main mb-1.5">Atasan Penyetuju</label>
-                <select id="overtime-approver" v-model="overtimeForm.approver_id" required class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true">
+                <select id="overtime-approver" v-model="overtimeForm.approver_id" required class="w-full border border-control rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true">
                   <option value="">-- Pilih Atasan --</option>
                   <option v-for="a in approvers" :key="a.id" :value="a.id">
                     {{ a.name }} (NIP: {{ a.nip }})
@@ -178,7 +178,7 @@
             <div v-else-if="formType === 'allowance'" class="space-y-3">
               <div>
                 <label for="allowance-type" class="block text-sm font-medium text-main mb-1.5">Jenis Tunjangan</label>
-                <select id="allowance-type" v-model="allowanceForm.allowance_type_id" required class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true">
+                <select id="allowance-type" v-model="allowanceForm.allowance_type_id" required class="w-full border border-control rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true">
                   <option value="">-- Pilih Jenis Tunjangan --</option>
                   <option v-for="at in allowanceTypes" :key="at.id" :value="at.id">
                     {{ at.name }} ({{ at.code }})
@@ -187,15 +187,15 @@
               </div>
               <div>
                 <label for="allowance-period" class="block text-sm font-medium text-main mb-1.5">Label Periode</label>
-                <input id="allowance-period" type="text" v-model="allowanceForm.period_label" required class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" placeholder="Contoh: 2026-03" aria-required="true" />
+                <input id="allowance-period" type="text" v-model="allowanceForm.period_label" required class="w-full border border-control rounded-lg px-4 py-2.5 text-sm bg-canvas text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" placeholder="Contoh: 2026-03" aria-required="true" />
               </div>
               <div>
                 <label for="allowance-amount" class="block text-sm font-medium text-main mb-1.5">Nominal (Rp)</label>
-                <input id="allowance-amount" type="number" v-model="allowanceForm.amount" required class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" placeholder="Contoh: 1500000" aria-required="true" />
+                <input id="allowance-amount" type="number" v-model="allowanceForm.amount" required class="w-full border border-control rounded-lg px-4 py-2.5 text-sm bg-canvas text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" placeholder="Contoh: 1500000" aria-required="true" />
               </div>
               <div>
                 <label for="allowance-approver" class="block text-sm font-medium text-main mb-1.5">Atasan Penyetuju</label>
-                <select id="allowance-approver" v-model="allowanceForm.approver_id" required class="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true">
+                <select id="allowance-approver" v-model="allowanceForm.approver_id" required class="w-full border border-control rounded-lg px-4 py-2.5 text-sm bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" aria-required="true">
                   <option value="">-- Pilih Atasan --</option>
                   <option v-for="a in approvers" :key="a.id" :value="a.id">
                     {{ a.name }} (NIP: {{ a.nip }})

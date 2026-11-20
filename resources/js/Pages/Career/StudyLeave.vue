@@ -83,14 +83,14 @@
             <div class="p-6 space-y-4">
               <div>
                 <label class="block text-sm font-medium mb-1">Pegawai <span class="text-status-danger" aria-hidden="true">*</span></label>
-                <select v-model="createForm.employee_id" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required>
+                <select v-model="createForm.employee_id" class="w-full border border-control rounded-md p-2 bg-canvas text-main" required>
                   <option value="" disabled>Pilih Pegawai</option>
                   <option v-for="emp in employees" :key="emp.id" :value="emp.id">{{ emp.full_name }} ({{ emp.nip }})</option>
                 </select>
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1">Level Pendidikan <span class="text-status-danger" aria-hidden="true">*</span></label>
-                <select v-model="createForm.degree_level" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required>
+                <select v-model="createForm.degree_level" class="w-full border border-control rounded-md p-2 bg-canvas text-main" required>
                   <option value="S3">S3</option>
                   <option value="S2">S2</option>
                   <option value="S1">S1</option>
@@ -98,23 +98,23 @@
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1">Program Studi <span class="text-status-danger" aria-hidden="true">*</span></label>
-                <input v-model="createForm.study_program" type="text" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required />
+                <input v-model="createForm.study_program" type="text" class="w-full border border-control rounded-md p-2 bg-canvas text-main" required />
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1">Universitas <span class="text-status-danger" aria-hidden="true">*</span></label>
-                <input v-model="createForm.university" type="text" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required />
+                <input v-model="createForm.university" type="text" class="w-full border border-control rounded-md p-2 bg-canvas text-main" required />
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1">Tanggal Mulai <span class="text-status-danger" aria-hidden="true">*</span></label>
-                <input v-model="createForm.start_date" type="date" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required />
+                <input v-model="createForm.start_date" type="date" class="w-full border border-control rounded-md p-2 bg-canvas text-main" required />
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1">Tanggal Akhir Diperkirakan <span class="text-status-danger" aria-hidden="true">*</span></label>
-                <input v-model="createForm.end_date" type="date" class="w-full border border-border rounded-md p-2 bg-canvas text-main" required />
+                <input v-model="createForm.end_date" type="date" class="w-full border border-control rounded-md p-2 bg-canvas text-main" required />
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1">Beasiswa</label>
-                <input v-model="createForm.scholarship_name" type="text" class="w-full border border-border rounded-md p-2 bg-canvas text-main" />
+                <input v-model="createForm.scholarship_name" type="text" class="w-full border border-control rounded-md p-2 bg-canvas text-main" />
               </div>
               <div class="flex justify-end gap-3 pt-4">
                 <AppButton variant="secondary" @click="closeCreateModal">Batal</AppButton>

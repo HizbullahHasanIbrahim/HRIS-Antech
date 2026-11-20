@@ -89,18 +89,18 @@
           <form @submit.prevent="submitRegister" class="p-6 space-y-5">
             <div>
               <label for="bpjs-type" class="block text-sm font-medium text-main mb-1.5">Tipe BPJS <span class="text-status-danger" aria-hidden="true">*</span></label>
-              <select id="bpjs-type" v-model="registerForm.bpjs_type" class="w-full border border-border rounded-lg px-4 py-2.5 bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true">
+              <select id="bpjs-type" v-model="registerForm.bpjs_type" class="w-full border border-control rounded-lg px-4 py-2.5 bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true">
                 <option value="kesehatan">BPJS Kesehatan</option>
                 <option value="ketenagakerjaan">BPJS Ketenagakerjaan</option>
               </select>
             </div>
             <div>
               <label for="bpjs-number" class="block text-sm font-medium text-main mb-1.5">Nomor Keanggotaan <span class="text-status-danger" aria-hidden="true">*</span></label>
-              <input id="bpjs-number" v-model="registerForm.membership_number" type="text" class="w-full border border-border rounded-lg px-4 py-2.5 bg-canvas text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" autocomplete="off" />
+              <input id="bpjs-number" v-model="registerForm.membership_number" type="text" class="w-full border border-control rounded-lg px-4 py-2.5 bg-canvas text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" autocomplete="off" />
             </div>
             <div>
               <label for="bpjs-date" class="block text-sm font-medium text-main mb-1.5">Tanggal Pendaftaran <span class="text-status-danger" aria-hidden="true">*</span></label>
-              <input id="bpjs-date" v-model="registerForm.registered_date" type="date" class="w-full border border-border rounded-lg px-4 py-2.5 bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" />
+              <input id="bpjs-date" v-model="registerForm.registered_date" type="date" class="w-full border border-control rounded-lg px-4 py-2.5 bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" />
             </div>
             <div class="flex justify-end gap-3 pt-4 border-t border-subtle">
               <AppButton type="button" variant="secondary" @click="closeRegisterModal" :disabled="submitting">Batal</AppButton>

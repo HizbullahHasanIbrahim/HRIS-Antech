@@ -51,8 +51,8 @@
         <p v-if="form.errors.general" class="text-status-danger text-sm mt-4 text-center">{{ form.errors.general }}</p>
       </form>
 
-      <div class="mt-6 p-4 bg-brand-primary/5 rounded-lg text-sm text-brand-primary">
-        <strong>Demo Accounts:</strong>
+      <div v-if="!isProduction" class="mt-6 p-4 bg-brand-primary/5 rounded-lg text-sm text-brand-primary">
+        <strong>Demo Accounts (Development Only):</strong>
         <ul class="mt-2 space-y-1 text-xs">
           <li>admin.bsdm / password123</li>
           <li>kepala.biro / password123</li>
@@ -72,6 +72,8 @@ const form = useForm({
   username: '',
   password: '',
 });
+
+const isProduction = import.meta.env.PROD;
 
 const login = () => {
   form.post(route('login'), {

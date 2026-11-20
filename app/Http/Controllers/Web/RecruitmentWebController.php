@@ -131,6 +131,12 @@ class RecruitmentWebController extends Controller
      */
     public function storeVacancy(Request $request): RedirectResponse
     {
+        $user = $request->user();
+
+        if (! $user || ! $user->hasRole('Admin BSDM') && ! $user->hasRole('Kepala Biro')) {
+            abort(403, 'Hanya Admin BSDM dan Kepala Biro yang berhak membuat lowongan kerja.');
+        }
+
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -140,12 +146,6 @@ class RecruitmentWebController extends Controller
             'open_date' => 'required|date',
             'close_date' => 'required|date|after_or_equal:open_date',
         ]);
-
-        $user = $request->user();
-
-        if (! $user) {
-            return back()->withErrors(['message' => 'Unauthorized.']);
-        }
 
         Vacancy::create([
             'unit_id' => $request->unit_id,
@@ -168,6 +168,12 @@ class RecruitmentWebController extends Controller
      */
     public function storeUser(Request $request): RedirectResponse
     {
+        $user = $request->user();
+
+        if (! $user || ! $user->hasRole('Admin BSDM')) {
+            abort(403, 'Hanya Admin BSDM yang berhak menambahkan pengguna baru.');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:150',
             'email' => 'required|string|email|max:150',
@@ -186,9 +192,14 @@ class RecruitmentWebController extends Controller
 
         DB::transaction(function () use ($validated, $role) {
             $employee = Employee::create([
+                'nip' => 'UAD'.now()->format('Ymd').str_pad((string) (Employee::count() + 1), 4, '0', STR_PAD_LEFT),
                 'full_name' => $validated['name'],
                 'email' => $validated['email'],
                 'category' => $validated['role'] === 'admin-bsdm' ? 'tendik' : $validated['role'],
+                'gender' => 'L',
+                'birth_place' => 'Yogyakarta',
+                'birth_date' => '1995-01-01',
+                'highest_education' => 'S1',
                 'unit_id' => $validated['unit_id'],
                 'employment_status' => 'aktif',
                 'join_date' => now(),

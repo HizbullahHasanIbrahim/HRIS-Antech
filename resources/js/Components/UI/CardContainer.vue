@@ -2,7 +2,7 @@
   <div class="bg-canvas border border-subtle rounded-xl p-6 shadow-sm">
     <h3 class="text-lg font-semibold text-main mb-4">{{ title }}</h3>
 
-    <div class="bg-surface dark:bg-surface-dark rounded-lg border border-control p-4">
+    <div class="bg-surface  rounded-lg border border-control p-4">
       <slot />
     </div>
 

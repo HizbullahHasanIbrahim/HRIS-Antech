@@ -96,15 +96,15 @@
           <form @submit.prevent="submitCreate" class="p-6 space-y-5">
             <div>
               <label for="title" class="block text-sm font-medium text-main mb-1.5">Judul <span class="text-status-danger" aria-hidden="true">*</span></label>
-              <input id="title" v-model="createForm.title" type="text" class="w-full border border-border rounded-lg px-4 py-2.5 bg-canvas text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" autocomplete="off" />
+              <input id="title" v-model="createForm.title" type="text" class="w-full border border-control rounded-lg px-4 py-2.5 bg-canvas text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" autocomplete="off" />
             </div>
             <div>
               <label for="description" class="block text-sm font-medium text-main mb-1.5">Deskripsi <span class="text-status-danger" aria-hidden="true">*</span></label>
-              <textarea id="description" v-model="createForm.description" class="w-full border border-border rounded-lg px-4 py-2.5 bg-canvas text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" rows="4" required aria-required="true"></textarea>
+              <textarea id="description" v-model="createForm.description" class="w-full border border-control rounded-lg px-4 py-2.5 bg-canvas text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" rows="4" required aria-required="true"></textarea>
             </div>
             <div>
               <label for="category" class="block text-sm font-medium text-main mb-1.5">Kategori <span class="text-status-danger" aria-hidden="true">*</span></label>
-              <select id="category" v-model="createForm.category" class="w-full border border-border rounded-lg px-4 py-2.5 bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true">
+              <select id="category" v-model="createForm.category" class="w-full border border-control rounded-lg px-4 py-2.5 bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true">
                 <option value="" disabled>Pilih Kategori</option>
                 <option value="penegatan">Penegatan (Dosen/Tendik Tetap)</option>
                 <option value="tenaga_kontrak">Tenaga Kontrak</option>
@@ -112,23 +112,23 @@
             </div>
             <div>
               <label for="unit_id" class="block text-sm font-medium text-main mb-1.5">Unit Kerja <span class="text-status-danger" aria-hidden="true">*</span></label>
-              <select id="unit_id" v-model="createForm.unit_id" class="w-full border border-border rounded-lg px-4 py-2.5 bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true">
+              <select id="unit_id" v-model="createForm.unit_id" class="w-full border border-control rounded-lg px-4 py-2.5 bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true">
                 <option value="" disabled>Pilih Unit</option>
                 <option v-for="dept in departments" :key="dept.id" :value="dept.id">{{ dept.name }}</option>
               </select>
             </div>
             <div>
               <label for="quota" class="block text-sm font-medium text-main mb-1.5">Kuota <span class="text-status-danger" aria-hidden="true">*</span></label>
-              <input id="quota" v-model="createForm.quota" type="number" class="w-full border border-border rounded-lg px-4 py-2.5 bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" min="1" required aria-required="true" />
+              <input id="quota" v-model="createForm.quota" type="number" class="w-full border border-control rounded-lg px-4 py-2.5 bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" min="1" required aria-required="true" />
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
                 <label for="open_date" class="block text-sm font-medium text-main mb-1.5">Tanggal Buka <span class="text-status-danger" aria-hidden="true">*</span></label>
-                <input id="open_date" v-model="createForm.open_date" type="date" class="w-full border border-border rounded-lg px-4 py-2.5 bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" />
+                <input id="open_date" v-model="createForm.open_date" type="date" class="w-full border border-control rounded-lg px-4 py-2.5 bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" />
               </div>
               <div>
                 <label for="close_date" class="block text-sm font-medium text-main mb-1.5">Tanggal Tutup <span class="text-status-danger" aria-hidden="true">*</span></label>
-                <input id="close_date" v-model="createForm.close_date" type="date" class="w-full border border-border rounded-lg px-4 py-2.5 bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" />
+                <input id="close_date" v-model="createForm.close_date" type="date" class="w-full border border-control rounded-lg px-4 py-2.5 bg-canvas text-main focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent" required aria-required="true" />
               </div>
             </div>
             <div class="flex justify-end gap-3 pt-4 border-t border-subtle">

@@ -267,7 +267,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
 import { usePage, router, Link } from '@inertiajs/vue3';
 import { useTheme } from '../Composables/useTheme';
 import ToastContainer from '../Components/UI/ToastContainer.vue';
@@ -276,7 +276,7 @@ const page = usePage();
 const sidebarOpen = ref(false);
 const userMenuOpen = ref(false);
 
-const { theme, isDark, setTheme } = useTheme();
+const { isDark, setTheme } = useTheme();
 
 const user = computed(() => (page.props as any).auth?.user);
 const roleName = computed(() => {
@@ -296,11 +296,4 @@ const initials = computed(() => {
 const logout = () => {
   router.post('/logout');
 };
-
-watch(
-  () => theme.value,
-  (newTheme) => {
-    setTheme(newTheme);
-  }
-);
 </script>

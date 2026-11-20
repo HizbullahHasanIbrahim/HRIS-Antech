@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import VueApexCharts from 'vue3-apexcharts';
 import { useTheme } from '../Composables/useTheme';
 
